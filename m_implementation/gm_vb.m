@@ -1,10 +1,10 @@
-function [label, model, L] = mixGaussVb(X, m, prior)
+function [label, model, L] = gm_vb(X, m, prior)
 % Variational Bayesian inference for Gaussian mixture.
 % Input: 
 %   X: d x n data matrix
 %   m: k (1 x 1) or label (1 x n, 1<=label(i)<=k) or model structure
 % Output:
-%   label: 1 x n cluster label
+%   label: 1 x n cl+uster label
 %   model: trained model structure
 %   L: variational lower bound
 % Reference: Pattern Recognition and Machine Learning by Christopher M. Bishop (P.474)
@@ -89,6 +89,7 @@ model.U = U;
 model.logW = logW;
 
 % Done
+
 function model = expect(X, model)
 alpha = model.alpha; % Dirichlet
 kappa = model.kappa;   % Gaussian
@@ -115,6 +116,7 @@ model.logR = logR;
 model.R = R;
 
 % Done
+
 function L = bound(X, model, prior)
 alpha0 = prior.alpha;
 kappa0 = prior.kappa;

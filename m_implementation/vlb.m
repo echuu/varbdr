@@ -1,4 +1,4 @@
-function L = mixGaussEvidence(X, model, prior)
+function L = vlb(X, model, prior)
 % Variational lower bound of the model evidence (log of marginal likelihood)
 % This function implements the method in the book PRML. It is equivalent to the bound inside mixGaussVb function.
 % Reference: Pattern Recognition and Machine Learning by Christopher M. Bishop (P.474)
