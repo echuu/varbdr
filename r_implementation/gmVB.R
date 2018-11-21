@@ -47,47 +47,56 @@ vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)),
                    epsilon_conv = 1e-4, is_animation = FALSE, 
                    VERBOSE = FALSE){
     # Compute logB function
-    logB = function(W, nu){
-        D = NCOL(W)
-        return(-0.5*nu*log(det(W)) - (0.5*nu*D*log(2) + 0.25*D*(D - 1) * 
-                                          log(pi) + sum(lgamma(0.5 * (nu + 1 - 1:NCOL(W)))) ))  #log of B.79
-    }
+    #logB = function(W, nu){
+    #    D = NCOL(W)
+    #    return(-0.5*nu*log(det(W)) - (0.5*nu*D*log(2) + 0.25*D*(D - 1) * 
+    #                                      log(pi) + sum(lgamma(0.5 * (nu + 1 - 1:NCOL(W)))) ))  #log of B.79
+    #}
+
     X = as.matrix(X)
     D = NCOL(X)              # Number of features
     N = NROW(X)              # Number of observations
     W_0_inv = solve(W_0)     # Compute W^{-1}
     L = rep(-Inf, max_iter)  # Store the lower bounds
-    r_nk = log_r_nk = log_rho_nk = matrix(0, nrow = N, ncol = K)
-    x_bar_k = matrix(0, nrow = D, ncol = K)
-    S_k = W_k = array(0, c(D, D, K ) )
-    log_pi = log_Lambda = rep(0, K)
     
+    # calculate the responsibilities
+    r_nk      = log_r_nk = log_rho_nk = matrix(0, nrow = N, ncol = K)
+    x_bar_k   = matrix(0, nrow = D, ncol = K)    # 10.52
+    S_k       = W_k = array(0, c(D, D, K ) )     # 10.53
+    log_pi    = log_Lambda = rep(0, K)           # 
+    
+    ## animation details -------------------------------------------------------
     if (is_animation) {
         # Variables needed for plotting
         dt = data.table(expand.grid(x = seq(from = min(X[,1]) - 2, 
-                                             to = max(X[,1]) + 2, length.out = 80), 
-                                     y = seq(from = min(X[,2]) - 8, 
-                                             to = max(X[,2]) + 2, length.out = 80)))
+                                         to = max(X[,1]) + 2, length.out = 80), 
+                                    y = seq(from = min(X[,2]) - 8, 
+                                         to = max(X[,2]) + 2, length.out = 80)))
     }
     dt_all = data.table(x = numeric(), y = numeric(), z = numeric(), 
                          iter = numeric())
+    ## animation details -------------------------------------------------------
     
     m_k     = t(kmeans(X, K, nstart = 25)$centers)  # Mean of Gaussian
-    beta_k  = rep(beta_0, K)                # Scale of precision matrix
-    nu_k    = rep(nu_0, K)                  # Degrees of freedom
-    alpha   = rep(alpha_0, K)               # Dirichlet parameter
+    beta_k  = rep(beta_0, K)                        # Scale of precision matrix
+    nu_k    = rep(nu_0, K)                          # Degrees of freedom
+    alpha   = rep(alpha_0, K)                       # Dirichlet parameter
     log_pi  = digamma(alpha) - digamma(sum(alpha))
+    
     for (k in 1:K) {
         W_k[,,k] =  W_0  # Scale matrix for Wishart
         log_Lambda[k] = sum(digamma((nu_k[k] + 1 - c(1:D))/2)) + 
             D*log(2) + log(det(W_k[,,k]))
     }
     
+    ## animation details -------------------------------------------------------
     if (is_animation) { # Create animation for initial assignments
         my_z = mixture_pdf_t(model = list(m = m_k, W = W_k, beta = beta_k, 
-                                          nu = nu_k, alpha = rep(1/K, K)), data = dt)
+                                     nu = nu_k, alpha = rep(1/K, K)), data = dt)
         dt_all = rbind(dt_all, dt[, z := my_z] %>% .[, iter := 0])
     }
+    ## animation details -------------------------------------------------------
+    
     
     # Iterate to find optimal parameters
     for (i in 2:max_iter) {
@@ -144,58 +153,72 @@ vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)),
         ##-------------------------------
         lb_px = lb_pml = lb_pml2 = lb_qml = 0
         for (k in 1:K) {
+            
             # 10.71
             lb_px = lb_px + N_k[k] * 
-                (log_Lambda[k] - D/beta_k[k] - nu_k[k] * 
-                     matrix.trace(S_k[,,k] %*% W_k[,,k]) - nu_k[k]*t(x_bar_k[,k] - 
-                                                                         m_k[,k]) %*% W_k[,,k] %*% (x_bar_k[,k] - m_k[,k]) - D*log(2*pi) ) 
+                (log_Lambda[k] - D / beta_k[k] - nu_k[k] * 
+                     matrix.trace(S_k[,,k] %*% W_k[,,k]) - 
+                     nu_k[k] * t(x_bar_k[, k] -  m_k[,k]) %*% W_k[,,k] %*% 
+                     (x_bar_k[, k] - m_k[, k]) - D * log(2 * pi) ) 
+            
             # 10.74
-            lb_pml = lb_pml + D*log(beta_0/(2*pi)) + log_Lambda[k] - 
-                (D*beta_0)/beta_k[k] - beta_0*nu_k[k]*t(m_k[,k] - m_0) %*% 
-                W_k[,,k] %*% (m_k[,k] - m_0)    
+            lb_pml = lb_pml + D * log(beta_0  /(2 * pi)) + log_Lambda[k] - 
+                (D * beta_0) / beta_k[k] - beta_0 * nu_k[k] * 
+                t(m_k[,k] - m_0) %*% W_k[,,k] %*% (m_k[,k] - m_0)    
+            
             # 10.74
             lb_pml2 = lb_pml2 + nu_k[k] * matrix.trace(W_0_inv %*% W_k[,,k]) 
+            
             # 10.77
-            lb_qml = lb_qml + 0.5*log_Lambda[k] + 0.5*D*log(beta_k[k]/(2*pi)) - 
-                0.5*D - logB(W = W_k[,,k], nu = nu_k[k]) - 
-                0.5*(nu_k[k] - D - 1)*log_Lambda[k] + 0.5*nu_k[k]*D
+            lb_qml = lb_qml + 0.5 * log_Lambda[k] + 
+                0.5 * D * log(beta_k[k] / (2 * pi)) - 
+                0.5 * D - logB(W = W_k[,,k], nu = nu_k[k]) - 
+                0.5 * (nu_k[k] - D - 1) * log_Lambda[k] + 0.5 * nu_k[k] * D
         }
         
-        lb_px  = 0.5 * lb_px             # 10.71
-        lb_pml = 0.5*lb_pml + K*logB(W = W_0,nu = nu_0) + 0.5*(nu_0 - D - 1) * 
-            sum(log_Lambda) - 0.5*lb_pml2 # 10.74
-        lb_pz  = sum(r_nk %*% log_pi)    # 10.72
-        lb_qz  = sum(r_nk * log_r_nk)    # 10.75
-        lb_pp  = sum((alpha_0 - 1)*log_pi) + lgamma(sum(K*alpha_0)) -
-            K*sum(lgamma(alpha_0))        # 10.73
-        lb_qp  = sum((alpha - 1)*log_pi) + lgamma(sum(alpha)) - 
-            sum(lgamma(alpha)) # 10.76
+        
+        # ELBO computation --- move this to another file -----------------------
+        lb_px  = 0.5 * lb_px                                            # 10.71
+        lb_pml = 0.5 * lb_pml + K * logB(W = W_0, nu = nu_0) + 0.5 * 
+            (nu_0 - D - 1) * sum(log_Lambda) - 0.5 * lb_pml2            # 10.74
+        lb_pz  = sum(r_nk %*% log_pi)                                   # 10.72
+        lb_qz  = sum(r_nk * log_r_nk)                                   # 10.75
+        lb_pp  = sum((alpha_0 - 1) * log_pi) + lgamma(sum(K * alpha_0)) -
+            K * sum(lgamma(alpha_0))                                    # 10.73
+        lb_qp  = sum((alpha - 1) * log_pi) + lgamma(sum(alpha)) - 
+            sum(lgamma(alpha))                                          # 10.76
+        
         # Sum all parts to compute lower bound
         L[i] = lb_px + lb_pz + lb_pp + lb_pml - lb_qz - lb_qp - lb_qml
         
+        # end of ELBO computation ----------------------------------------------
+        
+        
+        
+        ## animation details ---------------------------------------------------
         ##-------------------------------
         # Evaluate mixture density for plotting
         ##-------------------------------
         if (is_animation) {
             if ( (i - 1) %% 5 == 0 | i < 10) {
-                my_z = mixture_pdf_t(model = list(m = m_k, W = W_k, beta = beta_k, 
-                                                  nu = nu_k, alpha = alpha), data = dt)
+                my_z = mixture_pdf_t(model = list(m = m_k, W = W_k, 
+                                                  beta = beta_k, nu = nu_k, 
+                                                  alpha = alpha), data = dt)
                 dt_all = rbind(dt_all, dt[, z := my_z] %>% .[, iter := i - 1])
             }
         }
-        
+        ## animation details ---------------------------------------------------
         
         ### move this into another function ----> diagnostic messages
         # Show VB difference
-        if (VERBOSE) { cat("It:\t",i,"\tLB:\t",L[i],
-                              "\tLB_diff:\t",L[i] - L[i - 1],"\n")}
-        # Check if lower bound decreases
-        if (L[i] < L[i - 1]) { message("Warning: Lower bound decreases!\n"); }
-        # Check for convergence
-        if (abs(L[i] - L[i - 1]) < epsilon_conv) { break }
-        # Check if VB converged in the given maximum iterations
-        if (i == max_iter) {warning("VB did not converge!\n")}
+        
+        if (checkELBO(VERBOSE, i, max_iter, L, epsilon_conv)) {
+            break
+        }
+        
     }
+    
+    ## prepare output
     obj = structure(list(X = X, K = K, N = N, D = D, pi_k = pi_k, 
                           alpha = alpha, r_nk = r_nk,  m = m_k, W = W_k, 
                           beta = beta_k, nu = nu_k, L = L[2:i], 
