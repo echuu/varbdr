@@ -5,6 +5,9 @@ library(purrr)        # overlapping transpose function from data.table
 library(mvtnorm)
 library(Matrix)
 
+
+setwd("~/varbdr/r_implementation")
+
 source("densityCalculations.R")
 source("misc.R")
 
@@ -14,80 +17,76 @@ source("misc.R")
 
 ## vb_gmm() function  ----------------------------------------------------------
 ## input:
-    # X       : (N x D)
+    # X       : (N x D) -- observations stored row-wise
     # K       : # of clusters
-    # alpha_0 : 
-    # m_0     : prior mean
-    # beta_0  : prior variance scale
-    # nu_0    : wishart param 1
-    # W_0     : wishart param 2
+    # alpha_0 : prior concentration parameter for mixing weights (symmetric)
+    # m_0     : prior mean for beta
+    # beta_0  : prior variance scale for beta
+    # W_0     : prior scale matrix for lambda
+    # nu_0    : prior degrees of freedom for lambda
     # VERBOSE : if TRUE, then convergence output is shown
 ## output: 
     # X       : (N x D)
     # K       : # of clusters
     # N       : # of observations
-    # D       : # dimension of covariates
-    # pi_k    : # mixing weights (K x 1)
-    # alpha   : 
-    # r_nk    :
-    # m       :
-    # W       :
-    # beta    :
-    # nu      :
-    # L       : variational lower bound at each iteration
+    # D       : dimension of covariates
+    # pi_k    : updated mixing weights (K x 1)
+    # alpha   : updated concetration parameters
+    # r_nk    : updated responsibilities
+    # m       : updated mean for beta
+    # beta    : updated variance scale for beta
+    # W       : updated scale matrix for lambda
+    # nu      : updated degrees of freedom for lambda
+    # L       : variational lower bound at each iteration (ELBO)
     # dt_all  : graphic parameter
+vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1, 
+                  nu_0 = NCOL(X) + 50, W_0 = diag(100, NCOL(X)), max_iter = 500, 
+                  epsilon_conv = 1e-4, is_animation = FALSE, VERBOSE = FALSE) {
 
-#  structure(list(X = X, K = K, N = N, D = D, pi_k = pi_k, 
-#  alpha = alpha, r_nk = r_nk,  m = m_k, W = W_k, 
-#  beta = beta_k, nu = nu_k, L = L[2:i], 
-#  dt_all = dt_all), class = "vb_gmm")
-vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)), 
-                   beta_0 = 1, nu_0 = NCOL(X) + 50, 
-                   W_0 = diag(100, NCOL(X)), max_iter = 500, 
-                   epsilon_conv = 1e-4, is_animation = FALSE, 
-                   VERBOSE = FALSE){
-    # Compute logB function
-    #logB = function(W, nu){
-    #    D = NCOL(W)
-    #    return(-0.5*nu*log(det(W)) - (0.5*nu*D*log(2) + 0.25*D*(D - 1) * 
-    #                                      log(pi) + sum(lgamma(0.5 * (nu + 1 - 1:NCOL(W)))) ))  #log of B.79
-    #}
-
-    X = as.matrix(X)
-    D = NCOL(X)              # Number of features
-    N = NROW(X)              # Number of observations
-    W_0_inv = solve(W_0)     # Compute W^{-1}
-    L = rep(-Inf, max_iter)  # Store the lower bounds
-    
-    # calculate the responsibilities
-    r_nk      = log_r_nk = log_rho_nk = matrix(0, nrow = N, ncol = K)
-    x_bar_k   = matrix(0, nrow = D, ncol = K)    # 10.52
-    S_k       = W_k = array(0, c(D, D, K ) )     # 10.53
-    log_pi    = log_Lambda = rep(0, K)           # 
-    
     ## animation details -------------------------------------------------------
     if (is_animation) {
         # Variables needed for plotting
-        dt = data.table(expand.grid(x = seq(from = min(X[,1]) - 2, 
-                                         to = max(X[,1]) + 2, length.out = 80), 
-                                    y = seq(from = min(X[,2]) - 8, 
-                                         to = max(X[,2]) + 2, length.out = 80)))
+        xgrid = seq(from = min(X[,1]) - 2, to = max(X[,1]) + 2, length.out = 80)
+        ygrid = seq(from = min(X[,2]) - 8, to = max(X[,2]) + 2, length.out = 80)
+        dt = data.table(expand.grid(x = xgrid, y = ygrid))
     }
     dt_all = data.table(x = numeric(), y = numeric(), z = numeric(), 
-                         iter = numeric())
+                        iter = numeric())
     ## animation details -------------------------------------------------------
     
-    m_k     = t(kmeans(X, K, nstart = 25)$centers)  # Mean of Gaussian
-    beta_k  = rep(beta_0, K)                        # Scale of precision matrix
-    nu_k    = rep(nu_0, K)                          # Degrees of freedom
-    alpha   = rep(alpha_0, K)                       # Dirichlet parameter
-    log_pi  = digamma(alpha) - digamma(sum(alpha))
     
+    X = as.matrix(X)         # N X D design matrix of covariates
+    D = NCOL(X)              # Number of features
+    N = NROW(X)              # Number of observations
+    L = rep(-Inf, max_iter)  # Store the variational lower bounds
+    
+
+    W_0_inv = solve(W_0)     # Compute W_0^{-1} (used in updates for W_k)
+    
+    # initialize storage matrices/vectors for var. parameters: z_nk, pi_k
+    r_nk      = log_r_nk = log_rho_nk = matrix(0, nrow = N, ncol = K)
+    x_bar_k   = matrix(0, nrow = D, ncol = K)         # Bishop 10.52
+    S_k       = W_k = array(0, c(D, D, K ))           # Bishop 10.53
+    log_pi    = log_Lambda = rep(0, K) 
+    
+    # initialize variational parameters: for mu_k, lambda_k, alpha_k, pi_k
+    m_k       = t(kmeans(X, K, nstart = 25)$centers)  # Mean of Gaussian
+    beta_k    = rep(beta_0, K)                        # Scale of precision mat
+    nu_k      = rep(nu_0, K)                          # Degrees of freedom
+    alpha     = rep(alpha_0, K)                       # Dirichlet parameter
+    
+    # E[log(pi)] -- (K x 1) ---> needed for r_nk update
+    log_pi    = digamma(alpha) - digamma(sum(alpha))  
+
     for (k in 1:K) {
         W_k[,,k] =  W_0  # Scale matrix for Wishart
-        log_Lambda[k] = sum(digamma((nu_k[k] + 1 - c(1:D))/2)) + 
-            D*log(2) + log(det(W_k[,,k]))
+        
+        # E [ log(det(Lambda_k)) ] ---> needed for r_nk update
+        log_Lambda[k] = sum(digamma((nu_k[k] + 1 - c(1:D)) / 2)) + 
+            D * log(2) + log(det(W_k[ , , k]))
     }
+    
+    #### -----------------------------------------------------------------------
     
     ## animation details -------------------------------------------------------
     if (is_animation) { # Create animation for initial assignments
@@ -104,12 +103,20 @@ vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)),
         ##-------------------------------
         # Variational E-Step
         ##-------------------------------
+        
+        # update responsibilities: involves E[log(det(Lambda_k))], 
+        # E[log(det(pi_k))], E[(x_n - mu_k)' W_k (x_n - mu_k)]
         for (k in 1:K) {
+            # vectorize the operation: (x_n - mu_k), n = 1,...,N
+            # (N X D) matrix differences stored row-wise
             diff = sweep(X, MARGIN = 2, STATS = m_k[, k], FUN = "-")
-            log_rho_nk[, k] = log_pi[k] + 0.5*log_Lambda[k] - 
-                0.5*(D/beta_k[k]) - 0.5*nu_k[k] * diag(diff %*% 
-                                                           W_k[,,k] %*% t(diff)) # log of 10.67
+            exp_term = - 0.5 * D / beta_k[k] - 0.5 * nu_k[k] * 
+                diag(diff %*% W_k[,,k] %*% t(diff))
+            
+            # log of 10.67 (done for k = 1,...,K simultaneously)
+            log_rho_nk[, k] = log_pi[k] + 0.5 * log_Lambda[k] + exp_term
         }
+        
         # Responsibilities using the logSumExp for numerical stability
         Z        = apply(log_rho_nk, 1, log_sum_exp)
         log_r_nk = log_rho_nk - Z              # log of 10.49
@@ -118,34 +125,36 @@ vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)),
         ##-------------------------------
         # Variational M-Step
         ##-------------------------------
-        N_k = colSums(r_nk) + 1e-10  # 10.51
+        N_k = colSums(r_nk) + 1e-10  # K x 1 : N_1, N_2, ... , N_K ----  10.51
         for (k in 1:K) {
             x_bar_k[, k] = (r_nk[ ,k] %*% X) / N_k[k]   # 10.52
             x_cen        = sweep(X,MARGIN = 2,STATS = x_bar_k[, k],FUN = "-")
             S_k[, , k]   = t(x_cen) %*% (x_cen * r_nk[, k]) / N_k[k]  # 10.53
         }
-        # Update Dirichlet parameter
+        
+        ## Update Dirichlet parameter
         alpha = alpha_0 + N_k  # 10.58
-        # # Compute expected value of mixing proportions
+        ## Compute expected value of mixing proportions: E(pi_k)
         pi_k = (alpha_0 + N_k) / (K * alpha_0 + N)
-        # Update parameters for Gaussia-nWishart distribution
-        beta_k = beta_0 + N_k    # 10.60
-        nu_k   = nu_0 + N_k + 1  # 10.63
+        
+        ## Update parameters for Gaussian-Wishart distribution
+        beta_k = beta_0 + N_k      # 10.60
+        nu_k   = nu_0 + N_k + 1    # 10.63
         for (k in 1:K) {
             # 10.61
-            m_k[, k]   = (1/beta_k[k]) * (beta_0*m_0 + N_k[k]*x_bar_k[, k])  
+            m_k[, k] = (1 / beta_k[k]) * (beta_0 * m_0 + N_k[k] * x_bar_k[, k])  
             # 10.62
             W_k[, , k] = W_0_inv + N_k[k] * S_k[,,k] + 
-                ((beta_0*N_k[k])/(beta_0 + N_k[k])) * 
+                ((beta_0 * N_k[k]) / (beta_0 + N_k[k])) * 
                 tcrossprod((x_bar_k[, k] - m_0))    
             W_k[, , k] = solve(W_k[, , k])
         }
-        # Update expectations over \pi and \Lambda
+        ## Update expectations over \pi and \Lambda
         # 10.66
         log_pi = digamma(alpha) - digamma(sum(alpha))                      
         for (k in 1:K) { # 10.65                                              
-            log_Lambda[k] = sum(digamma((nu_k[k] + 1 - 1:D)/2)) + 
-                D*log(2) + log(det(W_k[,,k])) 
+            log_Lambda[k] = sum(digamma((nu_k[k] + 1 - 1:D) / 2)) + 
+                D * log(2) + log(det(W_k[,,k])) 
         }
         
         ##-------------------------------
@@ -196,9 +205,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)),
         
         
         ## animation details ---------------------------------------------------
-        ##-------------------------------
         # Evaluate mixture density for plotting
-        ##-------------------------------
         if (is_animation) {
             if ( (i - 1) %% 5 == 0 | i < 10) {
                 my_z = mixture_pdf_t(model = list(m = m_k, W = W_k, 
@@ -209,14 +216,12 @@ vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)),
         }
         ## animation details ---------------------------------------------------
         
-        ### move this into another function ----> diagnostic messages
-        # Show VB difference
-        
+        ### check convergence -- if VERBOSE, then ELBO printed
         if (checkELBO(VERBOSE, i, max_iter, L, epsilon_conv)) {
             break
         }
         
-    }
+    } # end of CAVI algorithm
     
     ## prepare output
     obj = structure(list(X = X, K = K, N = N, D = D, pi_k = pi_k, 
