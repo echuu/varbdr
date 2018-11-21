@@ -64,9 +64,10 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     W_0_inv = solve(W_0)     # Compute W_0^{-1} (used in updates for W_k)
     
     # initialize storage matrices/vectors for var. parameters: z_nk, pi_k
-    r_nk      = log_r_nk = log_rho_nk = matrix(0, nrow = N, ncol = K)
-    x_bar_k   = matrix(0, nrow = D, ncol = K)         # Bishop 10.52
-    S_k       = W_k = array(0, c(D, D, K ))           # Bishop 10.53
+    r_nk      = log_r_nk = log_rho_nk = matrix(0, nrow = N, ncol = K) # N X K
+    x_bar_k   = matrix(0, nrow = D, ncol = K)         # (D x K) Bishop 10.52
+    # S_k is a K-dim array that stores (D x D) (covariance) matrices
+    S_k       = W_k = array(0, c(D, D, K ))           # (D x D) Bishop 10.53
     log_pi    = log_Lambda = rep(0, K) 
     
     # initialize variational parameters: for mu_k, lambda_k, alpha_k, pi_k
@@ -100,9 +101,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     # Iterate to find optimal parameters
     for (i in 2:max_iter) {
         
-        ##-------------------------------
-        # Variational E-Step
-        ##-------------------------------
+        # Start Variational E-Step ---------------------------------------------
         
         # update responsibilities: involves E[log(det(Lambda_k))], 
         # E[log(det(pi_k))], E[(x_n - mu_k)' W_k (x_n - mu_k)]
@@ -110,26 +109,38 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
             # vectorize the operation: (x_n - mu_k), n = 1,...,N
             # (N X D) matrix differences stored row-wise
             diff = sweep(X, MARGIN = 2, STATS = m_k[, k], FUN = "-")
+            
+            # -1/2 * E[(x_n - mu_k)' W_k (x_n - mu_k)]
             exp_term = - 0.5 * D / beta_k[k] - 0.5 * nu_k[k] * 
                 diag(diff %*% W_k[,,k] %*% t(diff))
             
-            # log of 10.67 (done for k = 1,...,K simultaneously)
+            # log of 10.67 (done for all N observations simultaneously)
             log_rho_nk[, k] = log_pi[k] + 0.5 * log_Lambda[k] + exp_term
         }
         
-        # Responsibilities using the logSumExp for numerical stability
-        Z        = apply(log_rho_nk, 1, log_sum_exp)
-        log_r_nk = log_rho_nk - Z              # log of 10.49
-        r_nk     = apply(log_r_nk, 2, exp)     # 10.49
+        # update E[z_nk] = r_nk ------------------------------------------------
+        # log of the normalizing constant for the rho_nk's
+        # Z = log { sum_{j=1}^{k} exp( ln rho_{nj} ) }
+        logZ     = apply(log_rho_nk, 1, log_sum_exp)  
+        log_r_nk = log_rho_nk - logZ           # log of r_nk
+        r_nk     = apply(log_r_nk, 2, exp)     # exponentiate to recover r_nk
         
-        ##-------------------------------
-        # Variational M-Step
-        ##-------------------------------
-        N_k = colSums(r_nk) + 1e-10  # K x 1 : N_1, N_2, ... , N_K ----  10.51
+        
+        # Finish Variational E-Step --------------------------------------------
+        
+        
+        # Start Variational M-Step ---------------------------------------------
+        
+        # calculate the quantities: N_k, xbar_k, S_k, used in the updates of
+        # the variational distributions
+        N_k = colSums(r_nk) + 1e-10  # (K x 1) : N_1, N_2, ... , N_K ----  10.51
         for (k in 1:K) {
             x_bar_k[, k] = (r_nk[ ,k] %*% X) / N_k[k]   # 10.52
-            x_cen        = sweep(X,MARGIN = 2,STATS = x_bar_k[, k],FUN = "-")
-            S_k[, , k]   = t(x_cen) %*% (x_cen * r_nk[, k]) / N_k[k]  # 10.53
+            # x_diff = (x_n - xbar_k) for n = 1,..,N; ---- (N x D)
+            x_diff     = sweep(X, MARGIN = 2, STATS = x_bar_k[, k], FUN = "-")
+            # vectorized calculation of S_k as shown in 10.53 -- (D x D)
+            # store the resulting matrix in the k-th index of the array
+            S_k[, , k] = t(x_diff) %*% diag(r_nk[,k] / N_k[k]) %*% x_diff
         }
         
         ## Update Dirichlet parameter
@@ -157,9 +168,10 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
                 D * log(2) + log(det(W_k[,,k])) 
         }
         
-        ##-------------------------------
-        # Variational lower bound
-        ##-------------------------------
+        # Finish Variational M-Step --------------------------------------------
+        
+        
+        # Compute the Variational Lower Bound ----------------------------------
         lb_px = lb_pml = lb_pml2 = lb_qml = 0
         for (k in 1:K) {
             
@@ -200,8 +212,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         # Sum all parts to compute lower bound
         L[i] = lb_px + lb_pz + lb_pp + lb_pml - lb_qz - lb_qp - lb_qml
         
-        # end of ELBO computation ----------------------------------------------
-        
+        # end of Variational Lower Bound computation ---------------------------
         
         
         ## animation details ---------------------------------------------------
@@ -216,7 +227,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         }
         ## animation details ---------------------------------------------------
         
-        ### check convergence -- if VERBOSE, then ELBO printed
+        ### check convergence -- if VERBOSE, then ELBO printed -----------------
         if (checkELBO(VERBOSE, i, max_iter, L, epsilon_conv)) {
             break
         }
