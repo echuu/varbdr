@@ -10,7 +10,7 @@ mixture_pdf_gaussian = function(model, data) {
     for (k in 1:length(model$nu)) {
         tau_k   = model$W[,,k] * model$nu[k] # TODO: Is this right?
         mu_k    = model$m[, k]
-        mixture = mixture + model$pi_k[k]  * 
+        mixture = mixture + model$pi_k[k] * 
             dmvnorm(cbind(data$x,data$y), mean = mu_k, sigma = solve(tau_k))
     }
     return(mixture)

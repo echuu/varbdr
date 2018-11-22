@@ -4,12 +4,25 @@
 set.seed(1)
 
 source("displayResults.R")
-
+source("gmVB.R")
 
 View(faithful) # 272 x 2 : duration of eruption, waiting time b/w eruptions
 
 X = as.matrix(faithful)
 K = 25        # Number of clusters
+
+K = 25
+alpha_0 = 1e-5
+m_0 = c(colMeans(X))
+beta_0 = 1 
+nu_0 = NCOL(X) + 50
+W_0 = diag(100, NCOL(X))
+max_iter = 1001
+epsilon_conv = 1e-4
+is_animation = TRUE
+VERBOSE = TRUE
+
+
 
 
 # Run vb-gmm model model

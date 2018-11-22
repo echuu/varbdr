@@ -140,6 +140,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         
         # Finish Variational E-Step --------------------------------------------
         
+        
         # Start Variational M-Step ---------------------------------------------
         
         # calculate the quantities: N_k, xbar_k, S_k, used in the updates of
@@ -189,6 +190,49 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         
         
         # Compute the Variational Lower Bound ----------------------------------
+        lb_px = lb_pml = lb_pml2 = lb_qml = 0
+        for (k in 1:K) {
+            
+            # 10.71
+            lb_px = lb_px + N_k[k] * 
+                (log_Lambda[k] - D / beta_k[k] - nu_k[k] * 
+                     matrix.trace(S_k[,,k] %*% W_k[,,k]) - 
+                     nu_k[k] * t(x_bar_k[, k] -  m_k[,k]) %*% W_k[,,k] %*% 
+                     (x_bar_k[, k] - m_k[, k]) - D * log(2 * pi) ) 
+            
+            # 10.74
+            lb_pml = lb_pml + D * log(beta_0  /(2 * pi)) + log_Lambda[k] - 
+                (D * beta_0) / beta_k[k] - beta_0 * nu_k[k] * 
+                t(m_k[,k] - m_0) %*% W_k[,,k] %*% (m_k[,k] - m_0)    
+            
+            # 10.74
+            lb_pml2 = lb_pml2 + nu_k[k] * matrix.trace(W_0_inv %*% W_k[,,k]) 
+            
+            # 10.77
+            lb_qml = lb_qml + 0.5 * log_Lambda[k] + 
+                0.5 * D * log(beta_k[k] / (2 * pi)) - 
+                0.5 * D - logB(W = W_k[,,k], nu = nu_k[k]) - 
+                0.5 * (nu_k[k] - D - 1) * log_Lambda[k] + 0.5 * nu_k[k] * D
+        }
+        
+        
+        # ELBO computation --- move this to another file -----------------------
+        lb_px  = 0.5 * lb_px                                            # 10.71
+        lb_pml = 0.5 * lb_pml + K * logB(W = W_0, nu = nu_0) + 0.5 * 
+            (nu_0 - D - 1) * sum(log_Lambda) - 0.5 * lb_pml2            # 10.74
+        lb_pz  = sum(r_nk %*% log_pi)                                   # 10.72
+        lb_qz  = sum(r_nk * log_r_nk)                                   # 10.75
+        
+        # 10.73
+        lb_pp  = sum((alpha_0 - 1) * log_pi) + lgamma(K * alpha_0) -
+            K * lgamma(alpha_0)                                
+        
+        # 10.76
+        lb_qp  = sum((alpha - 1) * log_pi) + lgamma(sum(alpha)) - 
+            sum(lgamma(alpha))                                          
+        
+        # Sum all parts to compute lower bound
+        # L[i] = lb_px + lb_pz + lb_pp + lb_pml - lb_qz - lb_qp - lb_qml
         L[i] = calculateELBO(D, K, r_nk, log_r_nk, N_k, S_k, x_bar_k, alpha_0, 
                              m_0, beta_0, W_0, W_0_inv, nu_0, W_k, nu_k, m_k, 
                              beta_k, alpha, log_pi, log_Lambda)
