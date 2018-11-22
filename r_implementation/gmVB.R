@@ -105,14 +105,26 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         
         # update responsibilities: involves E[log(det(Lambda_k))], 
         # E[log(det(pi_k))], E[(x_n - mu_k)' W_k (x_n - mu_k)]
+        
+            # above note: do we actually "update" all those expectations here?
+            # it looks like the only quantity being updated here is r_nk
+            # which involes the 'pre'-set values for the two other expectations
+        
         for (k in 1:K) {
             # vectorize the operation: (x_n - mu_k), n = 1,...,N
             # (N X D) matrix differences stored row-wise
             diff = sweep(X, MARGIN = 2, STATS = m_k[, k], FUN = "-")
             
-            # -1/2 * E[(x_n - mu_k)' W_k (x_n - mu_k)]
+            
+            # -1/2 * E[(x_n - mu_k)' W_k (x_n - mu_k)] in vector form, so the
+            # resulting multiplication gives an (N x 1) vector
+              # diag() used to extract the diagonal
+              # note that the off-diagonal elements are all wasted computation
+              # since we only care about the multiplications for which the index
+              # of the differences match
+            # the following equation makes use of the expression in 10.64
             exp_term = - 0.5 * D / beta_k[k] - 0.5 * nu_k[k] * 
-                diag(diff %*% W_k[,,k] %*% t(diff))
+                diag(diff %*% W_k[,,k] %*% t(diff))         # exp term in 10.67
             
             # log of 10.67 (done for all N observations simultaneously)
             log_rho_nk[, k] = log_pi[k] + 0.5 * log_Lambda[k] + exp_term
@@ -140,33 +152,39 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
             x_diff     = sweep(X, MARGIN = 2, STATS = x_bar_k[, k], FUN = "-")
             # vectorized calculation of S_k as shown in 10.53 -- (D x D)
             # store the resulting matrix in the k-th index of the array
-            S_k[, , k] = t(x_diff) %*% diag(r_nk[,k] / N_k[k]) %*% x_diff
+            # S_k[, , k] = t(x_diff) %*% diag(r_nk[,k] / N_k[k]) %*% x_diff
+            # same calculation as above, uses less memory
+            S_k[, , k] = t(x_diff) %*% (x_diff * r_nk[, k]) / N_k[k]  # 10.53
         }
         
         ## Update Dirichlet parameter
-        alpha = alpha_0 + N_k  # 10.58
-        ## Compute expected value of mixing proportions: E(pi_k)
-        pi_k = (alpha_0 + N_k) / (K * alpha_0 + N)
+        alpha = alpha_0 + N_k                                # (K x 1) -- 10.58
+        ## Expectation of mixing proportions: E(pi_k)            
+        pi_k = (alpha_0 + N_k) / (K * alpha_0 + N)           # (K x 1) -- 10.69
         
-        ## Update parameters for Gaussian-Wishart distribution
-        beta_k = beta_0 + N_k      # 10.60
-        nu_k   = nu_0 + N_k + 1    # 10.63
+        ## Update parameters for G-W distribution
+        beta_k = beta_0 + N_k                                # (K x 1) -- 10.60
+        nu_k   = nu_0 + N_k + 1                              # (K x 1) -- 10.63
         for (k in 1:K) {
-            # 10.61
+            # update mean parameter for beta_k --              (K x 1) -- 10.61
             m_k[, k] = (1 / beta_k[k]) * (beta_0 * m_0 + N_k[k] * x_bar_k[, k])  
-            # 10.62
-            W_k[, , k] = W_0_inv + N_k[k] * S_k[,,k] + 
+            
+            # update variance parameter for beta_k --          (K x K) -- 10.62
+            W_k_inv = W_0_inv + N_k[k] * S_k[,,k] + 
                 ((beta_0 * N_k[k]) / (beta_0 + N_k[k])) * 
-                tcrossprod((x_bar_k[, k] - m_0))    
-            W_k[, , k] = solve(W_k[, , k])
+                tcrossprod((x_bar_k[, k] - m_0))
+            # previous matrix is inverted matrix that we want
+            W_k[, , k] = solve(W_k_inv)                    
         }
+        
         ## Update expectations over \pi and \Lambda
-        # 10.66
-        log_pi = digamma(alpha) - digamma(sum(alpha))                      
-        for (k in 1:K) { # 10.65                                              
+        # E [ log(det(Lambda_k)) ]
+        for (k in 1:K) {                                               
             log_Lambda[k] = sum(digamma((nu_k[k] + 1 - 1:D) / 2)) + 
-                D * log(2) + log(det(W_k[,,k])) 
+                D * log(2) + log(det(W_k[, , k]))            # (K x 1) -- 10.65
         }
+        # E[ log(pi_k) ], k = 1,...,K
+        log_pi = digamma(alpha) - digamma(sum(alpha))        # (K x 1) -- 10.66 
         
         # Finish Variational M-Step --------------------------------------------
         
