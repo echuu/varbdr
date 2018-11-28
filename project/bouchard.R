@@ -1,0 +1,28 @@
+
+## bouchard.R
+
+library(MASS)
+
+## testing the bound for E[logSumExp] proposed in Bouchard (2008)
+
+
+D   = 2          # dimension of covariate, 2 <= d <= 100
+K   = 2          # number of clusters
+N   = 1          # number of samples
+I_D = diag(1, D) # D X D  identity matrix
+df  = 100        # degrees of freedom for Wishart distribution
+
+
+# generate a random sample x in R^D (from any distribution)
+mu0    = c(rnorm(D, 3, 4))
+Sigma0 = 3 * I_D 
+x = mvrnorm(N, mu0, Sigma0)
+
+# sample mu_k ~ N(0, I_D)
+mu = t(mvrnorm(K, rep(0, D), I_D)) # D x K : mu_k stored column wise 
+
+
+# sample Sigma_k ~ W(df, 10 * I_D)
+Sigma = rWishart(K, df, 10 * I_D) # array of K matrices; Sigma[,,k]
+
+
