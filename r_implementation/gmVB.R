@@ -212,7 +212,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
             break
         }
         
-    } # end of CAVI algorithm
+    } # end of CAVI algorithm (outer for loop)
     
     ## prepare output
     obj = structure(list(X = X, K = K, N = N, D = D, pi_k = pi_k, 
