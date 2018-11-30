@@ -7,23 +7,33 @@ library(ggplot2)
 
 
 D     = 2          # dimension of covariate, 2 <= d <= 100
-K     = 2          # number of clusters
+K     = 10          # number of clusters
 N     = 1          # number of samples
 I_D   = diag(1, D) # D X D  identity matrix
 df    = 100        # degrees of freedom for Wishart distribution
 scale = 1          # scale for the covariance matrix
 
 
+set.seed(1)
+# sample mu_k ~ N(0, I_D)ye
+mu = t(mvrnorm(K, rep(0, D), I_D)) # D x K : mu_k stored column wise 
+
+# sample Sigma_k ~ W(df, 10 * I_D)
+Sigma = rWishart(K, df, scale * I_D) # array of K matrices; Sigma[,,k]
+
 # generate a random sample x in R^D (from any distribution)
 mu0    = c(rnorm(D, 3, 4))
 Sigma0 = 3 * I_D 
-x      = mvrnorm(N, mu0, Sigma0)
+x      = mvrnorm(N, rep(0, D), I_D)
 
 # compute the mc-approximate value -- this will be the baseline, what we compare
 # the variational bound to
 R = 1e5
 mc_approx = mcBound(x, K, D, R , mu, Sigma)
-mc_approx # 41.65944
+mc_approx 
+
+# K = 2  : 4.816663
+# K = 10 : 38.78178
 
 
 ## compare variational approximation with the MC approximation
@@ -34,11 +44,6 @@ mc_approx # 41.65944
 
 # --------------------- begin variational approximation ---------------------- #
 
-# sample mu_k ~ N(0, I_D)ye
-mu = t(mvrnorm(K, rep(0, D), I_D)) # D x K : mu_k stored column wise 
-
-# sample Sigma_k ~ W(df, 10 * I_D)
-Sigma = rWishart(K, df, scale * I_D) # array of K matrices; Sigma[,,k]
 
 maxIter = 200
 tol     = 1e-4
@@ -68,7 +73,7 @@ for (i in 2:10) {
     alpha = (0.5 * (0.5 * K - 1) + sum(lambda_xi * mu_x)) / sum(lambda_xi)
     
     # compute bound, store in bd[i]
-    bd[i] = computeBound(mu_x, xSigmax, lambda_xi, xi, alpha, K)
+    bd[i] = computeBound(mu_x, xSigmax, xi, lambda_xi, alpha, K)
     
     # check convergence:
     if (checkConvergence(bd, i, maxIter, tol)) {
