@@ -44,7 +44,6 @@ mc_approx
 
 # --------------------- begin variational approximation ---------------------- #
 
-
 maxIter = 200
 tol     = 1e-4
 bd      = rep(Inf, maxIter) # store the upper bound for each iter
