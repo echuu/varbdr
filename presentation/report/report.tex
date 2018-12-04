@@ -39,6 +39,7 @@
 \newcommand{\boldgamma}{\boldsymbol\gamma}
 \newcommand{\boldtau}{\boldsymbol\tau}
 \newcommand{\sumexp}{\sum_{j=1}^{K} \exp \{ \transpose{x_n} \gamma_j \}}
+\newcommand{\E}{\mathbb{E}}
 
 
 
@@ -77,7 +78,7 @@ In the Bayesian density regression problem, mixture of expert models are often u
 
 In the Bayesian density regression problem, we observe data $\left(y_n, x_n \right)_{n=1}^N$, and the goal is the estimate the conditional density of $y \given x$. A common appraoch for doing this is to model the density using a mixture of gaussians, such as the following,
 \begin{equation} \label{eq:general_gm}
-	f(y \given x) = \sum_{k} \pi_h \mathcal{N} \left(y \given \mu_k(x), \tau_k^{-1} \right)
+	f(y \given x) = \sum_{k} \pi_k \mathcal{N} \left(y \given \mu_k(x), \tau_k^{-1} \right)
 \end{equation}
 
 While the representation of the density using predictor-independent weights yields less expensive computation, it often lacks flexibility to make it useful in practice and results in a reliance on have too many mixture components. As a result, there have been many proposed models that consider predictor-dependent weights using a kernel stick-breaking process (\cite{dunsonpark:08}) or logit stick-breaking prior (\cite{durante:17}) to generate the weights. In the former method, the increased flexibility comes at heavy computational cost, and in the later method, the process from which the weights are generated does not allow for intuitive inference on the covariates. In our proposed model, the covariates enter through a logistic link function so that we can naturally perform inference on the coefficients. More specifically, we can model
@@ -154,7 +155,7 @@ From the expression above, we see that the optimal distribution has a sum involv
 
 With this factorization in mind, we can obtain the following updates for the remaining variational parameters,
 \begin{equation} \label{optimal_beta_given_tau}
-	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
+	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(\beta_k \given m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
 \end{equation}
 
 \begin{equation} \label{optimal_tau}
@@ -162,7 +163,7 @@ With this factorization in mind, we can obtain the following updates for the rem
 \end{equation}
 
 \begin{equation} \label{optimal_gamma}
-	q^{*}(\gamma_k) = \mathcal{N} \left( \mu_k, \mathrm{Q}_k^{-1} \right)
+	q^{*}(\gamma_k) = \mathcal{N} \left( \gamma_k \given \mu_k, \mathrm{Q}_k^{-1} \right)
 \end{equation}
 
 for $k = 1, \ldots, K$. The derivation for (\ref{optimal_beta_given_tau}) and (\ref{optimal_tau}) can be found in Appendix \ref{app:beta_tau}, and the details for (\ref{optimal_gamma}) can be found in Appendix \ref{app:gamma}.
@@ -172,7 +173,29 @@ for $k = 1, \ldots, K$. The derivation for (\ref{optimal_beta_given_tau}) and (\
 
 
 \subsection{Evidence Lower Bound (ELBO)}
+In order to evaluate the convergence of the algorithm, we can calculate the evidence lower bound after updating all the variational parameters. Since the ELBO is monotonic increasing, we continue the coordinate ascent until the change in the ELBO falls below a predetermined tolerance. Note that the expectations taken below are with respect to the optimal variational distributions derived in the previous section.
 
+\begin{equation} \label{eq:ELBO}
+\begin{split}
+	\mathcal{L}(q) &= \sum_{z} \int \int \int q(\boldbeta, \boldtau, \boldgamma, \mathbf{Z})
+	\ln \Big\{ \frac{p(\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \boldgamma, \mathbf{Z})}{q(\boldbeta, \boldtau, \boldgamma, \mathbf{Z})}\Big\} d\boldbeta d\boldtau d\boldgamma \\
+	&= \E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}] + 
+	\E[\ln \pr{\mathbf{Z} \given \mathbf{X}, \boldgamma}] + \E[\ln \pr{\boldgamma}] + \E[\ln \pr{\boldbeta, \boldtau}] \\
+	& \quad - \E[\ln q(\mathbf{Z})] - \E[\ln q(\boldbeta, \boldtau)] - \E[\ln q(\boldgamma)]
+\end{split}
+\end{equation}
+
+Each of the seven expectations can be expressed as follows. Details for each calculation can be found in Appendix \ref{app:elbo}. 
+\begin{align*}
+	& \E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}] = -\frac{1}{2}\nsum \ksum r_{nk} \Big\{ \left( \ln (2\pi) - \psi(a_k) + \psi(b_k)\right)  + \frac{a_k}{b_k}(y_n - \transpose{x_n}m_k)^2 + \transpose{x_n}\mathrm{V}_k^{-1}x_n \Big\} \\
+	 & \E[\ln \pr{\mathbf{Z} \given \mathbf{X}, \boldgamma}] = \nsum \ksum r_{nk} \left( \transpose{x_n}\mu_k - \alpha_n - \varphi_n \right) \\
+	 & \E[\ln \pr{\boldgamma}] = \frac{K \cdot D}{2} \ln (2\pi) - \frac{1}{2} \ksum \transpose{\mu_k}\mu_k \\
+	 & \E[\ln \pr{\boldbeta, \boldtau}] = \ksum -\frac{D}{2}\ln(2\pi) + \left( \frac{D}{2} + a_0 - 1 \right) (\psi(a_k) - \psi(b_k)) + \ln |\Lambda_0| + \ln \frac{b_0^{a_0}}{\Gamma(a_0)} \\
+	& \qquad \qquad \qquad \qquad  -\frac{1}{2} \Big\{ \frac{a_k}{b_k} \transpose{(m_k - m_0)} \Lambda_0 (m_k - m_0) + \mathrm{tr}\left( \Lambda_0 \mathrm{V}_k^{-1}\right)\Big\} \\
+	& \E[\ln q(\mathbf{Z})] =  \nsum \ksum r_{nk} \ln r_{nk} \\
+	& \E[\ln q(\boldbeta, \boldtau)] = -\frac{D}{2} \ln (2\pi) + \frac{1}{2} \ln |V_k| + C(a_k, b_k) \\
+	& \E[\ln q(\boldgamma)] = \sum_{k} \ln|\mathrm{Q}_k| - \frac{D}{2}(\ln (2\pi) + 1)
+\end{align*}
 
 
 \section{Algorithm}
@@ -288,7 +311,7 @@ For the variational distribution for $\gamma_k, k = 1, \ldots, K$, we first note
 \end{equation}
 
 
-If we then use the bound from~\cite{jj:2001}, $$\log(1 + e^x) \leq \frac{x - t}{2} + \frac{1}{4t} \tanh \left( \frac{t}{2} \right) (x^2 - t^2) + \log\left(1 + e^t\right)$$ then we arrive at the following bound: 
+If we use the bound from~\cite{jj:2001}, $$\log(1 + e^x) \leq \frac{x - t}{2} + \frac{1}{4t} \tanh \left( \frac{t}{2} \right) (x^2 - t^2) + \log\left(1 + e^t\right)$$ then we arrive at the following bound: 
 \begin{equation} \label{eq:jj_bound}
 	\log \left( \sum_{j = 1}^K \exp\{ x_n^{^\intercal} \gamma_j \}\right) \leq 
 \alpha_n + \sum_{j = 1}^K \frac{x_n^{\intercal} \gamma_j - \alpha_n + \xi_{nj}}{2} + \lambda(\xi_{nj}) \left( (x_n^{\intercal} \gamma_j - \alpha_n)^2 - \xi_{nj}^2\right) + \log \left( 1 + e^{\xi_{nj}}\right)
@@ -302,7 +325,7 @@ where $\lambda(\xi) = \frac{1}{4\xi} \tanh \left( \frac{\xi}{2} \right)$. Then w
     & = - \frac{1}{2} \gamma_k^{\tr} \gamma_k + \gamma_k^{\intercal} \sum_{n} r_{nk} x_n - \sum_n r_{nk} \Bigg\{ \frac{1}{2} \gamma_k^{\tr} x_n + \lambda\left( \xi_{nj} \right) \left( \gamma_j^{\tr}x_n x_n^{\tr} \gamma_j - 2\alpha_n \gamma_j^{\tr} x_n \right)\Bigg\} \\
     &= -\frac{1}{2} \gamma_k^{\tr} \left(\eye_D  + 2 \sum_n r_{nk} \lambda(\xi_{nk}) x_n x_n^{\tr} \right) \gamma_k + \gamma_k' \left( \sum_n r_{nk} \left(\frac{1}{2} + 2 \lambda \left( \xi_{nk}\right) \alpha_n  x_n\right) \right)
 \end{align*}
-Exponentiating, we can recover $q^{*}(\gamma_k) = \mathcal{N} \left( \mu_k, \mathrm{Q}_k^{-1} \right)$, where
+Exponentiating, we can recover $q^{*}(\gamma_k) = \mathcal{N} \left(\gamma_k \given \mu_k, \mathrm{Q}_k^{-1} \right)$, where
 \begin{equation} \label{eq:gamma_params}
 \begin{split}
 	& \mu_k = \mathrm{Q}_k^{-1} \eta_k \\
@@ -333,7 +356,7 @@ We first consider terms on the right hand side of (\ref{eq:lnq_beta_tau}) that d
 	\ln q^{\star}(\beta_k \given \tau_k) = -\frac{\tau_k}{2} \transpose{\beta_k} \Big[ \sum_{n}r_{nk} x_n \transpose{x_n} + \Lambda_0 \Big] \beta_k + \tau_k \transpose{\beta_k} \Big[ \sum_{n} r_{nk}y_n x_n + \Lambda_0 m_0 \Big]
 \end{equation}
 \begin{equation} \label{q_beta}
-	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
+	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(\beta_k \given m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
 \end{equation}
 \begin{equation} \label{eq:beta_params}
 \begin{split}
@@ -372,8 +395,53 @@ The expression for $b_k$ arises by noting that the three following simplificatio
 
 where the first equality holds by expanding $\transpose{m_k} \mathrm{V}_k m_k = \transpose{b_k} \left( \mathrm{V}_k^{-1}\right)^{\intercal} \mathrm{V}_k \mathrm{V}_k^{-1} b_k = \transpose{b_k} \mathrm{V}_k^{-1} b_k$. The second quality holds by recalling the definition of $\mathrm{V}_k$ in (\ref{eq:beta_params}), and the third equality holds by observing from (\ref{eq:beta_params}) that $\mathrm{V}_{k} m_k = b_k$
 
-\section{ } %% EBLO DERIVATION
+\section{ } \label{app:elbo}  %% EBLO DERIVATION
 
+\begin{equation} \label{eq:e1_deriv}
+\begin{split}
+	\E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}] &= 
+\end{split}
+\end{equation}
+
+\begin{equation} \label{eq:e2_deriv}
+\begin{split}
+	\E[\ln \pr{\mathbf{Z} \given \mathbf{X}, \boldgamma}] &=
+\end{split}
+\end{equation}
+
+\begin{equation} \label{eq:e3_deriv}
+\begin{split}
+	\E[\ln \pr{\boldgamma}] &= \ksum \frac{D}{2} \ln (2\pi) - \frac{1}{2} \transpose{\mu_k}\mu_k
+\end{split}
+\end{equation}
+
+\begin{equation} \label{eq:e4_deriv}
+\begin{split}
+	\E[\ln \pr{\boldbeta, \boldtau}] &= 
+\end{split}
+\end{equation}
+
+\begin{equation} \label{eq:e5_deriv}
+\begin{split}
+	\E[\ln q(\mathbf{Z})] &=  \nsum \ksum r_{nk} \ln r_{nk}
+\end{split}
+\end{equation}
+
+\begin{equation} \label{eq:e6_deriv}
+\begin{split}
+	\E[\ln q(\boldbeta, \boldtau)] &= \ksum \E \Big[ \ln \mathcal{N} \left( \beta_k \given m_k, (\tau_k V_k)^{-1}\right) + \ln \mathrm{Ga} \left( \tau_k \given a_k, b_k \right)\Big] \\
+	&= \ksum -\frac{D}{2} \ln(2\pi) + \frac{1}{2} \ln |V_k| + \frac{D}{2} \E [\ln \tau_k] - \E \Big[ \frac{\tau_k}{2}\transpose{(\beta_k - m_k)} V_k (\beta_k - m_k) \Big] \\
+	& \quad \quad + \ln \frac{b_k^{a_k}}{\Gamma(a_k)} + (a_k - 1) \E[ \ln \tau_k] - b_k \E[\tau_k] \\
+	&= -\frac{D}{2} \ln (2\pi) + \frac{1}{2} \ln |V_k| + C(a_k, b_k)
+\end{split}
+\end{equation}
+where $C(a_k, b_k) = \left(\frac{D}{2} + a_k - 1)(\psi(a_k) - \psi(b_k)\right) + \ln \frac{b_k^{a_k}}{\Gamma(a_k)} - \frac{D}{2} - a_k$
+
+\begin{equation} \label{eq:e7_deriv}
+\begin{split}
+	\E[\ln q(\boldgamma)] &= \sum_{k} \ln|\mathrm{Q}_k| - \frac{D}{2}(\ln (2\pi) + 1)
+\end{split}
+\end{equation}
 
 
 

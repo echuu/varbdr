@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.11.17)  2 DEC 2018 01:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.11.17)  4 DEC 2018 09:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -258,76 +258,110 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 )
 \Hy@SectionHShift=\skip52
 )
-(/usr/share/texlive/texmf-dist/tex/latex/biblatex/biblatex.sty
+(/usr/share/texlive/texmf-dist/tex/latex/algorithms/algorithm.sty
+Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
+nment
+
+(/usr/share/texlive/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count112
+\float@exts=\toks21
+\float@box=\box28
+\@float@everytoks=\toks22
+\@floatcapt=\box29
+)
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\@float@every@algorithm=\toks23
+\c@algorithm=\count113
+)
+(/usr/share/texlive/texmf-dist/tex/latex/algorithmicx/algpseudocode.sty
+Package: algpseudocode 
+
+(/usr/share/texlive/texmf-dist/tex/latex/algorithmicx/algorithmicx.sty
+Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
+
+Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
+\c@ALG@line=\count114
+\c@ALG@rem=\count115
+\c@ALG@nested=\count116
+\ALG@tlm=\skip53
+\ALG@thistlm=\skip54
+\c@ALG@Lnr=\count117
+\c@ALG@blocknr=\count118
+\c@ALG@storecount=\count119
+\c@ALG@tmpcounter=\count120
+\ALG@tmplength=\skip55
+)
+Document Style - pseudocode environments for use with the `algorithmicx' style
+) (/usr/share/texlive/texmf-dist/tex/latex/biblatex/biblatex.sty
 Package: biblatex 2017/12/19 v3.10 programmable bibliographies (PK/JW/AB)
 
 (/usr/share/texlive/texmf-dist/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2018/02/11 v2.5e e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count112
+\etb@tempcnta=\count121
 )
 (/usr/share/texlive/texmf-dist/tex/latex/logreq/logreq.sty
 Package: logreq 2010/08/04 v1.0 xml request logger
-\lrq@indent=\count113
+\lrq@indent=\count122
 
 (/usr/share/texlive/texmf-dist/tex/latex/logreq/logreq.def
 File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
 ))
-(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
-Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
-)
 (/usr/share/texlive/texmf-dist/tex/generic/xstring/xstring.sty
 (/usr/share/texlive/texmf-dist/tex/generic/xstring/xstring.tex
 \@xs@message=\write3
-\integerpart=\count114
-\decimalpart=\count115
+\integerpart=\count123
+\decimalpart=\count124
 )
 Package: xstring 2013/10/13  v1.7c  String manipulations (C Tellechea)
 )
-\c@tabx@nest=\count116
-\c@listtotal=\count117
-\c@listcount=\count118
-\c@liststart=\count119
-\c@liststop=\count120
-\c@citecount=\count121
-\c@citetotal=\count122
-\c@multicitecount=\count123
-\c@multicitetotal=\count124
-\c@instcount=\count125
-\c@maxnames=\count126
-\c@minnames=\count127
-\c@maxitems=\count128
-\c@minitems=\count129
-\c@citecounter=\count130
-\c@savedcitecounter=\count131
-\c@uniquelist=\count132
-\c@uniquename=\count133
-\c@refsection=\count134
-\c@refsegment=\count135
-\c@maxextratitle=\count136
-\c@maxextratitleyear=\count137
-\c@maxextradate=\count138
-\c@maxextraalpha=\count139
-\c@abbrvpenalty=\count140
-\c@highnamepenalty=\count141
-\c@lownamepenalty=\count142
-\c@maxparens=\count143
-\c@parenlevel=\count144
-\blx@tempcnta=\count145
-\blx@tempcntb=\count146
-\blx@tempcntc=\count147
-\blx@maxsection=\count148
-\blx@maxsegment@0=\count149
-\blx@notetype=\count150
-\blx@parenlevel@text=\count151
-\blx@parenlevel@foot=\count152
-\blx@sectionciteorder@0=\count153
-\labelnumberwidth=\skip53
-\labelalphawidth=\skip54
-\biblabelsep=\skip55
-\bibitemsep=\skip56
-\bibnamesep=\skip57
-\bibinitsep=\skip58
-\bibparsep=\skip59
+\c@tabx@nest=\count125
+\c@listtotal=\count126
+\c@listcount=\count127
+\c@liststart=\count128
+\c@liststop=\count129
+\c@citecount=\count130
+\c@citetotal=\count131
+\c@multicitecount=\count132
+\c@multicitetotal=\count133
+\c@instcount=\count134
+\c@maxnames=\count135
+\c@minnames=\count136
+\c@maxitems=\count137
+\c@minitems=\count138
+\c@citecounter=\count139
+\c@savedcitecounter=\count140
+\c@uniquelist=\count141
+\c@uniquename=\count142
+\c@refsection=\count143
+\c@refsegment=\count144
+\c@maxextratitle=\count145
+\c@maxextratitleyear=\count146
+\c@maxextradate=\count147
+\c@maxextraalpha=\count148
+\c@abbrvpenalty=\count149
+\c@highnamepenalty=\count150
+\c@lownamepenalty=\count151
+\c@maxparens=\count152
+\c@parenlevel=\count153
+\blx@tempcnta=\count154
+\blx@tempcntb=\count155
+\blx@tempcntc=\count156
+\blx@maxsection=\count157
+\blx@maxsegment@0=\count158
+\blx@notetype=\count159
+\blx@parenlevel@text=\count160
+\blx@parenlevel@foot=\count161
+\blx@sectionciteorder@0=\count162
+\labelnumberwidth=\skip56
+\labelalphawidth=\skip57
+\biblabelsep=\skip58
+\bibitemsep=\skip59
+\bibnamesep=\skip60
+\bibinitsep=\skip61
+\bibparsep=\skip62
 
 
 ! LaTeX Error: Command \bibhang already defined.
@@ -345,9 +379,9 @@ or  <return>  to continue without it.
 
 \blx@bcfin=\read1
 \blx@bcfout=\write4
-\c@mincomprange=\count154
-\c@maxcomprange=\count155
-\c@mincompwidth=\count156
+\c@mincomprange=\count163
+\c@maxcomprange=\count164
+\c@mincompwidth=\count165
 Package biblatex Info: Trying to load biblatex default data model...
 Package biblatex Info: ... file 'blx-dm.def' found.
 (/usr/share/texlive/texmf-dist/tex/latex/biblatex/blx-dm.def)
@@ -355,80 +389,80 @@ Package biblatex Info: Trying to load biblatex style data model...
 Package biblatex Info: ... file 'authoryear.dbx' not found.
 Package biblatex Info: Trying to load biblatex custom data model...
 Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
-\c@afterword=\count157
-\c@savedafterword=\count158
-\c@annotator=\count159
-\c@savedannotator=\count160
-\c@author=\count161
-\c@savedauthor=\count162
-\c@bookauthor=\count163
-\c@savedbookauthor=\count164
-\c@commentator=\count165
-\c@savedcommentator=\count166
-\c@editor=\count167
-\c@savededitor=\count168
-\c@editora=\count169
-\c@savededitora=\count170
-\c@editorb=\count171
-\c@savededitorb=\count172
-\c@editorc=\count173
-\c@savededitorc=\count174
-\c@foreword=\count175
-\c@savedforeword=\count176
-\c@holder=\count177
-\c@savedholder=\count178
-\c@introduction=\count179
-\c@savedintroduction=\count180
-\c@namea=\count181
-\c@savednamea=\count182
-\c@nameb=\count183
-\c@savednameb=\count184
-\c@namec=\count185
-\c@savednamec=\count186
-\c@translator=\count187
-\c@savedtranslator=\count188
-\c@shortauthor=\count189
-\c@savedshortauthor=\count190
-\c@shorteditor=\count191
-\c@savedshorteditor=\count192
-\c@labelname=\count193
-\c@savedlabelname=\count194
-\c@institution=\count195
-\c@savedinstitution=\count196
-\c@lista=\count197
-\c@savedlista=\count198
-\c@listb=\count199
-\c@savedlistb=\count266
-\c@listc=\count267
-\c@savedlistc=\count268
-\c@listd=\count269
-\c@savedlistd=\count270
-\c@liste=\count271
-\c@savedliste=\count272
-\c@listf=\count273
-\c@savedlistf=\count274
-\c@location=\count275
-\c@savedlocation=\count276
-\c@organization=\count277
-\c@savedorganization=\count278
-\c@origlocation=\count279
-\c@savedoriglocation=\count280
-\c@origpublisher=\count281
-\c@savedorigpublisher=\count282
-\c@publisher=\count283
-\c@savedpublisher=\count284
-\c@language=\count285
-\c@savedlanguage=\count286
-\c@origlanguage=\count287
-\c@savedoriglanguage=\count288
-\c@pageref=\count289
-\c@savedpageref=\count290
-\shorthandwidth=\skip60
-\shortjournalwidth=\skip61
-\shortserieswidth=\skip62
-\shorttitlewidth=\skip63
-\shortauthorwidth=\skip64
-\shorteditorwidth=\skip65
+\c@afterword=\count166
+\c@savedafterword=\count167
+\c@annotator=\count168
+\c@savedannotator=\count169
+\c@author=\count170
+\c@savedauthor=\count171
+\c@bookauthor=\count172
+\c@savedbookauthor=\count173
+\c@commentator=\count174
+\c@savedcommentator=\count175
+\c@editor=\count176
+\c@savededitor=\count177
+\c@editora=\count178
+\c@savededitora=\count179
+\c@editorb=\count180
+\c@savededitorb=\count181
+\c@editorc=\count182
+\c@savededitorc=\count183
+\c@foreword=\count184
+\c@savedforeword=\count185
+\c@holder=\count186
+\c@savedholder=\count187
+\c@introduction=\count188
+\c@savedintroduction=\count189
+\c@namea=\count190
+\c@savednamea=\count191
+\c@nameb=\count192
+\c@savednameb=\count193
+\c@namec=\count194
+\c@savednamec=\count195
+\c@translator=\count196
+\c@savedtranslator=\count197
+\c@shortauthor=\count198
+\c@savedshortauthor=\count199
+\c@shorteditor=\count266
+\c@savedshorteditor=\count267
+\c@labelname=\count268
+\c@savedlabelname=\count269
+\c@institution=\count270
+\c@savedinstitution=\count271
+\c@lista=\count272
+\c@savedlista=\count273
+\c@listb=\count274
+\c@savedlistb=\count275
+\c@listc=\count276
+\c@savedlistc=\count277
+\c@listd=\count278
+\c@savedlistd=\count279
+\c@liste=\count280
+\c@savedliste=\count281
+\c@listf=\count282
+\c@savedlistf=\count283
+\c@location=\count284
+\c@savedlocation=\count285
+\c@organization=\count286
+\c@savedorganization=\count287
+\c@origlocation=\count288
+\c@savedoriglocation=\count289
+\c@origpublisher=\count290
+\c@savedorigpublisher=\count291
+\c@publisher=\count292
+\c@savedpublisher=\count293
+\c@language=\count294
+\c@savedlanguage=\count295
+\c@origlanguage=\count296
+\c@savedoriglanguage=\count297
+\c@pageref=\count298
+\c@savedpageref=\count299
+\shorthandwidth=\skip63
+\shortjournalwidth=\skip64
+\shortserieswidth=\skip65
+\shorttitlewidth=\skip66
+\shortauthorwidth=\skip67
+\shorteditorwidth=\skip68
 
 
 ! LaTeX Error: Command \citename already defined.
@@ -454,12 +488,12 @@ Package biblatex Info: ... file 'biblatex.def' found.
 
 (/usr/share/texlive/texmf-dist/tex/latex/biblatex/biblatex.def
 File: biblatex.def 2017/12/19 v3.10 biblatex compatibility (PK/JW/AB)
-\c@textcitecount=\count291
-\c@textcitetotal=\count292
-\c@textcitemaxnames=\count293
-\c@biburlnumpenalty=\count294
-\c@biburlucpenalty=\count295
-\c@biburllcpenalty=\count296
+\c@textcitecount=\count300
+\c@textcitetotal=\count301
+\c@textcitemaxnames=\count302
+\c@biburlnumpenalty=\count303
+\c@biburlucpenalty=\count304
+\c@biburllcpenalty=\count305
 
 
 ! LaTeX Error: Command \bibfont already defined.
@@ -475,7 +509,7 @@ Your command was ignored.
 Type  I <command> <return>  to replace it with another command,
 or  <return>  to continue without it.
 
-\c@smartand=\count297
+\c@smartand=\count306
 
 Package biblatex Warning: Redefining '\citeauthor'.
 
@@ -506,8 +540,8 @@ Package biblatex Info: ... file 'standard.bbx' found.
 
 (/usr/share/texlive/texmf-dist/tex/latex/biblatex/bbx/standard.bbx
 File: standard.bbx 2017/12/19 v3.10 biblatex bibliography style (PK/JW/AB)
-\c@bbx:relatedcount=\count298
-\c@bbx:relatedtotal=\count299
+\c@bbx:relatedcount=\count307
+\c@bbx:relatedtotal=\count308
 ))
 Package biblatex Info: Trying to load citation style 'authoryear'...
 Package biblatex Info: ... file 'authoryear.cbx' found.
@@ -535,7 +569,7 @@ See the biblatex package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.40 \begin{document}
+l.58 \begin{document}
                      
 The 'natbib' package and biblatex are incompatible.
 
@@ -544,40 +578,40 @@ Package biblatex Info: ... file 'english.lbx' found.
 (/usr/share/texlive/texmf-dist/tex/latex/biblatex/lbx/english.lbx
 File: english.lbx 2017/12/19 v3.10 biblatex localization (PK/JW/AB)
 )
-\@quotelevel=\count300
-\@quotereset=\count301
+\@quotelevel=\count309
+\@quotereset=\count310
 
 (./report.aux)
 \openout1 = `report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 40.
-LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count302
+\scratchcounter=\count311
 \scratchdimen=\dimen120
-\scratchbox=\box28
-\nofMPsegments=\count303
-\nofMParguments=\count304
-\everyMPshowfont=\toks21
-\MPscratchCnt=\count305
+\scratchbox=\box30
+\nofMPsegments=\count312
+\nofMParguments=\count313
+\everyMPshowfont=\toks24
+\MPscratchCnt=\count314
 \MPscratchDim=\dimen121
-\MPnumerator=\count306
-\makeMPintoPDFobject=\count307
-\everyMPtoPDFconversion=\toks22
+\MPnumerator=\count315
+\makeMPintoPDFobject=\count316
+\everyMPtoPDFconversion=\toks25
 ) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
 
@@ -595,8 +629,8 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-\AtBeginShipoutBox=\box29
-Package hyperref Info: Link coloring OFF on input line 40.
+\AtBeginShipoutBox=\box31
+Package hyperref Info: Link coloring OFF on input line 58.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
@@ -604,11 +638,11 @@ Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
-\c@section@level=\count308
+\c@section@level=\count317
 )
-LaTeX Info: Redefining \ref on input line 40.
-LaTeX Info: Redefining \pageref on input line 40.
-LaTeX Info: Redefining \nameref on input line 40.
+LaTeX Info: Redefining \ref on input line 58.
+LaTeX Info: Redefining \pageref on input line 58.
+LaTeX Info: Redefining \nameref on input line 58.
 
 (./report.out) (./report.out)
 \@outlinefile=\write5
@@ -624,12 +658,12 @@ Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'report.bbl' not found.
 
 No file report.bbl.
-Package biblatex Info: Reference section=0 on input line 40.
-Package biblatex Info: Reference segment=0 on input line 40.
+Package biblatex Info: Reference section=0 on input line 58.
+Package biblatex Info: Reference segment=0 on input line 58.
 ! Undefined control sequence.
 \@maketitle ...p \noindent \@starteditor \@editor 
                                                   \@endeditor \vskip \afterm...
-l.50 
+l.68 
      
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -637,30 +671,76 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-LaTeX Font Info:    Try loading font information for U+msa on input line 61.
+LaTeX Font Info:    Try loading font information for U+msa on input line 79.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 61.
+LaTeX Font Info:    Try loading font information for U+msb on input line 79.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 
-LaTeX Warning: Citation 'dunsonpark:08' on page 1 undefined on input line 66.
+LaTeX Warning: Citation 'dunsonpark:08' on page 1 undefined on input line 84.
 
 
-LaTeX Warning: Citation 'durante:17' on page 1 undefined on input line 66.
+LaTeX Warning: Citation 'durante:17' on page 1 undefined on input line 84.
 
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Underfull \hbox (badness 10000) in paragraph at lines 116--117
+Overfull \hbox (2.71431pt too wide) detected at line 127
+[]
+ []
+
+[2]
+Overfull \hbox (11.81438pt too wide) in paragraph at lines 154--155
+\OML/cmm/m/it/10.95 ^^M[]$\OT1/cmr/m/n/10.95 's and a sum in-volv-ing only the 
+$(\OML/cmm/m/it/10.95 ^^L[]; ^^\[]\OT1/cmr/m/n/10.95 )$'s, which im-plies $\OML
+/cmm/m/it/10.95 q\OT1/cmr/m/n/10.95 (\OML/cmm/b/it/10.95 ^^L\OML/cmm/m/it/10.95
+ ; \OML/cmm/b/it/10.95 ^^\\OML/cmm/m/it/10.95 ; \OML/cmm/b/it/10.95 ^^M\OT1/cmr
+/m/n/10.95 ) = [] [][] \OML/cmm/m/it/10.95 q\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/1
+0.95 ^^L[]; ^^\[]\OT1/cmr/m/n/10.95 )[] [][] \OML/cmm/m/it/10.95 q\OT1/cmr/m/n/
+10.95 (\OML/cmm/m/it/10.95 ^^M[]\OT1/cmr/m/n/10.95 )$. 
+ []
+
+[3]
+Overfull \hbox (33.52559pt too wide) detected at line 198
+[]
+ []
+
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 206.
+! Undefined control sequence.
+\BState ->\State \algbackskip 
+                              
+l.211 \BState
+              \emph{top}:
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+\BState ->\State \algbackskip 
+                              
+l.215 \BState
+              \emph{loop}:
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+[4]
+Underfull \hbox (badness 10000) in paragraph at lines 260--261
 
  []
 
+[5]
 ! Misplaced alignment tab character &.
-l.121 	E_{q(\boldsymbol\tau)}[ \ln \tau_k ] &
+l.265 	E_{q(\boldsymbol\tau)}[ \ln \tau_k ] &
                                              = \psi(a_k) - \psi(b_k)
 I can't figure out why you would want to use a tab mark
 here. If you just want an ampersand, the remedy is
@@ -669,40 +749,29 @@ up above has ended a previous alignment prematurely,
 you're probably due for more error messages, and you
 might try typing `S' now just to see what is salvageable.
 
-[2]
 
-LaTeX Warning: Citation 'bouchard:07' on page 3 undefined on input line 164.
-
-
-LaTeX Warning: Citation 'jj:2001' on page 3 undefined on input line 170.
+LaTeX Warning: Citation 'bouchard:07' on page 6 undefined on input line 308.
 
 
-Overfull \hbox (15.16867pt too wide) detected at line 174
+LaTeX Warning: Citation 'jj:2001' on page 6 undefined on input line 314.
+
+
+Overfull \hbox (15.16867pt too wide) detected at line 318
 [] [] [] \OMS/cmsy/m/n/10.95 ^^T \OML/cmm/m/it/10.95 [] \OT1/cmr/m/n/10.95 + [
 ] [] + \OML/cmm/m/it/10.95 ^^U\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 ^^X[]\OT1
 /cmr/m/n/10.95 ) [] + [] []
  []
 
-
-Overfull \hbox (16.94214pt too wide) detected at line 183
+[6]
+Overfull \hbox (16.94214pt too wide) detected at line 327
 []
  []
 
 
-Underfull \vbox (badness 5519) has occurred while \output is active []
+Underfull \vbox (badness 2418) has occurred while \output is active []
 
- [3]
-! Misplaced alignment tab character &.
-l.215 	&
-         q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(m_k, (\tau_k \mathr...
-I can't figure out why you would want to use a tab mark
-here. If you just want an ampersand, the remedy is
-simple: Just type `I\&' now. But if some right brace
-up above has ended a previous alignment prematurely,
-you're probably due for more error messages, and you
-might try typing `S' now just to see what is salvageable.
-
-[4]
+ [7]
+[8]
 
 ! LaTeX Error: Can be used only in preamble.
 
@@ -710,20 +779,20 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.260 \bibliography
+l.449 \bibliography
                    {sample}
 Your command was ignored.
 Type  I <command> <return>  to replace it with another command,
 or  <return>  to continue without it.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 262.
-[5]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 262.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 451.
+[9] [10]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 451.
  (./report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 262.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 262.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 451.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 451.
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 9B305055716FD8D0998195AFB60A86EA;262.
+(rerunfilecheck)             Checksum: F412F514A33E5CA1A18AC835825EA28E;518.
 
 
 LaTeX Warning: There were undefined references.
@@ -736,35 +805,39 @@ Package biblatex Warning: Please (re)run Biber on the file:
 Package logreq Info: Writing requests to 'report.run.xml'.
 \openout1 = `report.run.xml'.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 262.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 451.
  ) 
 Here is how much of TeX's memory you used:
- 13012 strings out of 492982
- 211886 string characters out of 6134895
- 653621 words of memory out of 5000000
- 16428 multiletter control sequences out of 15000+600000
- 13223 words of font info for 48 fonts, out of 8000000 for 9000
+ 13664 strings out of 492982
+ 221167 string characters out of 6134895
+ 665445 words of memory out of 5000000
+ 17032 multiletter control sequences out of 15000+600000
+ 14870 words of font info for 53 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  39i,19n,31p,938b,742s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fon
-ts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type
-1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
-lic/amsfonts/cmextra/cmmib8.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
-ic/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.
-pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></
-usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></u
-sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam7.pfb>
-Output written on report.pdf (5 pages, 189930 bytes).
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/cmextra/cmmib8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pf
+b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/
+share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/
+texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf
+-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/public/amsfonts/symbols/msam7.pfb></usr/share/texlive/texmf-di
+st/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on report.pdf (10 pages, 241497 bytes).
 PDF statistics:
- 163 PDF objects out of 1000 (max. 8388607)
- 138 compressed objects within 2 object streams
- 30 named destinations out of 1000 (max. 500000)
- 49 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 255 PDF objects out of 1000 (max. 8388607)
+ 220 compressed objects within 3 object streams
+ 60 named destinations out of 1000 (max. 500000)
+ 81 words of extra memory for PDF output out of 10000 (max. 10000000)
 
