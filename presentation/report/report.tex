@@ -12,6 +12,10 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{hyperref}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
 \setlength{\parindent}{0pt}
 % Definitions of handy macros can go here
 
@@ -26,7 +30,20 @@
 \newcommand{\eye}{\mathrm{I}}
 \newcommand\given[1][]{\:#1\vert\:}
 \newcommand{\transpose}[1]{#1^{\intercal}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\nprod}{\prod_{n}}
+\newcommand{\kprod}{\prod_{k}}
+\newcommand{\nsum}{\sum_{n}}
+\newcommand{\ksum}{\sum_{k}}
+\newcommand{\boldbeta}{\boldsymbol\beta}
+\newcommand{\boldgamma}{\boldsymbol\gamma}
+\newcommand{\boldtau}{\boldsymbol\tau}
+\newcommand{\sumexp}{\sum_{j=1}^{K} \exp \{ \transpose{x_n} \gamma_j \}}
 
+
+
+
+\newcommand{\pr}[1]{p \left( #1 \right)}
 
 % Heading arguments are {volume}{year}{pages}{submitted}{published}{author-full-names}
 
@@ -70,20 +87,124 @@ While the representation of the density using predictor-independent weights yiel
 where $\mu_k(x) = \transpose{x} \beta_k$ and $\pi_{k} \propto \exp(\transpose{x} \gamma_k)$. 
 
 \section{Notation and Prior Specification}
+For the set of observed data, we denote $\mathbf{y} = \{y_1, \ldots, y_N \}, \mathbf{X} = \{ x_1, \ldots, x_N \}$, where each $x_n \in \R^{D}$. Let $\boldbeta = \{ \beta_1, \ldots, \beta_K\}$ and $\boldgamma = \{ \gamma_1, \ldots, \gamma_k\}$ denote the $D$-dimensional coefficient vectors  in the mixture weights and in gaussian mixture components, respectively. Finally, let $\boldtau = \{ \tau_1, \ldots, \tau_k \}$ denote the precision parameters. We introduce the set of latent variables $\mathbf{Z} = \{ z_1, \ldots, z_N \}$, where $z_n \in \R^K$ and $z_{nk} = 1$ if $y_n$ belongs to the $k$-th cluster so that $\sum_{k} z_{nk} = 1$. Conditioning on $\mathbf{Z}$, we have the following simplified form of the marginal likelihood. 
 
- 
+%% should probably include a figure displaying the graphical model, similar ot the one shown on p.475 (Bishop)
+
+\begin{equation} \label{eq:simp_lik}
+	p \left( \mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z}, \boldsymbol\gamma \right) = 
+	\prod_{n} \prod_{k} \mathcal{N} \left( y_n \given \transpose{x_n} \beta_k, \tau_{k}^{-1} \right)^{z_{nk}}
+\end{equation}
+\begin{equation} \label{eq:z_prior}
+	p \left( \mathbf{Z} \given \mathbf{X}, \boldsymbol\gamma \right) = \nprod \kprod \pi_{k} (x_n)^{z_{nk}} = 
+	\nprod \kprod \left( \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sumexp}\right)^{z_{nk}}
+\end{equation}
+
+Next, we introduce the priors over the parameters $\boldbeta, \boldtau, \boldgamma$, where we simplify the calculations by considering conjugate priors. 
+
+\begin{equation} \label{eq:gamma_prior}
+	 p(\boldgamma) = \kprod p(\gamma_k) = \mathcal{N} \left( \gamma_k \given 0, \eye_D \right)
+\end{equation}
+
+\begin{equation} \label{eq:betatau_prior}
+	 p\left( \boldbeta, \boldtau \right) = \prod_{k} p(\beta_k, \tau_k) = \kprod p(\beta_k \given \tau_k) p(\tau_k) = 
+	 \kprod \mathcal{N} \left( \beta_k \given m_0, (\tau_k \Lambda_0)^{-1} \right) \mathrm{Ga} \left( \tau_k \given a_0, b_0 \right)
+\end{equation}
+
+
+\section{Variational Distribution}
+At this point, the variational parameters of interest are $\boldsymbol \theta = (\mathbf{Z}, \boldbeta, \boldtau, \boldgamma)$. The log of the joint distibution of these random variables is given by
+\begin{equation} \label{eq:joint}
+\begin{split}
+	\ln \bigg\{ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} \bigg\} &= 
+	\ln \bigg\{\pr{\mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z}, \boldsymbol\gamma}\pr{\mathbf{Z}\given \mathbf{X}, \boldgamma}\pr{\boldgamma}\pr{\boldbeta, \boldtau} \bigg\}\\
+	&= \nsum \ksum z_{nk}\bigg\{ -\frac{1}{2}\ln(2\pi) + \frac{1}{2} \ln \tau_k - \frac{\tau_k}{2} \left( y_n - \transpose{x_n}\beta_k\right)^2 \bigg\} \\
+	& + \nsum \ksum z_{nk} \bigg\{ \transpose{x_n} \gamma_k - \ln\left( \sumexp \right) \bigg\} \\
+	& + \ksum  \bigg\{ -\frac{D}{2} \ln (2\pi) + \frac{D}{2} \ln \tau_k + \ln | \Lambda_0| - \frac{\tau_k}{2}\transpose{(\beta_k - m_0)} \Lambda_0 (\beta_k - m_0)\bigg\} \\
+	& + \ksum \bigg\{ (a_0 - 1) \ln \tau_k - b_0 \tau_k \bigg\}
+\end{split}
+\end{equation}
+
+We consider the following variational distribution used to approximate the posterior distribution of the parameters outlined previously.
+\begin{equation} \label{eq:variational}
+	q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma)
+\end{equation}
+
+\subsection{Coordinate Ascent Updates}
+
+As is standard in variational algorithms, we now seek the sequential updates of the factors in (\ref{eq:variational}). Taking the expectation with respect to the other variational parameters, we can derive the following update equation for $q(\mathbf{Z})$,
+\begin{equation} \label{eq:ln_z_update}
+	\ln q^{*}(\mathbf{Z}) = E_{-q(\mathbf{Z})} \Big[ \ln \big\{ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}, \boldgamma} \big\} \Big]
+\end{equation}
+We adopt the convention that the expectation with respect to a negative subscript indicates an expectation taken with repect to the other variational parameters. Ignoring terms that are not functionally dependent on $\mathbf{Z}$, we can exponentiate both sides of (\ref{eq:ln_z_update}) to obtain the optimal solution for $q(\mathbf{Z})$,
+\begin{equation} \label{optimal_z}
+	 q^{*}(\mathbf{Z}) = \prod_{n} \prod_{k} r_{nk}^{z_{nk}}, \quad r_{nk} = \frac{\rho_{nk}}{\sum_{j} \rho_{nj}}
+\end{equation}
+See Appendix \ref{app:q_z} for the details in this calculation. % More needs to be said here about how rho_nk depends on the variational distribution of the other parameters; for now, we just write down the general outline of the updates and aim to fill in details later
+
+It remains to consider the factor $q( \boldbeta, \boldtau, \boldgamma )$. Taking the expectation with respect to $q(\mathbf{Z})$, we have the following equality written up to constants,
+\begin{equation} \label{eq:ln_beta_tau_gamma}
+\begin{split}
+	\ln q^{*}(\boldbeta, \boldtau, \boldgamma) &=  \ksum \nsum  E_{q(\mathbf{Z})}[z_{nk}] \ln \mathcal{N} \left( y_n \given \transpose{x_n} \beta_k, \tau_{k}^{-1} \right) + \ksum \ln \pr{\beta_k, \tau_k} \\
+	& + \ksum \nsum E_{q(\mathbf{Z})} \left( \transpose{x_n} \gamma_k - \ln \left( \sumexp\right)\right) + \ksum \ln \mathcal{N}(\gamma_k \given 0, \eye_D)
+\end{split}
+\end{equation}
+
+From the expression above, we see that the optimal distribution has a sum involving only the $\gamma_k$'s and a sum involving only the $(\beta_k, \tau_k)$'s, which implies $q(\boldbeta, \boldtau, \boldgamma) = \big[ \kprod q(\beta_k, \tau_k) \big] \kprod q(\gamma_k)$.
+
+With this factorization in mind, we can obtain the following updates for the remaining variational parameters,
+\begin{equation} \label{optimal_beta_given_tau}
+	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
+\end{equation}
+
+\begin{equation} \label{optimal_tau}
+	q^{*}(\tau_k) =  \mathrm{Ga}\left( \tau_k \given a_k, b_k \right)
+\end{equation}
+
+\begin{equation} \label{optimal_gamma}
+	q^{*}(\gamma_k) = \mathcal{N} \left( \mu_k, \mathrm{Q}_k^{-1} \right)
+\end{equation}
+
+for $k = 1, \ldots, K$. The derivation for (\ref{optimal_beta_given_tau}) and (\ref{optimal_tau}) can be found in Appendix \ref{app:beta_tau}, and the details for (\ref{optimal_gamma}) can be found in Appendix \ref{app:gamma}.
+
+% decide if we want to write out definitions for m_k, V_k, a_k, b_k, mu_k, Q_k here for clarity's sake 
+% even though we already include the definitions in the corresponding appendix
+
+
+\subsection{Evidence Lower Bound (ELBO)}
+
+
+
+\section{Algorithm}
+
+Using the updates discussed in the previous section, we can formalize the variational algorithm below.
+
+\begin{algorithm}
+\caption{Variational Approximation for Gaussian Mixture}\label{alg:vb}
+\begin{algorithmic}[1]
+\Procedure{MyProcedure}{}
+\State $\textit{stringlen} \gets \text{length of }\textit{string}$
+\State $i \gets \textit{patlen}$
+\BState \emph{top}:
+\If {$i > \textit{stringlen}$} \Return false
+\EndIf
+\State $j \gets \textit{patlen}$
+\BState \emph{loop}:
+\If {$\textit{string}(i) = \textit{path}(j)$}
+\State $j \gets j-1$.
+\State $i \gets i-1$.
+\State \textbf{goto} \emph{loop}.
+\State \textbf{close};
+\EndIf
+\State $i \gets i+\max(\textit{delta}_1(\textit{string}(i)),\textit{delta}_2(j))$.
+\State \textbf{goto} \emph{top}.
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 
 
 % Acknowledgements should go at the end, before appendices and references
-
-% \acks{We would like to acknowledge support for this project
-% from the National Science Foundation (NSF grant IIS-9988642)
-% and the Multidisciplinary Research Program of the Department
-% of Defense (MURI N00014-00-1-0637). }
-
-% Manual newpage inserted to improve layout of sample file - not
-% needed in general before appendices/bibliography.
 
 \newpage
 
@@ -212,7 +333,7 @@ We first consider terms on the right hand side of (\ref{eq:lnq_beta_tau}) that d
 	\ln q^{\star}(\beta_k \given \tau_k) = -\frac{\tau_k}{2} \transpose{\beta_k} \Big[ \sum_{n}r_{nk} x_n \transpose{x_n} + \Lambda_0 \Big] \beta_k + \tau_k \transpose{\beta_k} \Big[ \sum_{n} r_{nk}y_n x_n + \Lambda_0 m_0 \Big]
 \end{equation}
 \begin{equation} \label{q_beta}
-	& q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
+	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
 \end{equation}
 \begin{equation} \label{eq:beta_params}
 \begin{split}
