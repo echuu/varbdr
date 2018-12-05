@@ -79,14 +79,50 @@
 \usepackage{graphicx} % Allows including images
 \usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
 
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{hyperref}
+
+% \usepackage{algorithm}
+\usepackage{algorithm,caption}
+\usepackage[options ]{algorithm2e}
+\usepackage[noend]{algpseudocode}
+
+\newcommand{\dataset}{{\cal D}}
+\newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
+\newcommand{\tr}{\intercal}
+\newcommand{\eye}{\mathrm{I}}
+\newcommand\given[1][]{\:#1\vert\:}
+\newcommand{\transpose}[1]{#1^{\intercal}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\nprod}{\prod_{n}}
+\newcommand{\kprod}{\prod_{k}}
+\newcommand{\nsum}{\sum_{n}}
+\newcommand{\ksum}{\sum_{k}}
+\newcommand{\boldbeta}{\boldsymbol\beta}
+\newcommand{\boldgamma}{\boldsymbol\gamma}
+\newcommand{\boldtau}{\boldsymbol\tau}
+\newcommand{\sumexp}{\sum_{j=1}^{K} \exp \{ \transpose{x_n} \gamma_j \}}
+\newcommand{\E}{\mathbb{E}}
+
+
+\usepackage{setspace}
+\let\Algorithm\algorithm
+\renewcommand\algorithm[1][]{\Algorithm[#1]\setstretch{0.75}}
+
+
+\newcommand{\pr}[1]{p \left( #1 \right)}
+
+
+
 %----------------------------------------------------------------------------------------
 %	TITLE PAGE
 %----------------------------------------------------------------------------------------
 
-\title[Short title]{Variational Approach for Bayesian Density Regression} % The short title appears at the bottom of every slide, the full title is only on the title page
+\title[]{Variational Approach for Bayesian Density Regression} % The short title appears at the bottom of every slide, the full title is only on the title page
 
 \author{Eric Chuu} % Your name
-\institute[UCLA] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+\institute[TAMU] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
 {
 Texas A\&M University \\ % Your institution for the title page
 \medskip
@@ -261,8 +297,97 @@ This statement requires citation \cite{p1}.
 \end{frame}
 
 %------------------------------------------------
-\subsection{Bouchard Bound for Problematic Quantity}
+\subsection{Variational Algorithm}
 %------------------------------------------------
+
+
+\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
+\frametitle{Variational Algorithm}
+\textbf{Input}
+\begin{enumerate}
+\item Data $\left(y_n, x_n\right)_{n=1}^{N}$
+\item Number of components, $K$
+\item Prior mean, precision for coefficients vectors, $\boldbeta_{1:K}$
+\item Prior shape, rate parameters for precision parameters, $\tau_{1:K}$
+\end{enumerate}
+\textbf{Output}
+\begin{enumerate}
+\item A variational density,
+$$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma) = q(\mathbf{Z}) \kprod q(\beta_k, \tau_k) q(\gamma_k)$$
+\item Fully specified by the variational parameters
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
+\frametitle{Variational Algorithm}
+\begin{algorithm}[H]
+\SetAlgoLined
+ \While{the ELBO has not converged}{
+  
+  \For{$n \in \{1, \ldots, N\}$}{
+       \For{$k \in \{1, \ldots, K\}$}{
+       Set $r_{nk} \propto \exp \Big\{-\frac{1}{2} \ln (2\pi) + \frac{1}{2} \E[\ln \tau_k] + \transpose{x_n} \E[\gamma_k]$ \;
+       
+       $\qquad \qquad - \frac{1}{2} \E [\tau_k(y_n - \transpose{x_n}\beta_k)^2]\big  - \E\Big[\ln \left( \sumexp \right)\Big]\Big\}$\;
+       }
+   }
+
+  \For{$k \in \{1, \ldots, K\}$}{ %% order of the following updates matters
+      \For{$n \in \{1, \ldots, N\}$}{
+          % update xi_1k, ... xi_Nk
+	      Set $\xi_{nk} \leftarrow \sqrt{(\transpose{x_n}\mu_k - \alpha_n)^2 + \transpose{x_n}\mathrm{Q}_k^{-1} x_n}$\;          
+       }
+   }
+
+   $\texttt{ /** Remaining Variational Updates on Next Slide **/ }$
+   
+}
+ \caption*{\textbf{Algorithm}. CAVI for Conditional Density Estimation}
+\end{algorithm}
+\end{frame}
+
+%------------------------------------------------
+
+
+
+\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
+\frametitle{Variational Algorithm (cont.)}
+\begin{algorithm}[H]
+\SetAlgoLined
+ \While{the ELBO has not converged}{
+        
+      \For{$n \in \{1, \ldots, N\}$}{        
+       % update alpha_1,...,alpha_N
+       Set $\alpha_{n} \leftarrow \Big[\frac{1}{2} \left( \frac{K}{2} - 1\right) + \ksum \lambda(\xi_{nk}) \transpose{\mu_k} x_n\Big] \Big/ \Big[\sum_{k} \lambda(\xi_{nk})\Big]$\;  
+   }
+   
+   
+   \For{$k \in \{1, \ldots, K\}$}{ %% order of the following updates matters
+      
+   $\mathrm{Q}_{k} \leftarrow \eye_D + 2 \sum_{n} r_{nk} \lambda(\xi_{nk}) x_n \transpose{x_n} \quad \qquad \qquad \quad \texttt{/* gamma\char`_k cov */ }$\; % update Q_k
+   
+   $\eta_k \leftarrow \sum_{n} r_{nk} \big[ \frac{1}{2} + 2\lambda(\xi_{nk}) \alpha_n \big]x_n$\; % update eta_k
+         
+   $\mu_k \leftarrow Q_k^{-1} \eta_k \qquad \qquad \qquad \qquad \qquad \qquad \quad \texttt{ /* gamma\char`_k mean */ }$\; % update mu_k = Q_k^{-1} eta_k
+   
+   $\mathrm{V}_k \leftarrow \nsum r_{nk} x_n \transpose{x_n} + \Lambda_0 \qquad \qquad \quad \qquad \qquad \texttt{ /* beta\char`_k cov */ }$\; % update V_k (update parameters of beta don't directly invvolve tau_k)
+   
+   $\zeta_k \leftarrow \sum_{n} r_{nk} y_n x_n + \Lambda_0 m_0$\; % update mean_of_beta_k (update parameters of beta don't directly invvolve tau_k)
+   
+   $m_k \leftarrow \mathrm{V}_k^{-1} \zeta_k \qquad \qquad\qquad\qquad\qquad \qquad \quad \texttt{ /* beta\char`_k mean */ }$\; % update m_k (update parameters of beta don't directly invvolve tau_k)
+   
+   $a_k \leftarrow a_0 + N_k \qquad \qquad \qquad \qquad \qquad\qquad \quad \texttt{ /* tau\char`_k shape */ }$\; % update a_k
+   
+   $b_k \leftarrow b_0 + \frac{1}{2}[\nsum r_{nk} y_n^2 + \transpose{m_0}\Lambda_0 m_0 - \transpose{\zeta_k} \mathrm{V}_k^{-1} \zeta_k] \texttt{ /* tau\char`_k rate */ }$\; % update b_k --> this one last since it involves V_k, and mean of beta_k
+   }
+   Compute ELBO using updated parameters
+ } % end of while
+ \Return $q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right)$
+ \caption*{\textbf{Algorithm}. CAVI for Conditional Density Estimation}
+\end{algorithm}
+\end{frame}
+
 
 
 \begin{frame}

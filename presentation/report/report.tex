@@ -213,7 +213,7 @@ Using the updates discussed in the previous section, we can formalize the variat
 
 \textbf{Output:} A variational density $q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma) = q(\mathbf{Z}) \kprod q(\beta_k, \tau_k) q(\gamma_k)$;\
 
-\textbf{Initialize:} Variational parameters $\mathbf{m}_{1:K}, \tau_{1:K}, \mathrm{V}_{1:K}, \boldsymbol\mu_{1:K}, \mathrm{Q}_{1:K}, a_{1:K}, b_{1:K}, \xi_{1:N, 1:K}, \alpha_{1:N}$
+\textbf{Initialize:} Variational parameters $\mathbf{m}_{1:K}, \mathrm{V}_{1:K}, \boldsymbol\mu_{1:K}, \mathrm{Q}_{1:K}, a_{1:K}, b_{1:K}, \xi_{1:N, 1:K}, \alpha_{1:N}$
 
  \While{the ELBO has not converged}{
   
@@ -404,9 +404,9 @@ We first consider terms on the right hand side of (\ref{eq:lnq_beta_tau}) that d
 \end{equation}
 \begin{equation} \label{eq:beta_params}
 \begin{split}
-	& m_k = \mathrm{V}_k^{-1}  b_k \\
- 	& \mathrm{V}_k = \sum_{n} r_{nk} x_n \transpose{x_n} + \Lambda_0 \\
- 	& b_k = \sum_{n} r_{nk} y_n x_n + \Lambda_0 m_0
+    & \mathrm{V}_k = \sum_{n} r_{nk} x_n \transpose{x_n} + \Lambda_0 \\
+ 	& \zeta_k = \sum_{n} r_{nk} y_n x_n + \Lambda_0 m_0 \\
+	& m_k = \mathrm{V}_k^{-1}  \zeta_k 
 \end{split}
 \end{equation}
 
@@ -426,18 +426,18 @@ where we have defined
 \begin{equation} \label{eq:tau_params}
 \begin{split}
 	& a_k = a_0 + N_k \\
-	& b_k = b_0 + \frac{1}{2} \sum_{n} r_{nk} y_n^2 + \transpose{m_0} \Lambda_0 m_0 - \transpose{b_k} \mathrm{V}_k^{-1} b_k
+	& b_k = b_0 + \frac{1}{2} \sum_{n} r_{nk} y_n^2 + \transpose{m_0} \Lambda_0 m_0 - \transpose{\zeta_k} \mathrm{V}_k^{-1} \zeta_k
 \end{split}
 \end{equation}
 
 The expression for $b_k$ arises by noting that the three following simplifications for the summation terms in the coefficient of $\tau_k$ in (\ref{eq:ln_q_tau}), 
 \begin{align*}
-	& \sum_{n}r_{nk}y_n^2 + \transpose{m_0} \Lambda_0 m_0 - \transpose{m_k} \mathrm{V}_k m_k =  \sum_{n}r_{nk}y_n^2 + \transpose{m_0} \Lambda_0 m_0 -\transpose{b_k} \mathrm{V}_k^{-1} b_k \\
+	& \sum_{n}r_{nk}y_n^2 + \transpose{m_0} \Lambda_0 m_0 - \transpose{m_k} \mathrm{V}_k m_k =  \sum_{n}r_{nk}y_n^2 + \transpose{m_0} \Lambda_0 m_0 -\transpose{\zeta_k} \mathrm{V}_k^{-1} \zeta_k \\
 	& \sum_{n} r_{nk} x_n \transpose{x_n} + \Lambda_0 - \mathrm{V}_k = 0 \\
 	& \sum_{n} r_{nk} y_n x_n + \Lambda_0 m_0 - \mathrm{V}_k m_k = 0
 \end{align*}
 
-where the first equality holds by expanding $\transpose{m_k} \mathrm{V}_k m_k = \transpose{b_k} \left( \mathrm{V}_k^{-1}\right)^{\intercal} \mathrm{V}_k \mathrm{V}_k^{-1} b_k = \transpose{b_k} \mathrm{V}_k^{-1} b_k$. The second quality holds by recalling the definition of $\mathrm{V}_k$ in (\ref{eq:beta_params}), and the third equality holds by observing from (\ref{eq:beta_params}) that $\mathrm{V}_{k} m_k = b_k$
+where the first equality holds by expanding $\transpose{m_k} \mathrm{V}_k m_k = \transpose{\zeta_k} \left( \mathrm{V}_k^{-1}\right)^{\intercal} \mathrm{V}_k \mathrm{V}_k^{-1} \zeta_k = \transpose{b_k} \mathrm{V}_k^{-1} \zeta_k$. The second quality holds by recalling the definition of $\mathrm{V}_k$ in (\ref{eq:beta_params}), and the third equality holds by observing from (\ref{eq:beta_params}) that $\mathrm{V}_{k} m_k = \zeta_k$
 
 \section{ } \label{app:elbo}  %% EBLO DERIVATION
 

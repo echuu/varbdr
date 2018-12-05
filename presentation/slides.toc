@@ -1,0 +1,7 @@
+\beamer@sectionintoc {1}{Introduction and Setup}{3}{0}{1}
+\beamer@sectionintoc {2}{Main Problem}{3}{0}{2}
+\beamer@subsectionintoc {2}{1}{Computational Bottlenecks}{3}{0}{2}
+\beamer@sectionintoc {3}{Variational Approach}{6}{0}{3}
+\beamer@subsectionintoc {3}{1}{CAVI Updates}{8}{0}{3}
+\beamer@subsectionintoc {3}{2}{Bouchard Bound for Problematic Quantity}{11}{0}{3}
+\beamer@subsectionintoc {3}{3}{Variational Algorithm}{13}{0}{3}
