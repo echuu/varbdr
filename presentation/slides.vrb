@@ -3,10 +3,7 @@
 \SetAlgoLined
  \While{the ELBO has not converged}{
 
-      \For{$n \in \{1, \ldots, N\}$}{
-       % update alpha_1,...,alpha_N
-       Set $\alpha_{n} \leftarrow \Big[\frac{1}{2} \left( \frac{K}{2} - 1\right) + \ksum \lambda(\xi_{nk}) \transpose{\mu_k} x_n\Big] \Big/ \Big[\sum_{k} \lambda(\xi_{nk})\Big]$\;
-   }
+    \big\vdots
 
 
    \For{$k \in \{1, \ldots, K\}$}{ %% order of the following updates matters

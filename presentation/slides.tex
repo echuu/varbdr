@@ -149,131 +149,221 @@ Texas A\&M University \\ % Your institution for the title page
 \section{Introduction and Setup} % Sections can be created in order to organize your presentation into discrete blocks, all sections and subsections are automatically printed in the table of contents as an overview of the talk
 %------------------------------------------------
 
-\section{Main Problem} 
-
-\subsection{Computational Bottlenecks}
-
-% \section{Variational Approach}
-
-
-
-%------------------------------------------------
-
 \begin{frame}
-\frametitle{Problem Introduction and Setup}
+\frametitle{Introduction and Setup}
+\textbf{Problem Setup}
+
 \begin{itemize}
-\item Lorem ipsum dolor sit amet, consectetur adipiscing elit
-\item Aliquam blandit faucibus nisi, sit amet dapibus enim tempus eu
-\item Nulla commodo, erat quis gravida posuere, elit lacus lobortis est, quis porttitor odio mauris at libero
-\item Nam cursus est eget velit posuere pellentesque
-\item Vestibulum faucibus velit a augue condimentum quis convallis nulla gravida
+\item Given data $\big\left( y_n, x_n \big\right)_{n=1}^N$ and we want to estimate the density of $y \given x$
+\item Gaussian mixture models are a common choice due to flexibility 
+$$f(y \given x) = \ksum \pi_k \mathcal{N}(y \given \mu_k(x), \tau_k^{-1})$$
+\item Covariate-independent weights have limited flexibility in practice % requires introduction of many mixture componenets to be useful
 \end{itemize}
+
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Introduction and Setup}
+\textbf{Covariate Dependent Weights}
+
+\begin{itemize}
+\item Allow for covariate dependence in the mixing weights
+$$f(y \given x) = \ksum \pi_k(x) \mathcal{N}(y \given \mu_k(x), \tau_k^{-1})$$
+\item Existing methods that use kernel stick breaking process (Dunson and Park, 2008), logit stick breaking prior (Rigon and Durante, 2017)
+\item We allow covariates to enter the weights via a logit link function
+$$\pi_k(x) \propto \exp\{\transpose{x}\gamma_k\}$$
+\end{itemize}
+
+\end{frame}
+
 
 %------------------------------------------------
 
-\begin{frame}
-\frametitle{Main Problem}
-\begin{block}{Block 1}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer lectus nisl, ultricies in feugiat rutrum, porttitor sit amet augue. Aliquam ut tortor mauris. Sed volutpat ante purus, quis accumsan dolor.
-\end{block}
-
-\begin{block}{Block 2}
-Pellentesque sed tellus purus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vestibulum quis magna at risus dictum tempor eu vitae velit.
-\end{block}
-
-\begin{block}{Block 3}
-Suspendisse tincidunt sagittis gravida. Curabitur condimentum, enim sed venenatis rutrum, ipsum neque consectetur orci, sed blandit justo nisi ac lacus.
-\end{block}
-\end{frame}
-
+%------------------------------------------------
+\section{Notation and Prior Specification} % Sections can be created in order to organize your presentation into discrete blocks, all sections and subsections are automatically printed in the table of contents as an overview of the talk
 %------------------------------------------------
 
+
 \begin{frame}
-\frametitle{Multiple Columns}
-\begin{columns}[c] % The "c" option specifies centered vertical alignment while the "t" option is used for top vertical alignment
+\frametitle{Notation}
 
-\column{.45\textwidth} % Left column and width
-\textbf{Heading}
-\begin{enumerate}
-\item Statement
-\item Explanation
-\item Example
-\end{enumerate}
+\textbf{Notation}
 
-\column{.5\textwidth} % Right column and width
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer lectus nisl, ultricies in feugiat rutrum, porttitor sit amet augue. Aliquam ut tortor mauris. Sed volutpat ante purus, quis accumsan dolor.
+\begin{itemize}
+	\item Observed Data: $\mathbf{y} = \{y_1, \ldots, y_N \}, \mathbf{X} = \{ x_1, \ldots, x_N \} \subseteq \R^{D}$
+	\item Guassian Componenets: $\boldbeta = \{ \beta_1, \ldots, \beta_K\}, \boldtau = \{ \tau_1, \ldots, \tau_k \}$
+	$$f(y \given x) = \ksum \pi_k(x) \textrm{ } \mathcal{N}(y \given \transpose{x}\beta_k, \tau_k^{-1})$$
+	\item coefficient vectors in the weights: $\boldgamma = \{ \gamma_1, \ldots, \gamma_k\}$
+	\item Latent variables: $\mathbf{Z} = \{ z_1, \ldots, z_N \}$
+	\begin{itemize}
+		\item $z_n \in \R^K$ and $z_{nk} = 1$ iff $y_n$ belongs to the $k$-th cluster
+	\end{itemize}
+\end{itemize}
 
-\end{columns}
+
 \end{frame}
+
+\begin{frame}
+
+\frametitle{Prior Specification}
+With the introduction of latent variables, we have the simplified conditional distribution,
+
+\begin{equation} \label{eq:conditional}
+	p \left( \mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z} \right) = 
+	\prod_{n} \prod_{k} \mathcal{N} \left( y_n \given \transpose{x_n} \beta_k, \tau_{k}^{-1} \right)^{z_{nk}}
+\end{equation}
+
+
+The conditional distribution of $\mathbf{Z}$ given $\mathbf{X}, \boldgamma$
+\begin{equation} \label{eq:cond_Z}
+	p \left( \mathbf{Z} \given \mathbf{X}, \boldsymbol\gamma \right) = \nprod \kprod \pi_{k} (x_n)^{z_{nk}} = 
+	\nprod \kprod \left( \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sumexp}\right)^{z_{nk}}
+\end{equation}
+ 
+\textbf{Priors over $\boldbeta, \boldtau, \boldgamma$}
+\begin{itemize}
+	\item $p(\boldgamma) = \kprod p(\gamma_k) = \mathcal{N} \left( \gamma_k \given 0, \eye_D \right)$
+	\item $p\left( \boldbeta, \boldtau \right) = p\left( \boldbeta \given \boldtau \right) p(\boldtau)= \kprod \mathcal{N} \left( \beta_k \given m_0, (\tau_k \Lambda_0)^{-1} \right) \mathrm{Ga} \left( \tau_k \given a_0, b_0 \right)$
+\end{itemize}
+
+\end{frame}
+
 
 %------------------------------------------------
 \section{Variational Approach}
 %------------------------------------------------
 
 \begin{frame}
-\frametitle{Variational Approach}
-\begin{table}
-\begin{tabular}{l l l}
-\toprule
-\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2}\\
-\midrule
-Treatment 1 & 0.0003262 & 0.562 \\
-Treatment 2 & 0.0015681 & 0.910 \\
-Treatment 3 & 0.0009271 & 0.296 \\
-\bottomrule
-\end{tabular}
-\caption{Table caption}
-\end{table}
+\frametitle{General Approach}
+\begin{block}{Full joint distribution of all random variables}
+$$ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} = \pr{\mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z}}\pr{\mathbf{Z}\given \mathbf{X}, \boldgamma}\pr{\boldgamma}\pr{\boldbeta, \boldtau}$$
+\end{block}
+
+\begin{block}{Formulate an approximating distribution}
+$$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma)$$
+\end{block}
+
+\begin{block}{Derive update equations for the variational distributions}
+\begin{align*}
+	& \ln q^{*}(\mathbf{Z}) = \E_{-q(\mathbf{Z})} \Big[ \ln \big\{ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}, \boldgamma} \big\} \Big] \\
+	& \ln q^{*}(\boldbeta, \boldtau, \boldgamma) = \E_{-q(\mathbf{\boldbeta, \boldtau, \boldgamma})}\Big[ \ln \big\{ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}, \boldgamma} \big\} \Big]
+\end{align*}
+\end{block}
 \end{frame}
 
-%------------------------------------------------
+
 
 \begin{frame}
-\frametitle{Theorem}
-\begin{theorem}[Mass--energy equivalence]
-$E = mc^2$
-\end{theorem}
+\frametitle{Variational Approximation}
+\textbf{Joint Distribution of all random variables}
+\begin{equation*} \label{eq:joint}
+\begin{split}
+	\ln &\pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} = \nsum \ksum z_{nk}\bigg\{ -\frac{1}{2}\ln(2\pi) + \frac{1}{2} \ln \tau_k - \frac{\tau_k}{2} \left( y_n - \transpose{x_n}\beta_k\right)^2 \bigg\} \\
+	& + \nsum \ksum z_{nk} \bigg\{ \transpose{x_n} \gamma_k - \ln\left( \sumexp \right) \bigg\} \\
+	& + \ksum  \bigg\{ -\frac{D}{2} \ln (2\pi) + \frac{D}{2} \ln \tau_k + \ln | \Lambda_0| - \frac{\tau_k}{2}\transpose{(\beta_k - m_0)} \Lambda_0 (\beta_k - m_0)\bigg\} \\
+	& + \ksum \bigg\{ (a_0 - 1) \ln \tau_k - b_0 \tau_k \bigg\}
+\end{split}
+\end{equation*}
+\textbf{Approximating Distribution}
+\begin{equation} \label{eq:q}
+	q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma)
+\end{equation}
+
 \end{frame}
 
 %------------------------------------------------
 \subsection{CAVI Updates}
 %------------------------------------------------
 
-\begin{frame}
-\frametitle{CAVI Updates}
-\begin{theorem}[Mass--energy equivalence]
-$E = mc^2$
-\end{theorem}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
-\frametitle{Verbatim}
-\begin{example}[Theorem Slide Code]
-\begin{verbatim}
-\begin{frame}
-\frametitle{Theorem}
-\begin{theorem}[Mass--energy equivalence]
-$E = mc^2$
-\end{theorem}
-\end{frame}\end{verbatim}
-\end{example}
-\end{frame}
-
-%------------------------------------------------
+\subsection{Example Calculation for $q(\mathbf{Z})$}
 
 \begin{frame}
-\frametitle{Figure}
-Uncomment the code on this slide to include your own image from the same directory as the template .TeX file.
-%\begin{figure}
-%\includegraphics[width=0.8\linewidth]{test}
-%\end{figure}
+\frametitle{Example calculation for $q(\mathbf{Z})$}
+
+\begin{align*}
+	\ln q^{*}(\mathbf{Z}) &= \sum_n \sum_k z_{nk} \Bigg\{  -\frac{1}{2}\ln(2\pi) + \frac{1}{2} E_{q(\boldsymbol\tau)}[ \ln \tau_k ] \\
+	& \qquad \qquad \qquad \quad- \frac{1}{2} E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] \\ 
+	&\qquad \qquad \qquad \quad + x_n^{\tr}E_{q(\boldsymbol\gamma)}[\gamma_k] - E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg]\Bigg\} \\
+	&= \sum_n \sum_k z_{nk} \ln \rho_{nk}
+\end{align*}
+
+Exponentiating and normalizing, we arrive at the optimal variational distribution. Then, $\E[z_{nk}] = r_{nk}$.
+
+\begin{equation} \label{eq:q_z}
+	q^{*}(\mathbf{Z}) = \prod_{n} \prod_{k} r_{nk}^{z_{nk}}, \quad r_{nk} = \frac{\rho_{nk}}{\sum_{j} \rho_{nj}}
+\end{equation}
+
+
 \end{frame}
 
-%------------------------------------------------
 
+\begin{frame}
+\frametitle{Example calculation for $q(\mathbf{Z})$}
+
+Consider the quantity $\ln \rho_{nk}$:
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\tau)}[ \ln \tau_k ]$ 
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] $
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\gamma)}[\gamma_k]$
+\end{itemize}
+
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg]$
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Variational Updates}
+
+Our choice of conjugate families tells us that we will have the following form of the variational distributions, for $k = 1, \ldots, K$,
+
+\begin{equation} \label{q_gamma}
+	q^{*}(\gamma_k) = \mathcal{N} \left(\gamma_k \given \mu_k, \mathrm{Q}_k^{-1} \right)
+\end{equation}
+
+\begin{equation} \label{q_beta}
+	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(\beta_k \given m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
+\end{equation}
+
+\begin{equation} \label{eq:q_tau}
+	q^{*}(\tau_k) =  \mathrm{Ga}\left( \tau_k \given a_k, b_k \right)
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Example calculation for $q(\mathbf{Z})$}
+
+Consider the quantity $\ln \rho_{nk}$:
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\tau)}[ \ln \tau_k ] = \psi(a_k) - \psi(b_k)$ 
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] = \frac{a_k}{b_k}(y_n + m_k^{\tr}x_n)^2 + x_n^{\tr} \mathrm{V}_k^{-1} x_n $
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\gamma)}[\gamma_k] = \mu_k$
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg] =  \textrm{ } \ldots \textrm{ oh no!}$
+\end{itemize}
+
+
+\end{frame}
 
 %------------------------------------------------
 \subsection{Bouchard Bound for Problematic Quantity}
@@ -281,19 +371,51 @@ Uncomment the code on this slide to include your own image from the same directo
 
 
 \begin{frame}
-\frametitle{Bouchard Bound for Problematic Quantity}
-\begin{theorem}[Mass--energy equivalence]
-$E = mc^2$
-\end{theorem}
+\frametitle{Bouchard's Bound for Problematic Quantity}
+\begin{block}{Upper bound on the sum of exponentials}
+$$\sum_{j = 1}^{K} e^{t_j} \leq \prod_{j=1}^{K} (1 + e^{t_j})$$
+\end{block}
+
+\begin{block}{Tangential Bound (Jaakkola and Jordan, 1996)}
+For $x \in \R, \alpha \in \R, \xi \in [0, \infty)$
+$$\log(1 + e^{x}) \leq \lambda(\xi)(x^2 - \xi^2) + \frac{x-\xi}{2} + \log(1 + e^{\xi})$$
+\end{block}
+
+Taking log the first bound and setting $t_j = \transpose{x_n}\gamma_j - \alpha_n$, we have
+\begin{equation*}
+	\log \sum_{j = 1}^K \exp\{ x_n^{^\intercal} \gamma_j \} & \leq 
+\alpha_n + \sum_{j = 1}^K \frac{x_n^{\intercal} \gamma_j - \alpha_n + \xi_{nj}}{2} + \lambda(\xi_{nj}) \left( (x_n^{\intercal} \gamma_j - \alpha_n)^2 - \xi_{nj}^2\right)\\
+& \qquad \qquad \qquad \qquad \qquad + \log \left( 1 + e^{\xi_{nj}}\right)
+\end{equation*}
+
 \end{frame}
 
 %------------------------------------------------
 
-\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
-\frametitle{Citation}
-An example of the \verb|\cite| command to cite within the presentation:\\~
+\begin{frame} % Need to use the fragile option when verbatim is used in the slide
 
-This statement requires citation \cite{p1}.
+\frametitle{Bouchard's Bound for Problematic Quantity}
+
+\textbf{Upper Bound for the problematic expectation}
+
+$\mathrm{E}_{q(\boldsymbol\gamma)} \Big[ \ln \left( \sum_{j}^K \exp \{ x_n^{\tr} \gamma_j \}\right) \Big]$
+\begin{equation*}
+\begin{split}
+	& \leq \alpha_n + \sum_{j}^K  \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_k)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}}) \\
+	& \quad \quad \quad +  \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right)
+\end{split}
+\end{equation*}
+
+\textbf{Two new variational parameters that need to be updated}
+
+The additional parameters introduced in the two upper bounds can be updated using the following equations
+\begin{align*}
+    \xi_{nk} & = \sqrt{\left(\mu_k^{\intercal}x_n - \alpha_n \right)^2 + x_n^{\intercal} \mathrm{Q}_k^{-1} x_n} \quad \forall k \\ \\
+    \alpha_n & = \frac{\frac{1}{2}\left( \frac{K}{2} - 1\right) + \sum_{j = 1}^K \lambda \left( \xi_{nj} \right)\mu_j^{\intercal} x_n}{\sum_{j=1}^{K} \lambda \left( \xi_{nj}\right)} 
+\end{align*}
+
+
+
 \end{frame}
 
 %------------------------------------------------
@@ -333,11 +455,12 @@ $$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q
        }
    }
 
-  \For{$k \in \{1, \ldots, K\}$}{ %% order of the following updates matters
-      \For{$n \in \{1, \ldots, N\}$}{
+  \For{$n \in \{1, \ldots, N\}$}{ %% order of the following updates matters
+      \For{$k \in \{1, \ldots, K\}$}{
           % update xi_1k, ... xi_Nk
 	      Set $\xi_{nk} \leftarrow \sqrt{(\transpose{x_n}\mu_k - \alpha_n)^2 + \transpose{x_n}\mathrm{Q}_k^{-1} x_n}$\;          
        }
+       Set $\alpha_{n} \leftarrow \Big[\frac{1}{2} \left( \frac{K}{2} - 1\right) + \ksum \lambda(\xi_{nk}) \transpose{\mu_k} x_n\Big] \Big/ \Big[\sum_{k} \lambda(\xi_{nk})\Big]$\;  
    }
 
    $\texttt{ /** Remaining Variational Updates on Next Slide **/ }$
@@ -357,12 +480,9 @@ $$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q
 \SetAlgoLined
  \While{the ELBO has not converged}{
         
-      \For{$n \in \{1, \ldots, N\}$}{        
-       % update alpha_1,...,alpha_N
-       Set $\alpha_{n} \leftarrow \Big[\frac{1}{2} \left( \frac{K}{2} - 1\right) + \ksum \lambda(\xi_{nk}) \transpose{\mu_k} x_n\Big] \Big/ \Big[\sum_{k} \lambda(\xi_{nk})\Big]$\;  
-   }
-   
-   
+    \big\vdots        
+        
+      
    \For{$k \in \{1, \ldots, K\}$}{ %% order of the following updates matters
       
    $\mathrm{Q}_{k} \leftarrow \eye_D + 2 \sum_{n} r_{nk} \lambda(\xi_{nk}) x_n \transpose{x_n} \quad \qquad \qquad \quad \texttt{/* gamma\char`_k cov */ }$\; % update Q_k
@@ -388,15 +508,37 @@ $$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q
 \end{algorithm}
 \end{frame}
 
+%------------------------------------------------
 
+\subsection{Monitoring Convergence}
+
+\begin{frame}
+\frametitle{Monitoring Convergence}
+\textbf{At the end of each iteration, we compute the ELBO}: 
+$$ \mathcal{L}(q) &= \sum_{z} \int \int \int q(\boldbeta, \boldtau, \boldgamma, \mathbf{Z})
+	\ln \Big\{ \frac{p(\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \boldgamma, \mathbf{Z})}{q(\boldbeta, \boldtau, \boldgamma, \mathbf{Z})}\Big\} d\boldbeta d\boldtau d\boldgamma $$
+
+\textbf{7 quantities to calculate}:
+
+\begin{itemize}
+	\item $\E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}]$
+	\item $\E[\ln \pr{\mathbf{Z} \given \mathbf{X}, \boldgamma}]$
+	\item $\E[\ln \pr{\boldgamma}]$
+	\item $\E[\ln \pr{\boldbeta, \boldtau}]$
+	\item $\E[\ln q(\mathbf{Z})]$
+ 	\item $\E[\ln q(\boldbeta, \boldtau)]$
+	\item $\E[\ln q(\boldgamma)]$
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
 
 \begin{frame}
 \frametitle{References}
 \footnotesize{
 \begin{thebibliography}{99} % Beamer does not support BibTeX so references must be inserted manually as below
-\bibitem[Smith, 2012]{p1} John Smith (2012)
-\newblock Title of the publication
-\newblock \emph{Journal Name} 12(3), 45 -- 678.
+Please see report submission for updated set of references.
 \end{thebibliography}
 }
 \end{frame}
