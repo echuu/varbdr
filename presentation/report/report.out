@@ -4,7 +4,7 @@
 \BOOKMARK [2][-]{subsection.3.1}{Coordinate Ascent Updates}{section.3}% 4
 \BOOKMARK [2][-]{subsection.3.2}{Evidence Lower Bound \(ELBO\)}{section.3}% 5
 \BOOKMARK [1][-]{section.4}{Algorithm}{}% 6
-\BOOKMARK [1][-]{appendix.A}{ }{}% 7
-\BOOKMARK [1][-]{appendix.B}{ }{}% 8
-\BOOKMARK [1][-]{appendix.C}{ }{}% 9
-\BOOKMARK [1][-]{appendix.D}{ }{}% 10
+\BOOKMARK [1][-]{appendix.A}{Variational Update for q\(Z\)}{}% 7
+\BOOKMARK [1][-]{appendix.B}{Variational Updates for q\(k\)}{}% 8
+\BOOKMARK [1][-]{appendix.C}{Variational Updates for q\(k, k\)}{}% 9
+\BOOKMARK [1][-]{appendix.D}{Variational Lower Bound}{}% 10

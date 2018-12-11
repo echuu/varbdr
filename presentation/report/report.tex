@@ -45,7 +45,7 @@
 
 \usepackage{setspace}
 \let\Algorithm\algorithm
-\renewcommand\algorithm[1][]{\Algorithm[#1]\setstretch{1.2}}
+\renewcommand\algorithm[1][]{\Algorithm[#1]\setstretch{1.1}}
 
 
 \newcommand{\pr}[1]{p \left( #1 \right)}
@@ -191,9 +191,9 @@ In order to evaluate the convergence of the algorithm, we can calculate the evid
 
 Each of the seven expectations can be expressed as follows. Details for each calculation can be found in Appendix \ref{app:elbo}. 
 \begin{align*}
-	& \E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}] = -\frac{1}{2}\nsum \ksum r_{nk} \Big\{ \left( \ln (2\pi) - \psi(a_k) + \psi(b_k)\right)  + \frac{a_k}{b_k}(y_n - \transpose{x_n}m_k)^2 + \transpose{x_n}\mathrm{V}_k^{-1}x_n \Big\} \\
+	& \E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}] = -\frac{1}{2}\nsum \ksum r_{nk} \Big\{ \ln (2\pi) - \psi(a_k) - \psi(b_k)  + \frac{a_k}{b_k}(y_n - \transpose{x_n}m_k)^2 + \transpose{x_n}\mathrm{V}_k^{-1}x_n \Big\} \\
 	 & \E[\ln \pr{\mathbf{Z} \given \mathbf{X}, \boldgamma}] = \nsum \ksum r_{nk} \left( \transpose{x_n}\mu_k - \alpha_n - \varphi_n \right) \\
-	 & \E[\ln \pr{\boldgamma}] = \frac{K \cdot D}{2} \ln (2\pi) - \frac{1}{2} \ksum \transpose{\mu_k}\mu_k \\
+	 & \E[\ln \pr{\boldgamma}] = - \frac{K \cdot D}{2} \ln (2\pi) - \frac{1}{2} \ksum \transpose{\mu_k}\mu_k \\
 	 & \E[\ln \pr{\boldbeta, \boldtau}] = \ksum -\frac{D}{2}\ln(2\pi) + \left( \frac{D}{2} + a_0 - 1 \right) (\psi(a_k) - \psi(b_k)) + \ln |\Lambda_0| + \ln \frac{b_0^{a_0}}{\Gamma(a_0)} \\
 	& \qquad \qquad \qquad \qquad  -\frac{1}{2} \Big\{ \frac{a_k}{b_k} \transpose{(m_k - m_0)} \Lambda_0 (m_k - m_0) + \mathrm{tr}\left( \Lambda_0 \mathrm{V}_k^{-1}\right)\Big\} \\
 	& \E[\ln q(\mathbf{Z})] =  \nsum \ksum r_{nk} \ln r_{nk} \\
@@ -201,6 +201,8 @@ Each of the seven expectations can be expressed as follows. Details for each cal
 	& \E[\ln q(\boldgamma)] = \sum_{k} \ln|\mathrm{Q}_k| - \frac{D}{2}(\ln (2\pi) + 1)
 \end{align*}
 
+
+\newpage
 
 \section{Algorithm}
 
@@ -226,22 +228,16 @@ Using the updates discussed in the previous section, we can formalize the variat
    }
   \texttt{}
 
-  \For{$k \in \{1, \ldots, K\}$}{ %% order of the following updates matters
-      \For{$n \in \{1, \ldots, N\}$}{
+  %% update variational parameters for determining variational distribution of gamma
+  \For{$n \in \{1, \ldots, N\}$}{ %% order of the following updates matters
+      \For{$k \in \{1, \ldots, K\}$}{
           % update xi_1k, ... xi_Nk
 	      Set $\xi_{nk} \leftarrow \sqrt{(\transpose{x_n}\mu_k - \alpha_n)^2 + \transpose{x_n}\mathrm{Q}_k^{-1} x_n}$\;          
        }
+       
+       Set $\alpha_{n} \leftarrow \dfrac{\frac{1}{2} \left( \frac{K}{2} - 1\right) + \ksum \lambda(\xi_{nk}) \transpose{\mu_k} x_n }{\sum_{k} \lambda(\xi_{nk})}$\;
    }
 
-   \texttt{}
-   
-   % need separate loop for this b/c each alpha_n needs knowledge of the sum over k of lambda(xi_{nk}
-   \For{$n \in \{1, \ldots, N\}$}{ 
-       \texttt{}
-       
-       % update alpha_1,...,alpha_N
-       Set $\alpha_{n} \leftarrow \dfrac{\frac{1}{2} \left( \frac{K}{2} - 1\right) + \ksum \lambda(\xi_{nk}) \transpose{\mu_k} x_n }{\sum_{k} \lambda(\xi_{nk})}$\;  
-   }
    
    \texttt{}
    
@@ -277,21 +273,21 @@ Using the updates discussed in the previous section, we can formalize the variat
 
 \appendix
 %%%%% details for updating q(Z) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{ } 
+\section{Variational Update for $q(\mathbf{Z})$} 
 \label{app:q_z}
 
 Taking the expectation with respect to the other variational parameters, we can derive the following variational distribution for $\mathbf{Z}$,
 \begin{align*}
-	\ln q^{*}(\mathbf{Z}) &= \sum_n \sum_k z_{nk} \Bigg\{  -\frac{1}{2}\ln(2\pi) + \frac{1}{2} E_{q(\boldsymbol\tau)}[ \ln \tau_k ] - \frac{1}{2} E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] \\ 
-	&\qquad \qquad \qquad \quad + x_n^{\tr}E_{q(\boldsymbol\gamma)}[\gamma_k] - E_{q(\boldsymbol\gamma)}\Bigg[\ln ( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \})\Bigg]\Bigg\} \\
+	\ln q^{*}(\mathbf{Z}) &= \sum_n \sum_k z_{nk} \Bigg\{  -\frac{1}{2}\ln(2\pi) + \frac{1}{2} \E_{q(\boldsymbol\tau)}[ \ln \tau_k ] - \frac{1}{2} \E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] \\ 
+	&\qquad \qquad \qquad \quad + x_n^{\tr}\E_{q(\boldsymbol\gamma)}[\gamma_k] - \E_{q(\boldsymbol\gamma)}\Bigg[\ln ( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \})\Bigg]\Bigg\} \\
 	&= \sum_n \sum_k z_{nk} \ln \rho_{nk}
 \end{align*}
 where we have defined 
 
 \begin{equation} \label{eq:ln_rho}
 \begin{split}
- \ln \rho_{nk} = &-\frac{1}{2}\ln(2\pi) + \frac{1}{2} E_{q(\boldsymbol\tau)}[ \ln \tau_k ] - \frac{1}{2} E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] \\ 
-	& + x_n^{\tr}E_{q(\boldsymbol\gamma)}[\gamma_k] - E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg]
+ \ln \rho_{nk} = &-\frac{1}{2}\ln(2\pi) + \frac{1}{2} \E_{q(\boldsymbol\tau)}[ \ln \tau_k ] - \frac{1}{2} \E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] \\ 
+	& + x_n^{\tr}\E_{q(\boldsymbol\gamma)}[\gamma_k] - \E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg]
 \end{split}
 \end{equation}
 
@@ -312,8 +308,8 @@ From the results derived in Appendix \ref{app:beta_tau}, we know that $q^{*}(\ta
 Again from Appendix \ref{app:beta_tau}, we can then compute the following expectation with respect to $q^{*}(\beta_k, \tau_k)$.
 \begin{equation} \label{eq:exp_taubeta}
 \begin{split}
-	E_{q(\boldsymbol\beta, \boldsymbol\tau)}\big[\tau_k (y_n - x_n^{\tr}\beta_k)^2\big] &= 
-	E \bigg[\tau_k \left( y_n - m_k^{\tr} x_n x_n^{\tr} m_k + \mathrm{tr} \left(x_n x_n^{\tr}\left(\tau_k V_k \right)^{-1} \right) - 2y_n x_n^{\tr} m_k \right) \bigg] \\
+	\E_{q(\boldsymbol\beta, \boldsymbol\tau)}\big[\tau_k (y_n - x_n^{\tr}\beta_k)^2\big] &= 
+	\E \bigg[\tau_k \left( y_n - m_k^{\tr} x_n x_n^{\tr} m_k + \mathrm{tr} \left(x_n x_n^{\tr}\left(\tau_k V_k \right)^{-1} \right) - 2y_n x_n^{\tr} m_k \right) \bigg] \\
 	&=  \frac{a_k}{b_k} \left(y_n^2 + m_k^{\tr}x_nx_n^{\tr} m_k \right) + \mathrm{tr} \left( x_n x_n^{\tr} V_k^{-1}\right) \\
 	&= \frac{a_k}{b_k}(y_n + m_k^{\tr}x_n)^2 + x_n^{\tr} V_k^{-1} x_n
 \end{split}
@@ -322,25 +318,25 @@ Again from Appendix \ref{app:beta_tau}, we can then compute the following expect
 
 From the expression derived in (\ref{eq:gamma_params}) of Appendix \ref{app:gamma}, we have $q^{*}(\gamma_k) = \mathcal{N}(\gamma_k \given \mu_k, \mathrm{Q}_k^{-1})$, then we have
 \begin{equation} \label{eq:exp_gamma}
-	E_{q(\gamma_k)}[\gamma_k] = \mu_k
+	\E_{q(\gamma_k)}[\gamma_k] = \mu_k
 \end{equation}
 
 Using the bound discussed in Appendix \ref{app:gamma}, equation (\ref{eq:jj_bound}), we can then compute the following expectation with respect to $q^{*}(\boldsymbol\gamma)$.
 \begin{equation} \label{eq:exp_lse_gamma}
 \begin{split}
-	& \mathrm{E}_{q(\boldsymbol\gamma)} \Bigg[ \ln \left( \sum_{j}^K \exp \{ x_n^{\tr} \gamma_j \}\right) \Bigg] \\
-	& \approx \mathrm{E}_{q(\boldsymbol\gamma)} \Bigg[ \alpha_n + \sum_{j = 1}^K \frac{x_n^{\intercal} \gamma_j - \alpha_n + \xi_{nj}}{2} + \lambda(\xi_{nj}) \left( (x_n^{\intercal} \gamma_j - \alpha_n)^2 - \xi_{nj}^2\right) + \log \left( 1 + e^{\xi_{nj}}\right) \Bigg] \\
+	& \E_{q(\boldsymbol\gamma)} \Bigg[ \ln \left( \sum_{j}^K \exp \{ x_n^{\tr} \gamma_j \}\right) \Bigg] \\
+	& \approx \E_{q(\boldsymbol\gamma)} \Bigg[ \alpha_n + \sum_{j = 1}^K \frac{x_n^{\intercal} \gamma_j - \alpha_n + \xi_{nj}}{2} + \lambda(\xi_{nj}) \left( (x_n^{\intercal} \gamma_j - \alpha_n)^2 - \xi_{nj}^2\right) + \log \left( 1 + e^{\xi_{nj}}\right) \Bigg] \\
 	& = \alpha_n + \sum_{j}^K \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) + \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_k)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}})
 \end{split}
 \end{equation}
 
-Gathering the results in (\ref{eq:exp_lntau}), (\ref{eq:exp_taubeta}), (\ref{eq:exp_gamma}), and (\ref{eq:exp_lse_gamma}), and substituting these into (\ref{eq:ln_rho}), we can compute $E[z_{nk}] = r_{nk}$ in closed form. 
+Gathering the results in (\ref{eq:exp_lntau}), (\ref{eq:exp_taubeta}), (\ref{eq:exp_gamma}), and (\ref{eq:exp_lse_gamma}), and substituting these into (\ref{eq:ln_rho}), we can compute $\E[z_{nk}] = r_{nk}$ in closed form. 
 
 
 % \newpage
 
 %%%%% details for updating q(Z) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{ } \label{app:gamma}  
+\section{Variational Updates for $q(\gamma_k)$} \label{app:gamma}  
 % contains details for using the Bouchard bound
 
 % Note: in this sample, the section number is hard-coded in. Following
@@ -386,7 +382,7 @@ The additional parameters introduced in the two upper bounds can be updated usin
 
 
 %%%%% details for updating q(beta, tau) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{ } \label{app:beta_tau}  
+\section{Variational Updates for $q(\beta_k, \tau_k)$} \label{app:beta_tau}  
 Using results from Appendix \ref{app:q_z}, we can write the following expression for the joint variational distribution of $(\beta_k, \tau_k)$, 
 \begin{equation} \label{eq:lnq_beta_tau}
 \begin{split}
@@ -395,7 +391,7 @@ Using results from Appendix \ref{app:q_z}, we can write the following expression
 \end{split}
 \end{equation}
 
-We first consider terms on the right hand side of (\ref{eq:lnq_beta_tau}) that depend on $beta_k$ to find $\ln q^{\star}(\beta_k \given \tau_k)$, giving
+We first consider terms on the right hand side of (\ref{eq:lnq_beta_tau}) that depend on $\beta_k$ to find $\ln q^{\star}(\beta_k \given \tau_k)$, giving
 \begin{equation} \label{eq:lnq_beta}
 	\ln q^{\star}(\beta_k \given \tau_k) = -\frac{\tau_k}{2} \transpose{\beta_k} \Big[ \sum_{n}r_{nk} x_n \transpose{x_n} + \Lambda_0 \Big] \beta_k + \tau_k \transpose{\beta_k} \Big[ \sum_{n} r_{nk}y_n x_n + \Lambda_0 m_0 \Big]
 \end{equation}
@@ -439,29 +435,35 @@ The expression for $b_k$ arises by noting that the three following simplificatio
 
 where the first equality holds by expanding $\transpose{m_k} \mathrm{V}_k m_k = \transpose{\zeta_k} \left( \mathrm{V}_k^{-1}\right)^{\intercal} \mathrm{V}_k \mathrm{V}_k^{-1} \zeta_k = \transpose{b_k} \mathrm{V}_k^{-1} \zeta_k$. The second quality holds by recalling the definition of $\mathrm{V}_k$ in (\ref{eq:beta_params}), and the third equality holds by observing from (\ref{eq:beta_params}) that $\mathrm{V}_{k} m_k = \zeta_k$
 
-\section{ } \label{app:elbo}  %% EBLO DERIVATION
+\section{Variational Lower Bound} \label{app:elbo}  %% EBLO DERIVATION
 
+% log marginal likelihood: ln p ( y | X, beta, tau, Z)
 \begin{equation} \label{eq:e1_deriv}
 \begin{split}
-	\E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}] &= 
+	\E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}] &= \nsum \ksum \E[z_{nk}] \E \Bigg[ \ln \mathcal{N}(y_n \given \transpose{x_n} \beta_k, \tau_k^{-1}\Bigg]  \\
+	&= -\frac{1}{2} \nsum \ksum r_{nk} \Big\{ \ln(2 \pi) - \E[\ln \tau_k] + \E[\tau_k \left( y_n - \transpose{x_n} \beta_k\right)^2]\Big\} \\
+	&= -\frac{1}{2}\nsum \ksum r_{nk} \Big\{ \ln (2\pi) - (\psi(a_k) + \psi(b_k)) + \transpose{x_n}\mathrm{V}_k^{-1}x_n \\ & \qquad \qquad + \frac{a_k}{b_k}(y_n - \transpose{x_n}m_k)^2 \Big\}
 \end{split}
 \end{equation}
 
 \begin{equation} \label{eq:e2_deriv}
 \begin{split}
-	\E[\ln \pr{\mathbf{Z} \given \mathbf{X}, \boldgamma}] &=
+	\E[\ln \pr{\mathbf{Z} \given \mathbf{X}, \boldgamma}] &= \E[z_{nk}] \left( \E[\transpose{x_n} \gamma_k] - \E\Big[\ln \sum_{j} \exp \{ \transpose{x_n}\gamma_j\}\Big]\right)\\
+	&\approx \nsum \ksum r_{nk} \left( \transpose{x_n}\mu_k - \alpha_n - \varphi_n \right)
 \end{split}
 \end{equation}
-
+$\varphi_n = \sum\limits_{j=1}^K \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) + \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_k)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}})$
+Here, we make use of the result in (\ref{eq:exp_lse_gamma}), where we take the expectation of the upper bound previously derived. 
 \begin{equation} \label{eq:e3_deriv}
 \begin{split}
-	\E[\ln \pr{\boldgamma}] &= \ksum \frac{D}{2} \ln (2\pi) - \frac{1}{2} \transpose{\mu_k}\mu_k
+	\E[\ln \pr{\boldgamma}] &= \ksum \E \Big[ \ln \mathcal{N}\left( \gamma_k \given 0, \eye_D\right)\Big] \\
+	&= -\frac{K \cdot D}{2} \ln (2\pi) - \frac{1}{2} \ksum \transpose{\mu_k}\mu_k
 \end{split}
 \end{equation}
-
 \begin{equation} \label{eq:e4_deriv}
 \begin{split}
-	\E[\ln \pr{\boldbeta, \boldtau}] &= 
+	\E[\ln \pr{\boldbeta, \boldtau}] &= \ksum \E\Big[\ln \mathcal{N}\left( \beta_k \given m_0, \left(\tau_k \Lambda_0 \right)^{-1} \right)\Big] + \E\Big[\ln \mathrm{Ga}\left( \tau_k \given a_0, b_0\right)\Big]\\
+	&= \ksum -\frac{D}{2}\ln(2\pi) + \left( \frac{D}{2} + a_0 - 1 \right) (\psi(a_k) - \psi(b_k)) + \ln |\Lambda_0| + \ln \frac{b_0^{a_0}}{\Gamma(a_0)}
 \end{split}
 \end{equation}
 
@@ -483,7 +485,8 @@ where $C(a_k, b_k) = \left(\frac{D}{2} + a_k - 1)(\psi(a_k) - \psi(b_k)\right) +
 
 \begin{equation} \label{eq:e7_deriv}
 \begin{split}
-	\E[\ln q(\boldgamma)] &= \sum_{k} \ln|\mathrm{Q}_k| - \frac{D}{2}(\ln (2\pi) + 1)
+	\E[\ln q(\boldgamma)] &= \ksum \E \Big[ \mathcal{N} \left( \gamma_k \given \mu_k, \mathrm{Q}_{k}^{-1} \right)\Big] \\
+	&= \sum_{k} \ln|\mathrm{Q}_k| - \frac{D}{2}(\ln (2\pi) + 1)
 \end{split}
 \end{equation}
 
