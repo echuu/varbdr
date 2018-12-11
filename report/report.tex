@@ -18,6 +18,8 @@
 \usepackage[noend]{algpseudocode}
 
 \setlength{\parindent}{0pt}
+
+
 % Definitions of handy macros can go here
 
 %\usepackage[style=authoryear]{biblatex}
@@ -25,6 +27,7 @@
 %\renewcommand*{\nameyeardelim}{\addcomma\space}
 
 \usepackage[style=authoryear]{biblatex}
+\setlength\bibitemsep{2\itemsep}
 \addbibresource{sample.bib}
 \renewcommand*{\nameyeardelim}{\addcomma\addspace}
 
@@ -49,7 +52,7 @@
 
 \usepackage{setspace}
 \let\Algorithm\algorithm
-\renewcommand\algorithm[1][]{\Algorithm[#1]\setstretch{1.1}}
+\renewcommand\algorithm[1][]{\Algorithm[#1]\setstretch{1.05}}
 
 
 \newcommand{\pr}[1]{p \left( #1 \right)}
@@ -75,7 +78,7 @@
 \maketitle
 
 \begin{abstract}%   <- trailing '%' for backward compatibility of .sty file
-In the Bayesian density regression problem, mixture of expert models are often used because of their flexibility in estimating conditional densities. In this paper, we discuss the case when covariate dependent weights are used in the approximating mixture density. Under this framework, however, traditional Bayesian methods results in computational difficulties when the dimension of the covariates is large. In order to remedy this problem and to provide a method for faster inference, we propose using a variational approximation to estimate the conditional density. We also discuss different alternative for approximating quantities that lack a closed form so that a coordinate ascent algorithm is viable.
+In the Bayesian density regression problem, a mixture of experts model is often used because of the high flexibility in estimating conditional densities. In this paper, we discuss the case when covariate dependent weights are used in the approximating mixture density. Under this framework, however, traditional Bayesian methods result in computational difficulties when the dimension of the covariates is large. In order to remedy this problem and to provide a method for faster inference, we propose using a variational approximation to estimate the conditional density. We also discuss upper bounds for approximating quantities that lack a closed form so that a coordinate ascent algorithm is viable.
 \end{abstract}
 
 \begin{keywords}
@@ -89,14 +92,20 @@ In the Bayesian density regression problem, we observe data $\left(y_n, x_n \rig
 	f(y \given x) = \sum_{k} \pi_k \mathcal{N} \left(y \given \mu_k(x), \tau_k^{-1} \right)
 \end{equation}
 
-While the representation of the density using predictor-independent weights yields less expensive computation, it often lacks flexibility to make it useful in practice and results in a reliance on have too many mixture components. As a result, there have been many proposed models that consider predictor-dependent weights using a kernel stick-breaking process \parencite{dunsonpark:08} or logit stick-breaking prior \parencite{durante:17} to generate the weights. In the former method, the increased flexibility comes at heavy computational cost, and in the later method, the process from which the weights are generated does not allow for intuitive inference on the covariates. In our proposed model, the covariates enter through a logistic link function so that we can naturally perform inference on the coefficients. More specifically, we can model
+While the representation of the density using predictor-independent weights yields less expensive computation, this approach often lacks flexibility to make it useful in practice and results in a reliance on have too many mixture components. As a result, there have been many proposed models that consider predictor-dependent weights. Some examples include using a kernel stick-breaking process \parencite{dunsonpark:08} or logit stick-breaking prior \parencite{durante:17} to generate the covariate-dependent weights. In the former method, the increased flexibility comes at heavy computational cost, and in the latter method, the process from which the weights are generated does not allow for intuitive inference. In our proposed model, the covariates enter the weights through a logistic link function so that we can naturally perform inference on the coefficients. More specifically, we can model
 \begin{equation} \label{eq:covdep_gm}
 	 f(y \given x) = \sum_{k}^{K} \pi_k(x) \mathcal{N} \left( y \given \mu_k(x), \tau_k^{-1} \right) 
 \end{equation} 
-where $\mu_k(x) = \transpose{x} \beta_k$ and $\pi_{k} \propto \exp(\transpose{x} \gamma_k)$. 
+where and $\pi_{k} \propto \exp(\transpose{x} \gamma_k)$. In order to perform fast inference on the model parameters, we adopt a variational approach to obtain an approximating distribution to the true posterior. Using this covariate-dependent setup, however, introduces a problem in the traditional coordinate ascent algorithm such that it prevents closed form updates of the variational distributions. In section \ref{sec:priors}, we give an overview of the priors used in the problem. In section \ref{sec:variational}, we consider the family of variational distributions that we use to approximate the true posterior. We then propose a way to obtain closed form updates by considering an upper bound on the problematic quantity, and in section \ref{alg1}, we formulate the complete algorithm. Finally, we discuss potential shortcomings of the proposed algorithm and other bounds that could be used to obtain more accurate approximating distributions.
 
-\section{Notation and Prior Specification}
-For the set of observed data, we denote $\mathbf{y} = \{y_1, \ldots, y_N \}, \mathbf{X} = \{ x_1, \ldots, x_N \}$, where each $x_n \in \R^{D}$. Let $\boldbeta = \{ \beta_1, \ldots, \beta_K\}$ and $\boldgamma = \{ \gamma_1, \ldots, \gamma_k\}$ denote the $D$-dimensional coefficient vectors  in the mixture weights and in gaussian mixture components, respectively. Finally, let $\boldtau = \{ \tau_1, \ldots, \tau_k \}$ denote the precision parameters. We introduce the set of latent variables $\mathbf{Z} = \{ z_1, \ldots, z_N \}$, where $z_n \in \R^K$ and $z_{nk} = 1$ if $y_n$ belongs to the $k$-th cluster so that $\sum_{k} z_{nk} = 1$. Conditioning on this additional variable $\mathbf{Z}$, we have the following simplified form of the marginal likelihood. 
+\section{Notation and Prior Specification} \label{sec:priors}
+For the set of observed data, we denote $\mathbf{y} = \{y_1, \ldots, y_N \}, \mathbf{X} = \{ x_1, \ldots, x_N \}$, where each $x_n \in \R^{D}$. Let $\boldbeta = \{ \beta_1, \ldots, \beta_K\}$ and $\boldgamma = \{ \gamma_1, \ldots, \gamma_k\}$ denote the $D$-dimensional coefficient vectors  in the mixture weights and in gaussian mixture components, respectively. Finally, let $\boldtau = \{ \tau_1, \ldots, \tau_k \}$ denote the precision parameters. The mixture density can then be written explicitly as
+
+\begin{equation} \label{eq:mix_density}
+	 \pr{y_n \given x_n, \boldbeta, \boldtau} = \ksum \pi_k(x_n) \mathcal{N} \left( y_n \given \transpose{x_n}\beta_k, \tau_k^{-1} \right), \quad \pi_k(x_n) = \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sum\limits_{j=1}^{K} \exp\{ \transpose{x_n} \gamma_j\}}
+\end{equation}
+
+We can simplify the form of the density by introducing the set of latent variables $\mathbf{Z} = \{ z_1, \ldots, z_N \}$, where $z_n \in \R^K$ and $z_{nk} = 1$ if and only if $y_n$ belongs to the $k$-th cluster so that $\sum_{k} z_{nk} = 1$. Conditioning on this additional variable $\mathbf{Z}$, we have the following density, 
 
 %% should probably include a figure displaying the graphical model, similar ot the one shown on p.475 (Bishop)
 
@@ -109,26 +118,33 @@ For the set of observed data, we denote $\mathbf{y} = \{y_1, \ldots, y_N \}, \ma
 	\nprod \kprod \left( \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sumexp}\right)^{z_{nk}}
 \end{equation}
 
-Next, we introduce the priors over the parameters $\boldbeta, \boldtau, \boldgamma$, where we simplify the calculations by considering conjugate priors. 
+Next, we introduce the priors over the parameters $\boldbeta, \boldtau, \boldgamma$, where we simplify the calculations by considering conjugate priors. For ease of computation, we consider an independent standard normal prior on $\gamma_k$'s, given by
 
 \begin{equation} \label{eq:gamma_prior}
-	 p(\boldgamma) = \kprod p(\gamma_k) = \mathcal{N} \left( \gamma_k \given 0, \eye_D \right)
+\begin{split}
+	 p(\boldgamma) = \kprod p(\gamma_k) = \kprod \mathcal{N} \left( \gamma_k \given 0, \eye_D \right)
+\end{split}
 \end{equation}
+
+For $(\boldbeta, \boldtau)$, we consider an independent normal-gamma prior, given by
 
 \begin{equation} \label{eq:betatau_prior}
-	 p\left( \boldbeta, \boldtau \right) = \prod_{k} p(\beta_k, \tau_k) = \kprod p(\beta_k \given \tau_k) p(\tau_k) = 
-	 \kprod \mathcal{N} \left( \beta_k \given m_0, (\tau_k \Lambda_0)^{-1} \right) \mathrm{Ga} \left( \tau_k \given a_0, b_0 \right)
+\begin{split}
+	 p\left( \boldbeta, \boldtau \right) = \pr{\boldbeta \given \boldtau} = \prod_{k} \kprod \mathcal{N} \left( \beta_k \given m_0, (\tau_k \Lambda_0)^{-1} \right) \mathrm{Ga} \left( \tau_k \given a_0, b_0 \right)
+\end{split}
 \end{equation}
 
+Note that in the case where the mixture weights are covariate-independent, a Dirichlet prior is typically used for the mixing weights, $\pi_1, \ldots, \pi_K$. In this case, however, the mixing weights are fully specified by $\mathbf{X}$ and $\boldgamma$, so we need only place a prior on $\boldgamma$. 
 
-\section{Variational Distribution}
-At this point, the variational parameters of interest are $\boldsymbol \theta = (\mathbf{Z}, \boldbeta, \boldtau, \boldgamma)$. The log of the joint distribution of these random variables is given by
+
+\section{Variational Distribution} \label{sec:variational}
+At this point, the variational parameters of interest are $\boldsymbol \theta = (\mathbf{Z}, \boldbeta, \boldtau, \boldgamma)$. The log of the joint distribution of these random variables (written up to constants) is given by
 \begin{equation} \label{eq:joint}
 \begin{split}
-	\ln \bigg\{ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} \bigg\} &= 
+	\ln  \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} &= 
 	\ln \bigg\{\pr{\mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z}, \boldsymbol\gamma}\pr{\mathbf{Z}\given \mathbf{X}, \boldgamma}\pr{\boldgamma}\pr{\boldbeta, \boldtau} \bigg\}\\
 	&= \nsum \ksum z_{nk}\bigg\{ -\frac{1}{2}\ln(2\pi) + \frac{1}{2} \ln \tau_k - \frac{\tau_k}{2} \left( y_n - \transpose{x_n}\beta_k\right)^2 \bigg\} \\
-	& + \nsum \ksum z_{nk} \bigg\{ \transpose{x_n} \gamma_k - \ln\left( \sumexp \right) \bigg\} \\
+	& + \nsum \ksum z_{nk} \bigg\{ \transpose{x_n} \gamma_k - \ln \sumexp  \bigg\} \\
 	& + \ksum  \bigg\{ -\frac{D}{2} \ln (2\pi) + \frac{D}{2} \ln \tau_k + \ln | \Lambda_0| - \frac{\tau_k}{2}\transpose{(\beta_k - m_0)} \Lambda_0 (\beta_k - m_0)\bigg\} \\
 	& + \ksum \bigg\{ (a_0 - 1) \ln \tau_k - b_0 \tau_k \bigg\}
 \end{split}
@@ -139,17 +155,36 @@ We consider the following variational distribution used to approximate the poste
 	q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma)
 \end{equation}
 
-\subsection{Coordinate Ascent Updates}
+\subsection{Coordinate Ascent Updates} \label{sec:cavi}
 
 As is standard in variational algorithms, we now seek the sequential updates of the factors in (\ref{eq:variational}). For a particular variational parameter, the optimal distribution is found by taking the expectation of the joint distribution of all the random variables with respect to all of the \textit{other} variational parameters, excluding the one of interest \parencite{bishop:06}. Proceeding this way, we arrive at the following update equation for $q(\mathbf{Z})$,
 \begin{equation} \label{eq:ln_z_update}
 	\ln q^{*}(\mathbf{Z}) = \E_{-q(\mathbf{Z})} \Big[ \ln \big\{ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}, \boldgamma} \big\} \Big]
 \end{equation}
-We adopt the convention that the expectation with respect to a negative subscript indicates an expectation taken with repect to the other variational parameters. Ignoring terms that are not functionally dependent on $\mathbf{Z}$, we can exponentiate both sides of (\ref{eq:ln_z_update}) to obtain the optimal solution for $q(\mathbf{Z})$,
+We adopt the convention that the expectation with respect to a negative subscript indicates an expectation taken with respect to the other variational parameters. Ignoring terms that are not functionally dependent on $\mathbf{Z}$, we can exponentiate both sides of (\ref{eq:ln_z_update}) to obtain the optimal solution for $q(\mathbf{Z})$,
 \begin{equation} \label{optimal_z}
 	 q^{*}(\mathbf{Z}) = \prod_{n} \prod_{k} r_{nk}^{z_{nk}}, \quad r_{nk} = \frac{\rho_{nk}}{\sum_{j} \rho_{nj}}
 \end{equation}
-For the details in this calculation, refer to the derivations in Appendix \ref{app:q_z}. The form of this discete distribution gives us $\E[z_{nk}] = r_{nk}$. If we consider the quantity $\ln \rho_{nk}$, as defined in (\ref{eq:ln_rho}) in Appendix \ref{app:q_z}, we note that the exact computation of $\ln \rho_{nk}$ involves four expectations taken with respect to the variational distribution $q(\boldbeta, \boldtau, \boldgamma)$. This distribution can be found by considering the expectation of the joint density in (\ref{eq:joint}) taken with respect to $q(\mathbf{Z})$. The resulting variational distribution can be written up to constants as shown below,
+For the details in this calculation, refer to Appendix \ref{app:q_z}. The form of this discrete distribution gives us $\E[z_{nk}] = r_{nk}$. If we consider the quantity $\ln \rho_{nk}$, defined in (\ref{eq:problem}) and discussed in more detail in Appendix \ref{app:q_z}, we note that the exact computation of $\ln \rho_{nk}$ involves four expectations taken with respect to the variational distribution $q(\boldbeta, \boldtau, \boldgamma)$. 
+
+\begin{equation} \label{eq:problem}
+\begin{split}
+ \ln \rho_{nk} = &-\frac{1}{2}\ln(2\pi) + \frac{1}{2} \E_{q(\boldsymbol\tau)}[ \ln \tau_k ] - \frac{1}{2} \E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] \\ 
+	& + x_n^{\tr}\E_{q(\boldsymbol\gamma)}[\gamma_k] - \E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg]
+\end{split}
+\end{equation}
+
+We briefly consider each of these expectations. Since we used conjugate families, we know that $\E_{q(\boldsymbol\tau)}[ \ln \tau_k ], \E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2]$, and $\E_{q(\boldsymbol\gamma)}[\gamma_k]$ will have closed form expressions. The remaining expectation, 
+$\E_{q(\boldsymbol\gamma)}\big[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \} \big]$ presents a problem in that there lacks a closed form expression. Therefore, in order to complete this update, we use the following upper bound to approximate this quantity,
+
+
+\begin{equation} \label{eq:bouchard_approx}
+	\E_{q(\boldsymbol\gamma)}\big[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \} \big] \approx \alpha_n + \varphi_n
+\end{equation}
+
+where $\varphi_n =  \sum_{j}^K \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) + \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_n)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}})$. The details for the approximation and how to find $\alpha_n$ and $\xi_{nj}$ can be found in Appendix \ref{app:gamma}. Using this in place of the problematic expectation in (\ref{eq:problem}), we are able to obtain $r_{nk}$ in closed form. \\
+
+The remaining variational distribution can be found by considering the expectation of the joint density in (\ref{eq:joint}) taken with respect to $q(\mathbf{Z})$, as derived above. The resulting variational distribution can be written up to constants as shown below,
 \begin{equation} \label{eq:ln_beta_tau_gamma}
 \begin{split}
 	\ln q^{*}(\boldbeta, \boldtau, \boldgamma) &=  \ksum \nsum  \E_{q(\mathbf{Z})}[z_{nk}] \ln \mathcal{N} \left( y_n \given \transpose{x_n} \beta_k, \tau_{k}^{-1} \right) + \ksum \ln \pr{\beta_k, \tau_k} \\
@@ -157,7 +192,7 @@ For the details in this calculation, refer to the derivations in Appendix \ref{a
 \end{split}
 \end{equation}
 
-Having just deriving the form for $q(\mathbf{Z})$, we can write out closed forms for the two expectation terms above. Noting in the summations above that the optimal distribution for $q(\boldbeta, \boldtau, \boldgamma)$ has a sum involving only the $\gamma_k$'s in the second line and a sum involving only the $(\beta_k, \tau_k)$'s in the first line of (\ref{eq:lnq_beta_tau}), we can deduce $q(\boldbeta, \boldtau, \boldgamma) = \kprod q(\beta_k, \tau_k) q(\gamma_k)$ and find the optimal distributions separately. With this factorization in mind, we can obtain the following updates for the remaining variational parameters,
+Having just deriving the form for $q(\mathbf{Z})$, we can write out closed forms for the two expectation terms above. Noting in the summations above that the optimal distribution for $q(\boldbeta, \boldtau, \boldgamma)$ has a sum involving only the $\gamma_k$'s in the second line and a sum involving only the $(\beta_k, \tau_k)$'s in the first line of (\ref{eq:ln_beta_tau_gamma}), we can deduce $q(\boldbeta, \boldtau, \boldgamma) = \kprod q(\beta_k, \tau_k) q(\gamma_k)$ and find the optimal distributions separately. With this factorization in mind, we obtain the following updates for the remaining variational parameters,
 \begin{equation} \label{optimal_beta_given_tau}
 	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(\beta_k \given m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
 \end{equation}
@@ -170,14 +205,14 @@ Having just deriving the form for $q(\mathbf{Z})$, we can write out closed forms
 	q^{*}(\gamma_k) = \mathcal{N} \left( \gamma_k \given \mu_k, \mathrm{Q}_k^{-1} \right)
 \end{equation}
 
-for $k = 1, \ldots, K$. The derivation for (\ref{optimal_beta_given_tau}) and (\ref{optimal_tau}) can be found in Appendix \ref{app:beta_tau}, and the details for (\ref{optimal_gamma}) can be found in Appendix \ref{app:gamma}. The definition of each of the variational parameters can also be found in the corresponding appendices. Now that we have closed form updates the variational distributions $q(\mathbf{Z})$ and $q(\boldbeta, \boldtau, \boldgamma)$, we can cycle through a two-step update procedure. In the first step (variational E-step), we compute the expectation of each of the $z_{nk}$'s using the variational distributions (\ref{optimal_beta_given_tau}), (\ref{optimal_tau}), and (\ref{optimal_gamma}). Then in the second step (variational M-step), we derive new optimal distributions using results from the E-step. We alternate between these two steps until the variational lower bound converges, as discussed in the Section \ref{sub:elbo}. 
+for $k = 1, \ldots, K$. The derivation and parameter definitions for (\ref{optimal_beta_given_tau}) and (\ref{optimal_tau}) can be found in Appendix \ref{app:beta_tau}, and the details for (\ref{optimal_gamma}) can be found in Appendix \ref{app:gamma}. Now that we have closed form updates for the variational distributions $q(\mathbf{Z})$ and $q(\boldbeta, \boldtau, \boldgamma)$, we can cycle through a two-step update procedure. In the first step (variational E-step), we compute the expectation of each of the $z_{nk}$'s using the variational distributions (\ref{optimal_beta_given_tau}), (\ref{optimal_tau}), and (\ref{optimal_gamma}). Then in the second step (variational M-step), we derive new optimal distributions using results from the E-step. We alternate between these two steps until the variational lower bound converges, as discussed in the section \ref{sub:elbo}. 
 
 
 \subsection{Evidence Lower Bound (ELBO)} \label{sub:elbo}
 In order to evaluate the convergence of the coordinate ascent algorithm, we can calculate the evidence lower bound using the updated variational parameters at the end of each iteration. Since the ELBO is monotonic increasing, we continue the coordinate ascent until the change in the ELBO between iterations falls below a predetermined tolerance. Note that the expectations taken below are with respect to the optimal variational distributions defined in the previous section.
 
 \begin{equation} \label{eq:ELBO}
-\setlength{\jot}{10pt}
+\setlength{\jot}{11pt}
 \begin{split}
 	\mathcal{L}(q) &= \sum_{z} \int \int \int q(\boldbeta, \boldtau, \boldgamma, \mathbf{Z})
 	\ln \Bigg\{ \frac{p(\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \boldgamma, \mathbf{Z})}{q(\boldbeta, \boldtau, \boldgamma, \mathbf{Z})}\Bigg\} d\boldbeta d\boldtau d\boldgamma \\
@@ -200,16 +235,14 @@ Details for each of the expectations can be found in Appendix \ref{app:elbo}.
 	& \E[\ln q(\boldgamma)] = - \frac{KD}{2}(\ln (2\pi) + 1) + \sum_{k} \ln|\mathrm{Q}_k|
 \end{align*}
 
-
 \newpage
 
-\section{Algorithm}
+\section{Algorithm} \label{alg1}
 
-Using the updates discussed in the previous section, we can formalize the variational algorithm below.
-
+Using the updates discussed in the previous section, we can formalize the variational algorithm below. Note that in the update of the $r_{nk}$'s, we use the approximation given in (\ref{eq:bouchard_approx}) to compute the update in closed form. 
 \begin{algorithm}[H]
 \SetAlgoLined
-\KwResult{Write here the result }
+\KwResult{An approximating distribution to the true posterior of \boldsymbol\theta}
 \textbf{Input:} Data $y_{1:N}, x_{1:N}$, number of components $K$, prior mean and precision for $\boldbeta_{1:K}$, prior shape, rate parameters for precision parameters $\tau_{1:K}$\;
 
 \textbf{Output:} A variational density $q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma) = q(\mathbf{Z}) \kprod q(\beta_k, \tau_k) q(\gamma_k)$;\
@@ -269,81 +302,34 @@ Using the updates discussed in the previous section, we can formalize the variat
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Alternative Bound}
+\section{Alternative Bound} \label{sec:alt}
+Instead of using the bound in (\ref{eq:bouchard_approx}), we can also consider the following bound which makes use of concavity of the log.
+\begin{equation} \label{eq:concave}
+	\log \sum_{k=1}^{K} e^{x_k} \leq \alpha \sum_{k=1}^{K} - \log \alpha - 1
+\end{equation}
+for any $x_k \in \R, \alpha \in \R$, where $x_k \sim q$. Taking expectation with respect to $q$, the right hand side is available in closed form (for most distributions) since $E_{q}[e^{x_k}]$ is nothing but the moment generating function of the distribution $q$. In the context of the Bayesian density regression problem, we can use bound in (\ref{eq:concave}) to obtain the following bound
 
+\begin{equation} \label{eq:alt_bound}
+\begin{split}
+	 \E_{q(\boldgamma)} \Big[ \ln \sum_{j} \exp \{ \transpose{x_n} \gamma_j \} \Big] & \leq \alpha_n 
+	 \sum_{j} \E_{q(\boldgamma)} \Big[ \exp \{ \transpose{x_n} \gamma_j \} \Big] - \log \alpha_n - 1 \\
+	 &= \alpha_n \sum_{j} \exp\Big\{ \transpose{x_n} \mu_j + \frac{1}{2} \transpose{x_n}\mathrm{Q}_j^{-1} x_n \Big\} - \log \alpha_n - 1
+\end{split}
+\end{equation}
 
-\newpage
+Choosing $\alpha_n$ to minimize the the right hand side of (\ref{eq:alt_bound}), we have
+$$\alpha_n = \left( \sum_{j} \exp\Big\{ \transpose{x_n} \mu_j + \frac{1}{2} \transpose{x_n}\mathrm{Q}_j^{-1} x_n \Big\} \right)^{-1}$$
 
-\subsection{Algorithm}
-
-\begin{algorithm}[H]
-\SetAlgoLined
-\KwResult{Write here the result }
-\textbf{Input:} Data $y_{1:N}, x_{1:N}$, number of components $K$, prior mean and precision for $\boldbeta_{1:K}$, prior shape, rate parameters for precision parameters $\tau_{1:K}$\;
-
-\textbf{Output:} A variational density $q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma) = q(\mathbf{Z}) \kprod q(\beta_k, \tau_k) q(\gamma_k)$;\
-
-\textbf{Initialize:} Variational parameters $\mathbf{m}_{1:K}, \mathrm{V}_{1:K}, \boldsymbol\mu_{1:K}, \mathrm{Q}_{1:K}, a_{1:K}, b_{1:K}, \xi_{1:N, 1:K}, \alpha_{1:N}$
-
- \While{the ELBO has not converged}{
-  
-  \For{$n \in \{1, \ldots, N\}$}{
-       \For{$k \in \{1, \ldots, K\}$}{
-       Set $r_{nk} \propto \exp \Big\{-\frac{1}{2} \ln (2\pi) + \frac{1}{2} \E[\ln \tau_k]
-       - \frac{1}{2} \E [\tau_k(y_n - \transpose{x_n}\beta_k)^2]\big + \transpose{x_n} \E[\gamma_k]$ \\
-       $\qquad - \E\Big[\ln \left( \sumexp \right)\Big]\Big\}$\;
-       }
-   }
-  \texttt{}
-
-  %% update variational parameters for determining variational distribution of gamma
-  \For{$n \in \{1, \ldots, N\}$}{ %% order of the following updates matters
-      \For{$k \in \{1, \ldots, K\}$}{
-          % update xi_1k, ... xi_Nk
-	      Set $\xi_{nk} \leftarrow \sqrt{(\transpose{x_n}\mu_k - \alpha_n)^2 + \transpose{x_n}\mathrm{Q}_k^{-1} x_n}$\;          
-       }
-       
-       Set $\alpha_{n} \leftarrow \dfrac{\frac{1}{2} \left( \frac{K}{2} - 1\right) + \ksum \lambda(\xi_{nk}) \transpose{\mu_k} x_n }{\sum_{k} \lambda(\xi_{nk})}$\;
-   }
-
-   
-   \texttt{}
-   
-   \For{$k \in \{1, \ldots, K\}$}{ %% order of the following updates matters
-   
-   \texttt{}
-   
-   Set $\mathrm{Q}_{k} \leftarrow \eye_D + 2 \sum_{n} r_{nk} \lambda(\xi_{nk}) x_n \transpose{x_n}$\; % update Q_k
-   
-   Set $\eta_k \leftarrow \sum_{n} r_{nk} \big[ \frac{1}{2} + 2\lambda(\xi_{nk}) \alpha_n \big]x_n$\; % update eta_k
-         
-   Set $\mu_k \leftarrow \mathrm{Q}_k^{-1} \eta_k$\; % update mu_k = Q_k^{-1} eta_k
-   
-   Set $\mathrm{V}_k \leftarrow \nsum r_{nk} x_n \transpose{x_n} + \Lambda_0$ \; % update V_k (update parameters of beta don't directly invvolve tau_k)
-   
-   Set $\zeta_k \leftarrow \sum_{n} r_{nk} y_n x_n + \Lambda_0 m_0$\; % update mean_of_beta_k (update parameters of beta don't directly invvolve tau_k)
-   
-   Set $m_k \leftarrow \mathrm{V}_k^{-1} \zeta_k$\; % update m_k (update parameters of beta don't directly invvolve tau_k)
-   
-   Set $a_k \leftarrow a_0 + N_k$\; % update a_k
-   
-   Set $b_k \leftarrow b_0 + \frac{1}{2}[\nsum r_{nk} y_n^2 + \transpose{m_0}\Lambda_0 m_0 - \transpose{\zeta_k} \mathrm{V}_k^{-1} \zeta_k]$\; % update b_k --> this one last since it involves V_k, and mean of beta_k
-   }
-   Compute ELBO using updated parameters
- } % end of while
- \Return $q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right)$
- \caption{CAVI for Conditional Density Estimation}
-\end{algorithm}
+Then, $\alpha_n$ can be updated as an additional variational to the coordinate ascent algorithm. Note that the only changes that we would have to make in the algorithm presented in section \ref{alg1} are the expectation used to update $r_{nk}$, the updates for $\alpha_n$ in the second set of for loops, and mean/precision components of $q(\gamma_k)$. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}
+In this project, we focused on one primary approximation to the difficult-to-compute expectation of the log sum of exponentials, $\E_{q(\boldsymbol\gamma)}\big[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \} \big]$. 
+Alternatively, we also considered a simpler bound in section \ref{sec:alt}, which only requires us to compute moment generating functions. As has been noted in previous work and simulations, the former bound provides better approximations when the variance of $q(\boldgamma)$ is extremely large because the approximation is asymptotically optimal \parencite{bouchard:07}, but in most other cases, the performance deteriorated \parencite{Depraetere:17}. Although both of these methods require additional variational parameters, this increase in model complexity is offset by the faster inference that variational Bayesian methods provide. As a result, even though each iteration involves $2K$ ($D \times D$)-matrix inversions to update the variational distributions for $\beta_k$ and $\gamma_k$, we expect the number of iterations in the coordinate ascent algorithm to be far fewer than if we use a traditional Gibbs sampling scheme. \\
 
-
-
-
-\subsection{Future Work}
+While we only considered two candidate approximations in this project, there are numerous ways to approach the problem. Although in a slightly different context, Depraeteret and Vandebroek (2017) provide several approximations to the same quantity of interest, all of which admit closed form updates so that variational Bayesian methods are tractable. 
 
 
 % Acknowledgements should go at the end, before appendices and references
@@ -405,7 +391,7 @@ Using the bound discussed in Appendix \ref{app:gamma}, equation (\ref{eq:jj_boun
 \begin{split}
 	& \E_{q(\boldsymbol\gamma)} \Bigg[ \ln \left( \sum_{j}^K \exp \{ x_n^{\tr} \gamma_j \}\right) \Bigg] \\
 	& \approx \E_{q(\boldsymbol\gamma)} \Bigg[ \alpha_n + \sum_{j = 1}^K \frac{x_n^{\intercal} \gamma_j - \alpha_n + \xi_{nj}}{2} + \lambda(\xi_{nj}) \left( (x_n^{\intercal} \gamma_j - \alpha_n)^2 - \xi_{nj}^2\right) + \log \left( 1 + e^{\xi_{nj}}\right) \Bigg] \\
-	& = \alpha_n + \sum_{j}^K \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) + \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_k)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}})
+	& = \alpha_n + \sum_{j}^K \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) + \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_n)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}})
 \end{split}
 \end{equation}
 
@@ -531,7 +517,7 @@ As seen in (\ref{eq:ELBO}) of section \ref{sub:elbo}, we need to calculate seven
 	&\approx \nsum \ksum r_{nk} \left( \transpose{x_n}\mu_k - \alpha_n - \varphi_n \right)
 \end{split}
 \end{equation}
-where $\varphi_n = \sum\limits_{j=1}^K \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) + \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_k)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}}).$
+where $\varphi_n = \sum\limits_{j=1}^K \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) + \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_n)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}}).$
 Here, we make use of the result in (\ref{eq:exp_lse_gamma}), where we take the expectation of the upper bound previously derived. 
 \begin{equation} \label{eq:e3_deriv}
 \begin{split}
@@ -574,6 +560,6 @@ since $\E[\transpose{(\gamma_k - \mu_k)}\mathrm{Q}_{k}(\gamma_k - \mu_k)] = D$.
 
 
 \vskip 0.2in
-\bibliography{sample}
+\printbibliography
 
 \end{document}

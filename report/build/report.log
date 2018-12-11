@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.11.17)  11 DEC 2018 01:15
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.11.17)  11 DEC 2018 15:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -678,7 +678,7 @@ See the biblatex package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.66 \begin{document}
+l.69 \begin{document}
                      
 The 'natbib' package and biblatex are incompatible.
 
@@ -690,23 +690,23 @@ File: english.lbx 2017/12/19 v3.10 biblatex localization (PK/JW/AB)
 \@quotelevel=\count314
 \@quotereset=\count315
 
-(./report.aux)
+(build/report.aux)
 \openout1 = `report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 66.
-LaTeX Font Info:    ... okay on input line 66.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 66.
-LaTeX Font Info:    ... okay on input line 66.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 66.
-LaTeX Font Info:    ... okay on input line 66.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 66.
-LaTeX Font Info:    ... okay on input line 66.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 66.
-LaTeX Font Info:    ... okay on input line 66.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 66.
-LaTeX Font Info:    ... okay on input line 66.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 66.
-LaTeX Font Info:    ... okay on input line 66.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -739,7 +739,7 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 \AtBeginShipoutBox=\box39
-Package hyperref Info: Link coloring OFF on input line 66.
+Package hyperref Info: Link coloring OFF on input line 69.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
@@ -749,11 +749,11 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count322
 )
-LaTeX Info: Redefining \ref on input line 66.
-LaTeX Info: Redefining \pageref on input line 66.
-LaTeX Info: Redefining \nameref on input line 66.
+LaTeX Info: Redefining \ref on input line 69.
+LaTeX Info: Redefining \pageref on input line 69.
+LaTeX Info: Redefining \nameref on input line 69.
 
-(./report.out) (./report.out)
+(build/report.out) (build/report.out)
 \@outlinefile=\write5
 \openout5 = `report.out'.
 
@@ -767,12 +767,12 @@ Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'report.bbl' not found.
 
 No file report.bbl.
-Package biblatex Info: Reference section=0 on input line 66.
-Package biblatex Info: Reference segment=0 on input line 66.
+Package biblatex Info: Reference section=0 on input line 69.
+Package biblatex Info: Reference segment=0 on input line 69.
 ! Undefined control sequence.
 \@maketitle ...p \noindent \@starteditor \@editor 
                                                   \@endeditor \vskip \afterm...
-l.76 
+l.79 
      
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -780,41 +780,58 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-LaTeX Font Info:    Try loading font information for U+msa on input line 87.
+LaTeX Font Info:    Try loading font information for U+msa on input line 90.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 87.
+LaTeX Font Info:    Try loading font information for U+msb on input line 90.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 
-LaTeX Warning: Citation 'dunsonpark:08' on page 1 undefined on input line 92.
+LaTeX Warning: Citation 'dunsonpark:08' on page 1 undefined on input line 95.
 
 
-LaTeX Warning: Citation 'durante:17' on page 1 undefined on input line 92.
+LaTeX Warning: Citation 'durante:17' on page 1 undefined on input line 95.
 
 [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (2.71431pt too wide) detected at line 135
-[]
- []
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
 
+LaTeX Warning: Citation 'bishop:06' on page 3 undefined on input line 160.
 
-LaTeX Warning: Citation 'bishop:06' on page 2 undefined on input line 144.
+[3]
+Underfull \hbox (badness 10000) in paragraph at lines 185--186
 
-[2] [3]
-Overfull \hbox (36.43427pt too wide) detected at line 201
-[]
  []
 
 [4]
+Overfull \hbox (36.43427pt too wide) detected at line 236
+[]
+ []
+
+[5]
+! Missing $ inserted.
+<inserted text> 
+                $
+l.245 ... the true posterior of \boldsymbol\theta}
+                                                  
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.245 ... the true posterior of \boldsymbol\theta}
+                                                  
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
 ! Missing delimiter (. inserted).
 <to be read again> 
                    +
-l.265  \Return
+l.298  \Return
                $q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right)$
 I was expecting to see something like `(' or `\{' or
 `\}' here. If you typed, e.g., `{' instead of `\{', you
@@ -824,44 +841,38 @@ Acceptable delimiters are characters whose \delcode is
 nonnegative, or you can use `\delimiter <delimiter code>'.
 
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 266.
+put line 299.
 
-Underfull \vbox (badness 3364) has occurred while \output is active []
+Underfull \vbox (badness 7759) has occurred while \output is active []
 
- [5]
-[6]
-! Missing delimiter (. inserted).
-<to be read again> 
-                   +
-l.334  \Return
-               $q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right)$
-I was expecting to see something like `(' or `\{' or
-`\}' here. If you typed, e.g., `{' instead of `\{', you
-should probably delete the `{' by typing `1' now, so that
-braces don't get unbalanced. Otherwise just proceed.
-Acceptable delimiters are characters whose \delcode is
-nonnegative, or you can use `\delimiter <delimiter code>'.
+ [6]
+
+LaTeX Warning: Citation 'bouchard:07' on page 7 undefined on input line 330.
 
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
+LaTeX Warning: Citation 'Depraetere:17' on page 7 undefined on input line 330.
 
- [7]
-[8]
+
+Underfull \hbox (badness 10000) in paragraph at lines 329--331
+
+ []
+
+[7]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 355.
+(hyperref)                removing `math shift' on input line 341.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 355.
+(hyperref)                removing `math shift' on input line 341.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 379--380
+Underfull \hbox (badness 10000) in paragraph at lines 365--366
 
  []
 
 ! Misplaced alignment tab character &.
-l.384 	E_{q(\boldsymbol\tau)}[ \ln \tau_k ] &
+l.370 	E_{q(\boldsymbol\tau)}[ \ln \tau_k ] &
                                              = \psi(a_k) - \psi(b_k)
 I can't figure out why you would want to use a tab mark
 here. If you just want an ampersand, the remedy is
@@ -870,101 +881,88 @@ up above has ended a previous alignment prematurely,
 you're probably due for more error messages, and you
 might try typing `S' now just to see what is salvageable.
 
-[9]
+[8]
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 418.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\gamma' on input line 418.
+(hyperref)                removing `math shift' on input line 404.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `subscript' on input line 418.
+(hyperref)                removing `\gamma' on input line 404.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 418.
+(hyperref)                removing `subscript' on input line 404.
 
 
-LaTeX Warning: Citation 'bouchard:07' on page 10 undefined on input line 427.
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `math shift' on input line 404.
 
 
-LaTeX Warning: Citation 'jj:2001' on page 10 undefined on input line 433.
+LaTeX Warning: Citation 'bouchard:07' on page 9 undefined on input line 413.
 
 
-Overfull \hbox (15.16867pt too wide) detected at line 437
+LaTeX Warning: Citation 'jj:2001' on page 9 undefined on input line 419.
+
+
+Overfull \hbox (15.16867pt too wide) detected at line 423
 [] [] [] \OMS/cmsy/m/n/10.95 ^^T \OML/cmm/m/it/10.95 [] \OT1/cmr/m/n/10.95 + [
 ] [] + \OML/cmm/m/it/10.95 ^^U\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 ^^X[]\OT1
 /cmr/m/n/10.95 ) [] + [] []
  []
 
 
-Overfull \hbox (16.94214pt too wide) detected at line 446
+Overfull \hbox (16.94214pt too wide) detected at line 432
 []
  []
 
 
 Underfull \vbox (badness 5331) has occurred while \output is active []
 
- [10]
+ [9]
 
-LaTeX Warning: Citation 'Depraetere:17' on page 11 undefined on input line 456.
+LaTeX Warning: Citation 'Depraetere:17' on page 10 undefined on input line 442.
 
-
-
-Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 464.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\beta' on input line 464.
+(hyperref)                removing `math shift' on input line 450.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `subscript' on input line 464.
+(hyperref)                removing `\beta' on input line 450.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\tau' on input line 464.
+(hyperref)                removing `subscript' on input line 450.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `subscript' on input line 464.
+(hyperref)                removing `\tau' on input line 450.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `math shift' on input line 464.
+(hyperref)                removing `subscript' on input line 450.
 
-[11] [12] [13]
 
-! LaTeX Error: Can be used only in preamble.
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `math shift' on input line 450.
 
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.577 \bibliography
-                   {sample}
-Your command was ignored.
-Type  I <command> <return>  to replace it with another command,
-or  <return>  to continue without it.
+[10] [11] [12]
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 579.
-[14]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 579.
- (./report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 579.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 579.
+LaTeX Warning: Empty bibliography on input line 563.
+
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 565.
+[13]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 565.
+ (build/report.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 565.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 565.
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: A94123C96EE9820F8480B9D655F1EECD;848.
+(rerunfilecheck)             Checksum: <no file>.
 
 
 LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
 
 Package biblatex Warning: Please (re)run Biber on the file:
@@ -974,16 +972,16 @@ Package biblatex Warning: Please (re)run Biber on the file:
 Package logreq Info: Writing requests to 'report.run.xml'.
 \openout1 = `report.run.xml'.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 579.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 565.
  ) 
 Here is how much of TeX's memory you used:
- 14619 strings out of 492982
- 236833 string characters out of 6134895
- 691977 words of memory out of 5000000
- 17962 multiletter control sequences out of 15000+600000
+ 14630 strings out of 492982
+ 237016 string characters out of 6134895
+ 690841 words of memory out of 5000000
+ 17971 multiletter control sequences out of 15000+600000
  15597 words of font info for 57 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 39i,20n,31p,991b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 39i,20n,31p,999b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share/texli
@@ -1003,10 +1001,10 @@ ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/te
 xmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/public/amsfonts/symbols/msam7.pfb></usr/share/texlive/texmf
 -dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on report.pdf (14 pages, 255606 bytes).
+Output written on build/report.pdf (13 pages, 259364 bytes).
 PDF statistics:
- 307 PDF objects out of 1000 (max. 8388607)
- 268 compressed objects within 3 object streams
- 69 named destinations out of 1000 (max. 500000)
- 113 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 310 PDF objects out of 1000 (max. 8388607)
+ 272 compressed objects within 3 object streams
+ 70 named destinations out of 1000 (max. 500000)
+ 97 words of extra memory for PDF output out of 10000 (max. 10000000)
 
