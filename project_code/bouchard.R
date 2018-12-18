@@ -15,7 +15,7 @@ scale = 1          # scale for the covariance matrix
 
 
 set.seed(1)
-# sample mu_k ~ N(0, I_D)ye
+# sample mu_k ~ N(0, I_D)
 mu = t(mvrnorm(K, rep(0, D), I_D)) # D x K : mu_k stored column wise 
 
 # sample Sigma_k ~ W(df, 10 * I_D)
@@ -23,7 +23,7 @@ Sigma = rWishart(K, df, scale * I_D) # array of K matrices; Sigma[,,k]
 
 # generate a random sample x in R^D (from any distribution)
 mu0    = c(rnorm(D, 3, 4))
-Sigma0 = 3 * I_D 
+Sigma0 = I_D 
 x      = mvrnorm(N, rep(0, D), I_D)
 
 # compute the mc-approximate value -- this will be the baseline, what we compare
@@ -99,7 +99,7 @@ ggplot(bound_iter, aes(x = bound, y = iter)) + geom_point()
 # alpha     : 1 x 1        variational parameter used in the bound
 # K         : 1 x 1        number of clusters
 computeBound = function(mu_x, xSigmax, xi, lambda_xi, alpha, K) {
-    const     = - alpha * (0.5 * K - 1) # 1 x 1 constant term in the bound  
+    const     = - alpha * (0.5 * K - 1)   # 1 x 1 constant term in the bound  
     # lambda_xi = tanh(xi)                # K x 1 vector 
     # mu_x      = t(x) %*% mu             # K x 1 vector, k-th element is mu_k'x
     # xSigmax   = rep(0, K)
@@ -176,7 +176,7 @@ mcBound = function(x, K, D, R = 1e5, mu, Sigma, seed = 1) {
         mcSum = mcSum + log_sum_exp(t(x) %*% b_k)     # more stable calculation
     } # end of outer MC loop
     
-    return(1 / R * mcSum)
+    return(mcSum / R)
     
 } # end of mcBound() function
 
