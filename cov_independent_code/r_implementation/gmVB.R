@@ -64,7 +64,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     W_0_inv = solve(W_0)     # Compute W_0^{-1} (used in updates for W_k)
     
     # initialize storage matrices/vectors for var. parameters: z_nk, pi_k
-    r_nk      = log_r_nk = log_rho_nk = matrix(0, nrow = N, ncol = K) # N X K
+    r_nk      = log_r_nk = log_rho_nk = matrix(0, nrow = N, ncol = K) # N x K
     x_bar_k   = matrix(0, nrow = D, ncol = K)         # (D x K) Bishop 10.52
     # S_k is a K-dim array that stores (D x D) (covariance) matrices
     S_k       = W_k = array(0, c(D, D, K))           # (D x D) Bishop 10.53
@@ -106,9 +106,11 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         # update responsibilities: involves E[log(det(Lambda_k))], 
         # E[log(det(pi_k))], E[(x_n - mu_k)' W_k (x_n - mu_k)]
         
-            # above note: do we actually "update" all those expectations here?
+            # question: do we actually "update" all those expectations here?
             # it looks like the only quantity being updated here is r_nk
             # which involes the 'pre'-set values for the two other expectations
+            # answer: one of the remaining expectations is updated in the 
+            # following loop, and the rest are (again) updated at end of cavi
         
         for (k in 1:K) {
             # vectorize the operation: (x_n - mu_k), n = 1,...,N

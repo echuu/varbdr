@@ -52,9 +52,16 @@ varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda0 = I_D,
                                  # can calculate this by exponentiating 
                                  # log_rho_nk and dividing each element by the
                                  # sum of the ROW it belongs in
+    
     log_r_nk   = matrix(0, N, K) # N x K : log(r_nk)
     log_rho_nk = matrix(0, N, K) # N x K : log(rho_nk)
     
+    beta    = matrix(0, D, K)    # D x K : each beta_k stored column-wise
+    tau     = numeric(0, K)      # 1 x K : scale for each precision, V_k
+    gamma   = matrix(0, D, K)    # D x K : each gamma_k stored column-wise
+    
+    
+    # initialize distributional parameters -------------------------------------
     
     # variational parameters used to compute Q_k_inv, eta_k via Bouchard
     alpha   = numeric(N)            # N x 1 : alpha_n used to compute xi_{n,1:K}
@@ -66,10 +73,30 @@ varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda0 = I_D,
     mu_k    = matrix(0, D, K)        # D x K       mean of gamma_k
     
     # variational parameters for beta_k | tau_k
-    V_k_inv = array(0, c(D, D, K))   # K x (D x D) scaled precision for beta_k
-    zeta_k  = matrix(0, D, K)        # D x K       V_k_inv * zeta_k = m_k
-    m_k     = matrix(0, D, K)        # D x K       mean of gamma_k
+    V_k_inv = array(I_D, c(D, D, K))   # K x (D x D) scaled precision for beta_k
+    zeta_k  = matrix(0, D, K)          # D x K       V_k_inv * zeta_k = m_k
+    m_k     = matrix(0, D, K)          # D x K       mean of gamma_k
     
+    # variational parameters for tau_k
+    a_k = rep(1, K)                    # K x 1 : shape param for tau_k
+    b_k = rep(1, K)                    # K x 1 : rate param for tau_k
+
+    # sample the variational parameters tau, beta, gamma -----------------------
+    
+    # intialize variational parameters: beta_1:K, tau_1:K, gamma_1:K
+    # (1) draw tau_k ~ Ga(a_k, b_k)
+    # tau = ragamma(K, shape = a_k, rate = b_k)
+    # alternatively, just set tau_k's to 1
+    tau = rep(1, K)
+    
+    # (2) draw beta_k | tau_k ~ N(m_k, (tau_k V_k)^(-1))
+    
+    # m_k = t(kmeans(X, K, nstart = 25)$centers) --- used when y ~ N(mu_k, W_k)
+    m_k = matrix(0, D, K) # intialize means of beta_k to be 0
+    
+    # (3) draw gamma_k ~ N (mu_k, Q_k^(-1))
+    # mu_k = t(kmeans(X, K, nstart = 25)$centers)
+    mu_k = matrix(0, D, K) # intialize means of gamma_k to be 0
     
     # precompute values that are used regularly in CAVI ------------------------
     # values that are used in the r_nk update
@@ -81,13 +108,28 @@ varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda0 = I_D,
         # (2) max_iter iterations have been performed
     for (i in 2:max_iter) {
         
-    
         # Variational E-step ---------------------------------------------------
+        
+        # update responsibilities r_nk; involves E[ln tau_k], E[gamma_k],
+        # E[tau_k * (y_n - x_n'beta_k)^2], E[ln sum_j (x_n'gamma_j)]
+        
+        for (k in 1:K) {
+            
+            
+            
+        } # end of updating rho_nk
+        
+        # update E[z_nk] = r_nk ------------------------------------------------
+        # log of the normalizing constant for the rho_nk's
+        # Z = log { sum_{j=1}^{k} exp( ln rho_{nj} ) }
+        logZ     = apply(log_rho_nk, 1, log_sum_exp) # log of norm. constant
+        log_r_nk = log_rho_nk - logZ                 # log of r_nk
+        r_nk     = apply(log_r_nk, 2, exp)           # exponentiate each column
         
     
     
     
-    
+        
         # Variational M-step ---------------------------------------------------
         
         
