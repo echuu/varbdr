@@ -1,12 +1,14 @@
 
 # testResults.R
 
-set.seed(1)
+set.seed(12)
+
+# setwd to source file location
 
 source("displayResults.R")
 source("gmVB.R")
 
-View(faithful) # 272 x 2 : duration of eruption, waiting time b/w eruptions
+# View(faithful) # 272 x 2 : duration of eruption, waiting time b/w eruptions
 
 X = as.matrix(faithful)
 K = 25        # Number of clusters
