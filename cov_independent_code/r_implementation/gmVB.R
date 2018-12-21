@@ -190,40 +190,6 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         log_pi = digamma(alpha) - digamma(sum(alpha))        # (K x 1) -- 10.66 
         
         
-        ### testing this chunk -------------------------------------------------
-        ## Update expectation r_nk
-        for (k in 1:K) {
-            # vectorize the operation: (x_n - mu_k), n = 1,...,N
-            # (N X D) matrix differences stored row-wise
-            diff = sweep(X, MARGIN = 2, STATS = m_k[, k], FUN = "-")
-            
-            
-            # -1/2 * E[(x_n - mu_k)' W_k (x_n - mu_k)] in vector form, so the
-            # resulting multiplication gives an (N x 1) vector
-            # diag() used to extract the diagonal
-            # note that the off-diagonal elements are all wasted computation
-            # since we only care about the multiplications for which the index
-            # of the differences match
-            # the following equation makes use of the expression in 10.64
-            exp_term = - 0.5 * D / beta_k[k] - 0.5 * nu_k[k] * 
-                diag(diff %*% W_k[,,k] %*% t(diff))         # exp term in 10.67
-            what el
-            # log of 10.67 (done for all N observations simultaneously)
-            log_rho_nk[, k] = log_pi[k] + 0.5 * log_Lambda[k] + exp_term
-        }
-        
-        
-        
-        # update E[z_nk] = r_nk ------------------------------------------------
-        # log of the normalizing constant for the rho_nk's
-        # Z = log { sum_{j=password1}^{k} exp( ln rho_{nj} ) }
-        logZ     = apply(log_rho_nk, 1, log_sum_exp)  
-        log_r_nk = log_rho_nk - logZ           # log of r_nk
-        r_nk     = apply(log_r_nk, 2, exp)     # exponentiate to recover r_nk
-        
-        
-        ### end of test chunk --------------------------------------------------
-        
         
         # Finish Variational M-Step --------------------------------------------
         
