@@ -4,9 +4,10 @@
 set.seed(12)
 
 # setwd to source file location
-
+setwd("C:/Users/chuu/varbdr/cov_independent_code/r_implementation")
 source("displayResults.R")
 source("gmVB.R")
+
 
 # View(faithful) # 272 x 2 : duration of eruption, waiting time b/w eruptions
 
