@@ -121,49 +121,27 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         
         # Start Variational M-Step ---------------------------------------------
         
-        # calculate the quantities: N_k, xbar_k, S_k, used in the updates of
-        # the variational distributions
-        N_k = colSums(r_nk) + 1e-10  # (K x 1) : N_1, N_2, ... , N_K ----  10.51
-        for (k in 1:K) {
-            x_bar_k[, k] = (r_nk[ ,k] %*% X) / N_k[k]        # (D x K) -- 10.52
-            # x_diff = (x_n - xbar_k) for n = 1,..,N; ---- (N x D)
-            x_diff     = sweep(X, MARGIN = 2, STATS = x_bar_k[, k], FUN = "-")
-            # vectorized calculation of S_k as shown in 10.53 -- (D x D)
-            # store the resulting matrix in the k-th index of the array
-            # S_k[, , k] = t(x_diff) %*% diag(r_nk[,k] / N_k[k]) %*% x_diff
-            # same calculation as above, uses less memory    # (D x D) -- 10.53
-            S_k[,,k] = t(x_diff) %*% (x_diff * r_nk[, k]) / N_k[k]  # 
-        }
+         
+        theta = mStep(N, K, D, X, x_bar_k, r_nk, alpha_0, beta_0, nu_0, m_k,
+                      W_k, W_k_inv, W_0_inv, S_k, 
+                      m0, log_Lambda, log_pi)
         
-        ## Update Dirichlet parameter
-        alpha = alpha_0 + N_k                                # (K x 1) -- 10.58
-        ## Expectation of mixing proportions: E(pi_k)            
-        pi_k = (alpha_0 + N_k) / (K * alpha_0 + N)           # (K x 1) -- 10.69
+        # helpful definitions
+        N_k     = theta$N_k
+        S_k     = theta$S_k
+        x_bar_k = theta$x_bar_k
         
-        ## Update parameters for G-W distribution
-        beta_k = beta_0 + N_k                                # (K x 1) -- 10.60
-        nu_k   = nu_0 + N_k + 1                              # (K x 1) -- 10.63
-        for (k in 1:K) {
-            # update mean parameter for beta_k --              (K x 1) -- 10.61
-            m_k[, k] = (1 / beta_k[k]) * (beta_0 * m_0 + N_k[k] * x_bar_k[, k])  
-            
-            # update variance parameter for beta_k --          (D x D) -- 10.62
-            W_k_inv = W_0_inv + N_k[k] * S_k[,,k] + 
-                ((beta_0 * N_k[k]) / (beta_0 + N_k[k])) * 
-                tcrossprod((x_bar_k[, k] - m_0))
-            # previous matrix is inverted matrix that we want
-            W_k[, , k] = solve(W_k_inv)                    
-        }
+        # update variational parameters
+        W_k  = theta$W_k 
+        nu_k = theta$nu_k 
+        m_k  = theta$m_k
+        beta_k = theta$beta_k
+        alpha = theta$alpha
+        pi_k = theta$pi_k
         
-        
-        ## Update expectations over \pi and \Lambda
-        # E [ log(det(Lambda_k)) ]
-        for (k in 1:K) {                                               
-            log_Lambda[k] = sum(digamma((nu_k[k] + 1 - 1:D) / 2)) + 
-                D * log(2) + log(det(W_k[, , k]))            # (K x 1) -- 10.65
-        }
-        # E[ log(pi_k) ], k = 1,...,K
-        log_pi = digamma(alpha) - digamma(sum(alpha))        # (K x 1) -- 10.66 
+        # update expectations
+        log_Lambda = theta$log_Lambda
+        log_pi = theta$log_pi
         
         
         
@@ -171,9 +149,10 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         
         
         # Compute the Variational Lower Bound ----------------------------------
-        L[i] = calculateELBO(D, K, r_nk, log_r_nk, N_k, S_k, x_bar_k, alpha_0, 
-                             m_0, beta_0, W_0, W_0_inv, nu_0, W_k, nu_k, m_k, 
-                             beta_k, alpha, log_pi, log_Lambda)
+        L[i] = calculateELBO(D, K, r_nk, log_r_nk, 
+                             N_k, S_k, x_bar_k, 
+                             alpha_0, m_0, beta_0, W_0, W_0_inv, nu_0, 
+                             W_k, nu_k, m_k, beta_k, alpha, log_pi, log_Lambda)
         # end of Variational Lower Bound computation ---------------------------
         
         

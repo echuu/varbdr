@@ -1,36 +1,39 @@
 
 # testResults.R
+run = function() {
+    set.seed(12)
+    
+    # setwd to source file location
+    setwd("C:/Users/chuu/varbdr/cov_independent_code/r_implementation")
+    source("displayResults.R")
+    source("gmVB_0.R")
+    
+    
+    # View(faithful) # 272 x 2 : duration of eruption, waiting time b/w eruptions
+    
+    X = as.matrix(faithful)
+    K = 25        # Number of clusters
+    
+    K = 25
+    alpha_0 = 1e-5
+    m_0 = c(colMeans(X))
+    beta_0 = 1 
+    nu_0 = NCOL(X) + 50
+    W_0 = diag(100, NCOL(X))
+    max_iter = 1001
+    epsilon_conv = 1e-4
+    is_animation = TRUE
+    VERBOSE = TRUE
+    
+    
+    
+    
+    # Run vb-gmm model model
+    vb_gmm_model = vb_gmm(X = X, K = K, alpha_0 = 1e-5, max_iter = 1001, 
+                           is_animation = TRUE, VERBOSE = TRUE)
+}
 
-set.seed(12)
 
-# setwd to source file location
-setwd("C:/Users/chuu/varbdr/cov_independent_code/r_implementation")
-source("displayResults.R")
-source("gmVB.R")
-
-
-# View(faithful) # 272 x 2 : duration of eruption, waiting time b/w eruptions
-
-X = as.matrix(faithful)
-K = 25        # Number of clusters
-
-K = 25
-alpha_0 = 1e-5
-m_0 = c(colMeans(X))
-beta_0 = 1 
-nu_0 = NCOL(X) + 50
-W_0 = diag(100, NCOL(X))
-max_iter = 1001
-epsilon_conv = 1e-4
-is_animation = TRUE
-VERBOSE = TRUE
-
-
-
-
-# Run vb-gmm model model
-vb_gmm_model = vb_gmm(X = X, K = K, alpha_0 = 1e-5, max_iter = 1001, 
-                       is_animation = TRUE, VERBOSE = TRUE)
 
 
 data.grid = expand.grid(x = seq(from = min(X[,1]) - 2, 
