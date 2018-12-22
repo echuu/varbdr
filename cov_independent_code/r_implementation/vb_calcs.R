@@ -58,9 +58,13 @@ eStep = function(N, D, K, X, theta) {
     log_r_nk = log_rho_nk - logZ           # log of r_nk
     r_nk     = apply(log_r_nk, 2, exp)     # exponentiate to recover r_nk
     
+    
+    # Essential E-Step: update r_nk
+    theta$r_nk = r_nk
+    theta$log_r_nk = log_r_nk
+    
     # log_r_nk, r_nk are used later in ELBO calculation
-    # out = list(log_rn_k = log_r_nk, r_nk = r_nk)
-    return(list(log_r_nk = log_r_nk, r_nk = r_nk))
+    return(theta)
     
 } # end of eStep()
 
@@ -69,14 +73,14 @@ eStep = function(N, D, K, X, theta) {
 # variational M-Step
 mStep = function(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m0) {
     
-    x_bar_k = theta$x_bar_k
-    r_nk = theta$r_nk
-    m_k = theta$m_k
-    W_k = theta$W_k
-    W_k_inv = theta$W_k_inv
-    S_k = theta$S_k
+    x_bar_k    = theta$x_bar_k
+    r_nk       = theta$r_nk
+    m_k        = theta$m_k
+    W_k        = theta$W_k
+    W_k_inv    = theta$W_k_inv
+    S_k        = theta$S_k
     log_Lambda = theta$log_Lambda
-    log_pi = theta$log_pi
+    log_pi     = theta$log_pi
     
     # calculate the quantities: N_k, xbar_k, S_k, used in the updates of
     # the variational distributions
@@ -122,7 +126,7 @@ mStep = function(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m0) {
     # E[ log(pi_k) ], k = 1,...,K
     log_pi = digamma(alpha) - digamma(sum(alpha))        # (K x 1) -- 10.66
     
-    theta = list()
+    # theta = list()
     
     # store the updated expectations
     theta$log_Lambda = log_Lambda
@@ -141,18 +145,15 @@ mStep = function(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m0) {
     theta$alpha = alpha
     theta$pi_k = pi_k
     
-    # theta$r_nk = r_nk
-    # theta$log_r_nk = theta$log_r_nk
-    
     return(theta)
     
 } # end of mStep()
 
 
 # ELBO Calculation
-elbo = function() {
-    return(0)
-}
+#elbo = function() {
+#    return(0)
+#}
 
 
 

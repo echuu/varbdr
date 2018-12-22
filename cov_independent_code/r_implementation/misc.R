@@ -44,7 +44,7 @@ logDirConst = function(alpha) {
 ########## ----------    problem-specific calculations    ---------- ###########
 
 
-# calculateELBO(): calculate the variational lower bound
+# elbo(): calculate the variational lower bound
 ## input: 
     # D          : (1 x 1) dimension of coefficient vector
     # K          : (1 x 1) # of clusters
@@ -68,11 +68,11 @@ logDirConst = function(alpha) {
     # log_Lambda : (K x 1) E [ log(det(Lambda_k)) ]
 ## output: 
     # elbo    : variational lower bound for current values of variational params
-calculateELBO = function(D, K, theta, r_nk, log_r_nk,
+elbo = function(D, K, theta, # r_nk, log_r_nk,
                          alpha_0, m_0, beta_0, W_0, W_0_inv, nu_0) {
     
-    # log_r_nk = theta$log_r_nk
-    # r_nk     = theta$r_nk
+    log_r_nk = theta$log_r_nk
+    r_nk     = theta$r_nk
     
     
     # helpful definitions

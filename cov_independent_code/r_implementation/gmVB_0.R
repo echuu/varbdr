@@ -101,7 +101,6 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     
     
     theta = list()
-    
     # store the updated expectations
     theta$log_Lambda = log_Lambda
     theta$log_pi = log_pi
@@ -126,43 +125,15 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     # Iterate to find optimal parameters
     for (i in 2:max_iter) {
         
-        # Start Variational E-Step ---------------------------------------------
+        ## Variational E-Step
+        theta = eStep(N, D, K, X, theta)
         
-        # updates  = eStep(N, D, K, X, m_k, beta_k, W_k, nu_k, log_pi, log_Lambda)
-        #updates = eStep(N, D, K, X, m_k, beta_k, W_k, nu_k, 
-        #                   log_pi, log_Lambda)
-        
-        updates = eStep(N, D, K, X, theta)
-        # r_nk     = updates$r_nk 
-        # log_r_nk = updates$log_r_nk
-        # logZ     = apply(log_rho_nk, 1, log_sum_exp)  
-        # log_rho_nk = updates$log_rho_nk
-        # logZ = updates$logZ
-        # log_r_nk = log_rho_nk - logZ           # log of r_nk
-        log_r_nk = updates$log_r_nk
-        r_nk     = updates$r_nk     # exponentiate to recover r_nk
-        
-        theta$r_nk = r_nk
-        theta$log_r_nk = log_r_nk
-        
-        # Finish Variational E-Step --------------------------------------------
-        
-        # Start Variational M-Step ---------------------------------------------
-        
-         
+        ## Variational M-Step
         theta = mStep(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m0)
         
         
-        # update expectations -- needed in E-step of next iteration
-        # log_Lambda = theta$log_Lambda
-        # log_pi     = theta$log_pi
-        
-        # Finish Variational M-Step --------------------------------------------
-        
-        
         # Compute the Variational Lower Bound ----------------------------------
-        L[i] = calculateELBO(D, K, theta, r_nk, log_r_nk,
-                             alpha_0, m_0, beta_0, W_0, W_0_inv, nu_0)
+        L[i] = elbo(D, K, theta, alpha_0, m_0, beta_0, W_0, W_0_inv, nu_0)
         # end of Variational Lower Bound computation ---------------------------
         
         
@@ -173,7 +144,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
                 my_z = mixture_pdf_t(model = list(m = theta$m_k, W = theta$W_k, 
                                                   beta = theta$beta_k, 
                                                   nu = theta$nu_k, 
-                                                  alpha = theta$alpha), 
+                                                  alpha = theta$alpha),
                                      data = dt)
                 dt_all = rbind(dt_all, dt[, z := my_z] %>% .[, iter := i - 1])
             }
