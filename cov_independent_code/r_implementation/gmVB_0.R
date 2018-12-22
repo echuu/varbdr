@@ -100,14 +100,39 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     ## animation details -------------------------------------------------------
     
     
+    theta = list()
+    
+    # store the updated expectations
+    theta$log_Lambda = log_Lambda
+    theta$log_pi = log_pi
+    
+    # store defined variables
+    theta$N_k = numeric(K)
+    theta$S_k = S_k
+    theta$x_bar_k = x_bar_k
+    
+    # store variational parameters
+    theta$m_k = m_k
+    theta$W_k = W_k
+    theta$nu_k = nu_k
+    theta$beta_k = beta_k
+    theta$alpha = alpha
+    theta$pi_k = numeric(K)
+    
+    # e-step parameters
+    theta$r_nk = r_nk
+    theta$log_r_nk = log_r_nk
+    
     # Iterate to find optimal parameters
     for (i in 2:max_iter) {
         
         # Start Variational E-Step ---------------------------------------------
         
         # updates  = eStep(N, D, K, X, m_k, beta_k, W_k, nu_k, log_pi, log_Lambda)
-        updates = eStep(N, D, K, X, m_k, beta_k, W_k, nu_k, 
-                           log_pi, log_Lambda)
+        #updates = eStep(N, D, K, X, m_k, beta_k, W_k, nu_k, 
+        #                   log_pi, log_Lambda)
+        
+        updates = eStep(N, D, K, X, theta)
         # r_nk     = updates$r_nk 
         # log_r_nk = updates$log_r_nk
         # logZ     = apply(log_rho_nk, 1, log_sum_exp)  
@@ -117,42 +142,27 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         log_r_nk = updates$log_r_nk
         r_nk     = updates$r_nk     # exponentiate to recover r_nk
         
+        theta$r_nk = r_nk
+        theta$log_r_nk = log_r_nk
+        
         # Finish Variational E-Step --------------------------------------------
         
         # Start Variational M-Step ---------------------------------------------
         
          
-        theta = mStep(N, K, D, X, x_bar_k, r_nk, alpha_0, beta_0, nu_0, m_k,
-                      W_k, W_k_inv, W_0_inv, S_k, 
-                      m0, log_Lambda, log_pi)
-        
-        # helpful definitions
-        N_k     = theta$N_k
-        S_k     = theta$S_k
-        x_bar_k = theta$x_bar_k
-        
-        # update variational parameters
-        W_k  = theta$W_k 
-        nu_k = theta$nu_k 
-        m_k  = theta$m_k
-        beta_k = theta$beta_k
-        alpha = theta$alpha
-        pi_k = theta$pi_k
-        
-        # update expectations
-        log_Lambda = theta$log_Lambda
-        log_pi = theta$log_pi
+        theta = mStep(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m0)
         
         
+        # update expectations -- needed in E-step of next iteration
+        # log_Lambda = theta$log_Lambda
+        # log_pi     = theta$log_pi
         
         # Finish Variational M-Step --------------------------------------------
         
         
         # Compute the Variational Lower Bound ----------------------------------
-        L[i] = calculateELBO(D, K, r_nk, log_r_nk, 
-                             N_k, S_k, x_bar_k, 
-                             alpha_0, m_0, beta_0, W_0, W_0_inv, nu_0, 
-                             W_k, nu_k, m_k, beta_k, alpha, log_pi, log_Lambda)
+        L[i] = calculateELBO(D, K, theta, r_nk, log_r_nk,
+                             alpha_0, m_0, beta_0, W_0, W_0_inv, nu_0)
         # end of Variational Lower Bound computation ---------------------------
         
         
@@ -160,9 +170,11 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         # Evaluate mixture density for plotting
         if (is_animation) {
             if ( (i - 1) %% 5 == 0 | i < 10) {
-                my_z = mixture_pdf_t(model = list(m = m_k, W = W_k, 
-                                                  beta = beta_k, nu = nu_k, 
-                                                  alpha = alpha), data = dt)
+                my_z = mixture_pdf_t(model = list(m = theta$m_k, W = theta$W_k, 
+                                                  beta = theta$beta_k, 
+                                                  nu = theta$nu_k, 
+                                                  alpha = theta$alpha), 
+                                     data = dt)
                 dt_all = rbind(dt_all, dt[, z := my_z] %>% .[, iter := i - 1])
             }
         }
@@ -176,10 +188,10 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     } # end of CAVI algorithm (outer for loop)
     
     ## prepare output
-    obj = structure(list(X = X, K = K, N = N, D = D, pi_k = pi_k, 
-                         alpha = alpha, r_nk = r_nk,  m = m_k, W = W_k, 
-                         beta = beta_k, nu = nu_k, L = L[2:i], 
-                         dt_all = dt_all), class = "vb_gmm")
+    obj = structure(list(X = X, K = K, N = N, D = D, pi_k = theta$pi_k, 
+                         alpha = theta$alpha, r_nk = theta$r_nk,  m = theta$m_k, 
+                         W = theta$W_k, beta = theta$beta_k, nu = theta$nu_k, 
+                         L = L[2:i], dt_all = dt_all), class = "vb_gmm")
     return(obj)
 } # end of vb_gmm() function
 

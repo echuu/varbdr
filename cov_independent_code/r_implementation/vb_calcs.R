@@ -19,7 +19,15 @@ source("misc.R")
 #          e-step consists of only the r_nk updates
 # output: 
 #       out  : (2 x 1) list containing the (N x K) matricies r_nk, log_r_nk
-eStep = function(N, D, K, X, m_k, beta_k, W_k, nu_k, log_pi, log_Lambda) {
+eStep = function(N, D, K, X, theta) {
+    
+    # initialize local variational parameters
+    m_k        = theta$m_k
+    beta_k     = theta$beta_k
+    W_k        = theta$W_k
+    nu_k       = theta$nu_k
+    log_pi     = theta$log_pi
+    log_Lambda = theta$log_Lambda
     
     log_rho_nk = matrix(0, nrow = N, ncol = K)
     
@@ -59,9 +67,16 @@ eStep = function(N, D, K, X, m_k, beta_k, W_k, nu_k, log_pi, log_Lambda) {
 
 
 # variational M-Step
-mStep = function(N, K, D, X, x_bar_k, r_nk, alpha_0, beta_0, nu_0, m_k,
-                 W_k, W_k_inv, W_0_inv, S_k, 
-                 m0, log_Lambda, log_pi) {
+mStep = function(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m0) {
+    
+    x_bar_k = theta$x_bar_k
+    r_nk = theta$r_nk
+    m_k = theta$m_k
+    W_k = theta$W_k
+    W_k_inv = theta$W_k_inv
+    S_k = theta$S_k
+    log_Lambda = theta$log_Lambda
+    log_pi = theta$log_pi
     
     # calculate the quantities: N_k, xbar_k, S_k, used in the updates of
     # the variational distributions
@@ -125,6 +140,9 @@ mStep = function(N, K, D, X, x_bar_k, r_nk, alpha_0, beta_0, nu_0, m_k,
     theta$beta_k = beta_k
     theta$alpha = alpha
     theta$pi_k = pi_k
+    
+    # theta$r_nk = r_nk
+    # theta$log_r_nk = theta$log_r_nk
     
     return(theta)
     

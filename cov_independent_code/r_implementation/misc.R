@@ -68,9 +68,30 @@ logDirConst = function(alpha) {
     # log_Lambda : (K x 1) E [ log(det(Lambda_k)) ]
 ## output: 
     # elbo    : variational lower bound for current values of variational params
-calculateELBO = function(D, K, r_nk, log_r_nk, N_k, S_k, x_bar_k, alpha_0, 
-                         m_0, beta_0, W_0, W_0_inv, nu_0, W_k, nu_k, 
-                         m_k, beta_k, alpha, log_pi, log_Lambda) {
+calculateELBO = function(D, K, theta, r_nk, log_r_nk,
+                         alpha_0, m_0, beta_0, W_0, W_0_inv, nu_0) {
+    
+    # log_r_nk = theta$log_r_nk
+    # r_nk     = theta$r_nk
+    
+    
+    # helpful definitions
+    N_k     = theta$N_k
+    S_k     = theta$S_k
+    x_bar_k = theta$x_bar_k
+    
+    # update variational parameters
+    W_k    = theta$W_k 
+    nu_k   = theta$nu_k 
+    m_k    = theta$m_k
+    beta_k = theta$beta_k
+    alpha  = theta$alpha
+    pi_k   = theta$pi_k
+    
+    # update expectations
+    log_Lambda = theta$log_Lambda
+    log_pi     = theta$log_pi
+    
     
     ln_p_x = ln_p_z = ln_p_pi = ln_p_mu_lambda = 0
     ln_q_z = ln_q_pi = ln_q_mu_lambda = 0
