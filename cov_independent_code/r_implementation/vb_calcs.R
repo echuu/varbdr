@@ -211,7 +211,7 @@ mStep = function(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m_0) {
     # beta_0     : (1 x 1) prior variance scale for beta
     # W_0        : (D x D) prior scale matrix for lambda
     # W_0_inv    : (D x D) inverse of prior scale matrix for lambda
-    # nu_0       : (1 x 1) prior degrees of freedom for each Lambda_kpass
+    # nu_0       : (1 x 1) prior degrees of freedom for each Lambda_k
 ## output: 
 # elbo    : variational lower bound for current values of variational params
 elbo = function(D, K, theta, # r_nk, log_r_nk,
