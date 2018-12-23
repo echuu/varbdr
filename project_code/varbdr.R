@@ -47,6 +47,8 @@ varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda0 = I_D,
     L = rep(-Inf, max_iter)  # Store the variational lower bounds
     
     
+    # put everything below into a separate function to initialize var. param
+    
     r_nk       = matrix(0, N, K) # N x K : normalized responsibilities
                                  #         rho_nk / sum_j rho_nj
                                  # can calculate this by exponentiating 
@@ -97,6 +99,10 @@ varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda0 = I_D,
     # (3) draw gamma_k ~ N (mu_k, Q_k^(-1))
     # mu_k = t(kmeans(X, K, nstart = 25)$centers)
     mu_k = matrix(0, D, K) # intialize means of gamma_k to be 0
+    
+    
+    ## everything above put into separate function  ----------------------------
+    
     
     # precompute values that are used regularly in CAVI ------------------------
     # values that are used in the r_nk update

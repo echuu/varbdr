@@ -94,33 +94,15 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     ## animation details -------------------------------------------------------
     if (is_animation) { # Create animation for initial assignments
         my_z = mixture_pdf_t(model = list(m = m_k, W = W_k, beta = beta_k, 
-                                          nu = nu_k, alpha = rep(1/K, K)), data = dt)
+                                          nu = nu_k, alpha = rep(1/K, K)), 
+                             data = dt)
         dt_all = rbind(dt_all, dt[, z := my_z] %>% .[, iter := 0])
     }
     ## animation details -------------------------------------------------------
     
     
-    theta = list()
-    # store the updated expectations
-    theta$log_Lambda = log_Lambda
-    theta$log_pi = log_pi
-    
-    # store defined variables
-    theta$N_k = numeric(K)
-    theta$S_k = S_k
-    theta$x_bar_k = x_bar_k
-    
-    # store variational parameters
-    theta$m_k = m_k
-    theta$W_k = W_k
-    theta$nu_k = nu_k
-    theta$beta_k = beta_k
-    theta$alpha = alpha
-    theta$pi_k = numeric(K)
-    
-    # e-step parameters
-    theta$r_nk = r_nk
-    theta$log_r_nk = log_r_nk
+    theta = initVarParams(K, log_Lambda, log_pi, N_k, S_k, x_bar_k, 
+                          m_k, W_k, nu_k, beta_k, alpha, r_nk, log_r_nk)
     
     # Iterate to find optimal parameters
     for (i in 2:max_iter) {
@@ -129,7 +111,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
         theta = eStep(N, D, K, X, theta)
         
         ## Variational M-Step
-        theta = mStep(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m0)
+        theta = mStep(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m_0)
         
         
         # Compute the Variational Lower Bound ----------------------------------

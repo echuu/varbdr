@@ -6,12 +6,12 @@ library(ggplot2)
 ## testing the bound for E[logSumExp] proposed in Bouchard (2008)
 
 
-D     = 2          # dimension of covariate, 2 <= d <= 100
+D     = 2           # dimension of covariate, 2 <= d <= 100
 K     = 10          # number of clusters
-N     = 1          # number of samples
-I_D   = diag(1, D) # D X D  identity matrix
-df    = 100        # degrees of freedom for Wishart distribution
-scale = 1          # scale for the covariance matrix
+N     = 1           # number of samples
+I_D   = diag(1, D)  # D X D  identity matrix
+df    = 100         # degrees of freedom for Wishart distribution
+scale = 1           # scale for the covariance matrix
 
 
 set.seed(1)
@@ -160,6 +160,7 @@ checkConvergence = function(bound, i, maxIter, tol, VERBOSE = TRUE) {
     # R      : 1 x 1        number of MC samples
     # mu     : D x K        mean vector for each of the K clusters
     # Sigma  : K x (D x D)  K-dim array of (D x D) cov matrices for each cluster
+# output: monte carlo estimate of E[log(sum(exp(x'beta)))] 
 mcBound = function(x, K, D, R = 1e5, mu, Sigma, seed = 1) {
     set.seed(seed)
     mcSum = 0;
