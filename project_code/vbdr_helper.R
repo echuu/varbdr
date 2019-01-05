@@ -27,7 +27,7 @@
 
 # vb_initVarParams() -- initialize the variational parameters, 
 #                       store in master variable to generalize calculations
-vb_initVarParams = function(X, K, prior) {
+vb_initVarParams = function(y, X, K) {
     
     I_D   = diag(1, D)  # D X D  identity matrix
     
@@ -74,8 +74,9 @@ vb_initVarParams = function(X, K, prior) {
     mu_k    = matrix(0, D, K)          # D x K       mean of gamma_k
     
     
-    # 16-dim list
-    theta = list(log_rho_nk = log_rho_nk, log_r_nk = log_r_nk, r_nk = r_nk, 
+    # 19-dim list
+    theta = list(y = y, X = X, K = K, 
+                 log_rho_nk = log_rho_nk, log_r_nk = log_r_nk, r_nk = r_nk, 
                  N_k = N_k, beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k, 
                  V_k_inv = V_k_inv, m_k = m_k, a_k = a_k, b_k = b_k, 
                  alpha = alpha, xi = xi, lambda = lambda,
@@ -86,4 +87,56 @@ vb_initVarParams = function(X, K, prior) {
     
 } # end of vb_initVarParams() function
 
+
+# vb_elbo() -- compute the ELBO/Variational Lower Bound
+# input
+    # theta    :  19-dim list that contains model, variational parameters
+# output
+    # elbo/variational lower bound (function of variational parameters)
+vb_elbo = function(theta) {
+    
+    e_ln_p_y = e_ln_p_z = e_ln_p_gamma = e_ln_p_beta_tau = 0
+    e_ln_q_z = e_ln_q_gamma = e_ln_q_beta_tau = 0
+    
+    N = nrow(X)
+    K = ncol(X)
+    X = theta$X
+    y = theta$y
+    
+    
+    for (n in 1:N) {
+        
+        
+        # (1) compute e_ln_p_y
+        x_Vinv_x = numeric(K)
+        for (k in 1:K) {
+            x_Vinv_x[k] = X[n,] %*% theta$V_k_inv %*% t(X[n,])
+        }
+        
+        e_ln_p_y = e_ln_p_y + theta$r_nk[n,] * 
+            (log(2 * pi) - digamma(theta$a_k) - digamma(theta$b_k) + x_Vinv_x + 
+                 theta$a_k / theta$b_k * (y[n] - t(theta$m_k)) %*% X[n,])
+        
+        # (2) compute e_ln_p_z
+        
+        
+        # (3) compute e_ln_p_gamma
+        
+        
+        # (4) compute e_ln_p_beta_tau
+        
+        
+        
+    }
+    
+    
+    
+    
+    
+    vlb = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + e_ln_p_beta_tau +
+        e_ln_q_z + e_ln_q_gamma + e_ln_q_beta_tau
+    
+    return(vlb)
+    
+} # end of vb_elbo() function
 
