@@ -103,7 +103,41 @@ vb_elbo = function(theta) {
     X = theta$X
     y = theta$y
     
+    # alpha, xi related quantities ---------------------------------------------
+    alpha = numeric(N)                # (N x 1)
+    xi    = matrix(0, N, K)           # (N x K)
+    M     = theta$mu_k %*% lambda     # (D x N) : (D x K) * (K x N)
     
+    
+    # recompute alpha
+    for (n in 1:N) {
+        alpha[n] = X[n,] %*% M[,n]
+    }
+    
+    # recompute xi (computed column-wise)
+    X_mu = X %*% mu    # (N x K) : (N x D) * (D x K)
+    for (k in 1:K) {
+        
+        x_Qk_x = numeric(N)
+        for (n in 1:N) {
+            x_Qk_x[n] = X[n,] %*% theta$Q_k_inv[,,k] %*% t(X[n,])
+        }
+        
+        xi[,k] = (X_mu[,k] - alpha)^2  + x_Qk_x  # n-dim col vector in k-th col
+        
+    }
+    
+    for (k in 1:K) {
+        
+        phi = phi + lambda[,k] * (alpha^2 - xi[,k]^2) +
+            (0.5 - 2 * alpha * lambda[,k]) * X_mu[,k] + 
+            lambda[,k] * (X_mu[,k]^2 + ) ##### re-use xQx 
+        
+    }
+        
+    
+    
+    # compute the 7 expectations -----------------------------------------------
     for (n in 1:N) {
         
         
@@ -118,7 +152,8 @@ vb_elbo = function(theta) {
                  theta$a_k / theta$b_k * (y[n] - t(theta$m_k)) %*% X[n,])
         
         # (2) compute e_ln_p_z
-        
+        e_ln_p_z = e_ln_p_z + sum(theta$r_nk[n,] * t(theta$mu_k) %*% X[n,] - 
+                                      alpha[n] - theta$phi[n])
         
         # (3) compute e_ln_p_gamma
         
@@ -130,9 +165,7 @@ vb_elbo = function(theta) {
     }
     
     
-    
-    
-    
+    # compute the elbo ---------------------------------------------------------
     vlb = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + e_ln_p_beta_tau +
         e_ln_q_z + e_ln_q_gamma + e_ln_q_beta_tau
     
