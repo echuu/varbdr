@@ -21,31 +21,42 @@ vb_elbo = function(theta, prior) {
     
     
     # INCOMPLETE: alpha, xi, phi, related quantities ---------------------------
-    alpha = numeric(N)                # (N x 1)
-    xi    = matrix(0, N, K)           # (N x K)
-    M     = theta$mu_k %*% lambda     # (D x N) : (D x K) * (K x N)
+    alpha = numeric(N)                   # (N x 1)
+    xi    = matrix(0, N, K)              # (N x K)
+    phi   = numeric(N)                   # (N x 1)
+    M     = theta$mu_k %*% t(lambda)     # (D x N) : (D x K) * (K x N)
     
     
     # recompute alpha
     for (n in 1:N) {
-        alpha[n] = X[n,] %*% M[,n]
+        alpha[n] = (0.5 * (0.5 * K - 1) + X[n,] %*% M[,n]) / sum(lambda[n,])
     }
     
     # recompute xi (computed column-wise)
     X_mu = X %*% mu    # (N x K) : (N x D) * (D x K)
     for (k in 1:K) {
         
-        x_Qk_x = numeric(N)
+        x_Qk_inv_x = numeric(N)
         for (n in 1:N) {
-            x_Qk_x[n] = X[n,] %*% theta$Q_k_inv[,,k] %*% t(X[n,])
+            x_Qk_inv_x[n] = X[n,] %*% theta$Q_k_inv[,,k] %*% t(X[n,])
         }
         
-        xi[,k] = (X_mu[,k] - alpha)^2  + x_Qk_x  # n-dim col vector in k-th col
-        
+        # populate the k-th column of xi
+        xi[,k] = (X_mu[,k] - alpha)^2  + x_Qk_inv_x  
     }
     
-    # compute phi
+    # compute lambda(xi) using updated value of xi
+    lambda = 1 / (4 * xi) * tanh(0.5 * xi)    # (N x K)
     
+    # compute phi (function of alpha, xi)
+    for (n in 1:N) {
+        phi[n] = sum((X_mu[n,] - alpha[n] - xi[n,]) / 2 + log(1 + exp(xi[n,])))
+    }
+    
+    
+    # these should probably be moved into the M-step since they will be used
+    # in the next iteration as well. would also clean up the elbo code too,
+    # considering the ELBO should only include computation of the expectations
     
     # compute 7 expectations ---------------------------------------------------
     
