@@ -4,7 +4,7 @@
 
 library(matrixcalc)
 
-vb_elbo = function(theta, prior) {
+elbo = function(theta, prior) {
     
     # initialize the 7 expectations to be computed
     e_ln_p_y = e_ln_p_z = e_ln_p_gamma = e_ln_p_beta_tau = 0
@@ -70,11 +70,11 @@ vb_elbo = function(theta, prior) {
         } # end of inner for()
         
         # perform the inner k-summation
-        e1[n] = sum(r[n,] * log(2 * pi) - psi_a - psi_b + x_Vinv_x + 
+        e1[n] = sum(r[n,] * log(2 * pi) - psi_a + psi_b + x_Vinv_x + 
                         a_k / b_k * (y[n] - t(X[n,] %*% theta$m_k)))
         
     }
-    e_ln_p_y = sum(e1)
+    e_ln_p_y = 0.5 * sum(e1)
     
     
     # E [ ln p(Z | X, gamma) ]

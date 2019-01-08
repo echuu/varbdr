@@ -23,7 +23,6 @@
 
     # vb_eStep()
     # vb_mStep()
-    # vb_elbo()
 
 # vb_initVarParams() -- initialize the variational parameters, 
 #                       store in master variable to generalize calculations
@@ -37,11 +36,10 @@ vb_initVarParams = function(y, X, K) {
     L = rep(-Inf, max_iter)            # Store the variational lower bounds
     
     # E[z_nk] = r_nk; these quantities are updated during the var e-step
+        # Note: rho_nk / sum_j rho_nj
+        # can calculate this by exponentiating log_rho_nk, 
+        # dividing each element by the sum of the ROW it belongs in
     r_nk       = matrix(0, N, K)       # (N x K) : normalized responsibilities
-                                       #           rho_nk / sum_j rho_nj
-                                       # can calculate this by exponentiating 
-                                       # log_rho_nk, dividing each element by 
-                                       # the sum of the ROW it belongs in
     log_r_nk   = matrix(0, N, K)       # (N x K) : log(r_nk)
     log_rho_nk = matrix(0, N, K)       # (N x K) : log(rho_nk)
     
