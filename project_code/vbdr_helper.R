@@ -69,6 +69,7 @@ vb_initVarParams = function(y, X, K) {
     lambda  = matrix(0, N, K)          # N x K : matrix of lambda(xi)
         
     # variational parameters for gamma_1:K ~ N(gamma_k | mu_k, Q_k^{-1})
+    Q_k     = array(I_D, c(D, D, K))   # K x (D x D)
     Q_k_inv = array(I_D, c(D, D, K))   # K x (D x D) precisions for gamma_k
     eta_k   = matrix(0, D, K)          # D x K       Q_k_inv * eta_k = mu_k
     mu_k    = matrix(0, D, K)          # D x K       mean of gamma_k
@@ -80,7 +81,7 @@ vb_initVarParams = function(y, X, K) {
                  N_k = N_k, beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k, 
                  V_k_inv = V_k_inv, m_k = m_k, a_k = a_k, b_k = b_k, 
                  alpha = alpha, xi = xi, lambda = lambda,
-                 Q_k_inv = Q_k_inv, mu_k = mu_k)
+                 Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k)
     
     
     return(theta)
@@ -88,88 +89,5 @@ vb_initVarParams = function(y, X, K) {
 } # end of vb_initVarParams() function
 
 
-# vb_elbo() -- compute the ELBO/Variational Lower Bound
-# input
-    # theta    :  19-dim list that contains model, variational parameters
-# output
-    # elbo/variational lower bound (function of variational parameters)
-vb_elbo = function(theta) {
-    
-    e_ln_p_y = e_ln_p_z = e_ln_p_gamma = e_ln_p_beta_tau = 0
-    e_ln_q_z = e_ln_q_gamma = e_ln_q_beta_tau = 0
-    
-    N = nrow(X)
-    K = ncol(X)
-    X = theta$X
-    y = theta$y
-    
-    # alpha, xi related quantities ---------------------------------------------
-    alpha = numeric(N)                # (N x 1)
-    xi    = matrix(0, N, K)           # (N x K)
-    M     = theta$mu_k %*% lambda     # (D x N) : (D x K) * (K x N)
-    
-    
-    # recompute alpha
-    for (n in 1:N) {
-        alpha[n] = X[n,] %*% M[,n]
-    }
-    
-    # recompute xi (computed column-wise)
-    X_mu = X %*% mu    # (N x K) : (N x D) * (D x K)
-    for (k in 1:K) {
-        
-        x_Qk_x = numeric(N)
-        for (n in 1:N) {
-            x_Qk_x[n] = X[n,] %*% theta$Q_k_inv[,,k] %*% t(X[n,])
-        }
-        
-        xi[,k] = (X_mu[,k] - alpha)^2  + x_Qk_x  # n-dim col vector in k-th col
-        
-    }
-    
-    for (k in 1:K) {
-        
-        phi = phi + lambda[,k] * (alpha^2 - xi[,k]^2) +
-            (0.5 - 2 * alpha * lambda[,k]) * X_mu[,k] + 
-            lambda[,k] * (X_mu[,k]^2 + ) ##### re-use xQx 
-        
-    }
-        
-    
-    
-    # compute the 7 expectations -----------------------------------------------
-    for (n in 1:N) {
-        
-        
-        # (1) compute e_ln_p_y
-        x_Vinv_x = numeric(K)
-        for (k in 1:K) {
-            x_Vinv_x[k] = X[n,] %*% theta$V_k_inv %*% t(X[n,])
-        }
-        
-        e_ln_p_y = e_ln_p_y + theta$r_nk[n,] * 
-            (log(2 * pi) - digamma(theta$a_k) - digamma(theta$b_k) + x_Vinv_x + 
-                 theta$a_k / theta$b_k * (y[n] - t(theta$m_k)) %*% X[n,])
-        
-        # (2) compute e_ln_p_z
-        e_ln_p_z = e_ln_p_z + sum(theta$r_nk[n,] * t(theta$mu_k) %*% X[n,] - 
-                                      alpha[n] - theta$phi[n])
-        
-        # (3) compute e_ln_p_gamma
-        
-        
-        # (4) compute e_ln_p_beta_tau
-        
-        
-        
-    }
-    
-    
-    # compute the elbo ---------------------------------------------------------
-    vlb = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + e_ln_p_beta_tau +
-        e_ln_q_z + e_ln_q_gamma + e_ln_q_beta_tau
-    
-    return(vlb)
-    
-} # end of vb_elbo() function
+
 
