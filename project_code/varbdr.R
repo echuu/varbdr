@@ -28,8 +28,8 @@ scale = 1           # scale for the covariance matrix
     # b0       : prior rate parameter for tau_k; k = 1,...,K
     # g0       : prior mean for gamma_k; k = 1,...,K
     # Sigma0   : prior covariance for gamma_k; k = 1,...,K
-varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda0 = I_D, 
-                  a0, b0, g0 = 0, Sigma0 = I_D, max_iter = 500, 
+varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D, 
+                  a_0, b_0, g_0 = 0, Sigma_0 = I_D, max_iter = 500, 
                   tol = 1e-4, is_animation = FALSE, VERBOSE = FALSE) {
     
     X = as.matrix(X)         # N X D design matrix of covariates

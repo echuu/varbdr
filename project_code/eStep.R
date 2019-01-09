@@ -1,5 +1,5 @@
 
-## eStep()
+## eStep.R
 ## perform the variational e-step
 
 library(matrixcalc)
@@ -9,7 +9,6 @@ library(matrixcalc)
 # output:
           # theta : list of variational parameters with 
           #         r_nk, log_r_nk, log_rho_nk updated
-
 eStep() = function(theta) {
     
     
@@ -54,6 +53,7 @@ eStep() = function(theta) {
     theta$log_rho_rnk = log_rho_nk   # this quantity is not used later (i think)
     theta$log_r_nk    = log_r_nk
     theta$r_nk        = r_nk
+    theta$N_k         = colSums(r_nk) # (K x 1)
     
     return(theta)
     

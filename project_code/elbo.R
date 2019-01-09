@@ -10,53 +10,24 @@ elbo = function(theta, prior) {
     e_ln_p_y = e_ln_p_z = e_ln_p_gamma = e_ln_p_beta_tau = 0
     e_ln_q_z = e_ln_q_beta_tau = e_ln_q_gamma = 0
     
+    X = prior$X
+    y = prior$y
     N = nrow(X)
     K = ncol(X)
-    X = theta$X
-    y = theta$y
     
     # commonly computed terms
     psi_a = digamma(theta$a_k)    # (K x 1)
     psi_b = digamma(theta$b_k)    # (K x 1)
     
     
-    # INCOMPLETE: alpha, xi, phi, related quantities ---------------------------
-    alpha = numeric(N)                   # (N x 1)
-    xi    = matrix(0, N, K)              # (N x K)
-    phi   = numeric(N)                   # (N x 1)
-    M     = theta$mu_k %*% t(lambda)     # (D x N) : (D x K) * (K x N)
+    # alpha, xi, phi, related quantities ---- calculations moved to mStep.R
+    # alpha = numeric(N)                   # (N x 1)
+    # xi    = matrix(0, N, K)              # (N x K)
+    # phi   = numeric(N)                   # (N x 1)
+    # M     = theta$mu_k %*% t(lambda)     # (D x N) : (D x K) * (K x N)
     
     
-    # recompute alpha
-    for (n in 1:N) {
-        alpha[n] = (0.5 * (0.5 * K - 1) + X[n,] %*% M[,n]) / sum(lambda[n,])
-    }
     
-    # recompute xi (computed column-wise)
-    X_mu = X %*% mu    # (N x K) : (N x D) * (D x K)
-    for (k in 1:K) {
-        
-        x_Qk_inv_x = numeric(N)
-        for (n in 1:N) {
-            x_Qk_inv_x[n] = X[n,] %*% theta$Q_k_inv[,,k] %*% t(X[n,])
-        }
-        
-        # populate the k-th column of xi
-        xi[,k] = (X_mu[,k] - alpha)^2  + x_Qk_inv_x  
-    }
-    
-    # compute lambda(xi) using updated value of xi
-    lambda = 1 / (4 * xi) * tanh(0.5 * xi)    # (N x K)
-    
-    # compute phi (function of alpha, xi)
-    for (n in 1:N) {
-        phi[n] = sum((X_mu[n,] - alpha[n] - xi[n,]) / 2 + log(1 + exp(xi[n,])))
-    }
-    
-    
-    # these should probably be moved into the M-step since they will be used
-    # in the next iteration as well. would also clean up the elbo code too,
-    # considering the ELBO should only include computation of the expectations
     
     # compute 7 expectations ---------------------------------------------------
     
@@ -71,7 +42,8 @@ elbo = function(theta, prior) {
         
         # perform the inner k-summation
         e1[n] = sum(r[n,] * log(2 * pi) - psi_a + psi_b + x_Vinv_x + 
-                        a_k / b_k * (y[n] - t(X[n,] %*% theta$m_k)))
+                        theta$a_k / theta$b_k * 
+                        (y[n] - t(X[n,] %*% theta$m_k))^2)
         
     }
     e_ln_p_y = 0.5 * sum(e1)
@@ -81,7 +53,7 @@ elbo = function(theta, prior) {
     e2 = numeric(K)
     for (k in 1:K) {
         # exchange the summations; perform the inner n-summation
-        e2[k] = sum(r[,k] * (X_mu[,k] - alpha - phi))
+        e2[k] = sum(r[,k] * (X_mu[,k] - theta$alpha - theta$phi))
     }
     e_ln_p_z = sum(e2)
 
