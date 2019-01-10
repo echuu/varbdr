@@ -24,7 +24,7 @@ initVarParams = function(N, D, K) {
     # X = as.matrix(X)                   # (N x D) design matrix of covariates
     # D = NCOL(X)                        # Number of features
     # N = NROW(X)                        # Number of observations
-    L = rep(-Inf, max_iter)            # Store the variational lower bounds
+    L = rep(-Inf, max_iter)              # Store the variational lower bounds
     
     # E[z_nk] = r_nk; these quantities are updated during the var e-step
         # Note: rho_nk / sum_j rho_nj
@@ -65,13 +65,16 @@ initVarParams = function(N, D, K) {
     eta_k   = matrix(0, D, K)          # D x K       Q_k_inv * eta_k = mu_k
     mu_k    = matrix(0, D, K)          # D x K       mean of gamma_k
     
+    # current # of CAVI iterations
+    curr = 0
+    
     
     # 19-dim list
     theta = list(log_rho_nk = log_rho_nk, log_r_nk = log_r_nk, r_nk = r_nk, 
                  N_k = N_k, beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k, 
                  V_k_inv = V_k_inv, m_k = m_k, a_k = a_k, b_k = b_k, 
                  alpha = alpha, xi = xi, lambda = lambda,
-                 Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k)
+                 Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k, L = L, curr = 0)
     
     
     return(theta)

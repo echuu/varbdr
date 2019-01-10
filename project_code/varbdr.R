@@ -28,9 +28,9 @@ scale = 1           # scale for the covariance matrix
     # b0       : prior rate parameter for tau_k; k = 1,...,K
     # g0       : prior mean for gamma_k; k = 1,...,K
     # Sigma0   : prior covariance for gamma_k; k = 1,...,K
-varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D, 
+varbdr = function(y, X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D, 
                   a_0, b_0, g_0 = 0, Sigma_0 = I_D, max_iter = 500, 
-                  tol = 1e-4, is_animation = FALSE, VERBOSE = FALSE) {
+                  tol = 1e-4, is_animation = FALSE, VERBOSE = TRUE) {
     
     X = as.matrix(X)         # N X D design matrix of covariates
     D = NCOL(X)              # Number of features
@@ -42,18 +42,22 @@ varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D,
         #        tau_k ~ Ga (a0, b0)
         # gamma_k      ~ N  (g0, Sigma0)
     
-    # store the priors into a prior list
-    prior = list()
+    # intialize prior object using the prior parameters passed in
+    prior = initPriors(y, X, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
+                       max_iter, tol, VERBOSE)
 
-    # initialize variational parameters    
-    theta = vb_initVarParams(X, K)
-
+    # initialize variational parameters
+        # N = number of observations
+        # D = dimension of covariaftes
+        # K = number of clusters
+    theta = initVarParams(N, D, K)
     
+    # ****
+    # THIS NEEDS TO BE ADDRESSED AND CAREFULLY CONSIDERED
     # in gmVB_0.R code, we compute two of the three expectations outside of the
     # cavi loop since these are normally computed at the END of each cavi
     # iteration, so we need these to have values for the FIRST iteration
-    
-    
+    # ****
     
     # begin CAVI ---------------------------------------------------------------
     
@@ -62,43 +66,26 @@ varbdr = function(X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D,
         # (2) max_iter iterations have been performed
     for (i in 2:max_iter) {
         
-        # Variational E-step ---------------------------------------------------
+        # e-step, m-step
+        theta = eStep(theta)
+        theta = mStep(theta, prior)
         
-        # update responsibilities r_nk; involves E[ln tau_k], E[gamma_k],
-        # E[tau_k * (y_n - x_n'beta_k)^2], E[ln sum_j (x_n'gamma_j)]
+        # compute ELBO
+        theta$L[i] = elbo(theta, prior)
         
-        for (k in 1:K) {
-            
-            
-            
-        } # end of updating rho_nk
+        ## some calculation is done here in cov-independent code to recompute
+        ## 2 expectations
         
-        # update E[z_nk] = r_nk ------------------------------------------------
-        # log of the normalizing constant for the rho_nk's
-        # Z = log { sum_{j=1}^{k} exp( ln rho_{nj} ) }
-        logZ     = apply(log_rho_nk, 1, log_sum_exp) # log of norm. constant
-        log_r_nk = log_rho_nk - logZ                 # log of r_nk
-        r_nk     = apply(log_r_nk, 2, exp)           # exponentiate each column
+        # check for convergence
+        if (elboConverged(theta, prior)) {
+            break
+        }
         
-        # this is done within the estep() function
-    
-    
-    
-        
-        # Variational M-step ---------------------------------------------------
-        
-        
-    } # end of CAVI
-    
-    
-    
-    # prepare output -----------------------------------------------------------
+    } # end of CAVI loop
     
     # return list containing udpated variational parameters
     
-    out = list()
-    
-    return(out)
+    return(theta)
     
 } # end of varbdr() function
 

@@ -19,7 +19,6 @@ elbo = function(theta, prior) {
     psi_a = digamma(theta$a_k)    # (K x 1)
     psi_b = digamma(theta$b_k)    # (K x 1)
     
-    
     # alpha, xi, phi, related quantities ---- calculations moved to mStep.R
     # alpha = numeric(N)                   # (N x 1)
     # xi    = matrix(0, N, K)              # (N x K)
@@ -27,10 +26,7 @@ elbo = function(theta, prior) {
     # M     = theta$mu_k %*% t(lambda)     # (D x N) : (D x K) * (K x N)
     
     
-    
-    
     # compute 7 expectations ---------------------------------------------------
-    
     
     # E [ ln p(y | X, beta, tau, Z) ]
     e1 = numeric(N)
@@ -103,5 +99,3 @@ elbo = function(theta, prior) {
     return(vlb)
     
 } # end vb_elbo() function
-
-

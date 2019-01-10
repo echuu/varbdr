@@ -14,7 +14,8 @@
         # Sigma0   : prior covariance for gamma_k; k = 1,...,K
 # output: 
         # prior    : list containing the prior parameters
-initPriors = function(y, X, m_0, Lambda0, a_0, b_0, g0, Sigma0) {
+initPriors = function(y, X, m_0, Lambda0, a_0, b_0, g0, Sigma0,
+                      max_iter, tol, VERBOSE) {
     
     prior = list()
     
@@ -33,6 +34,12 @@ initPriors = function(y, X, m_0, Lambda0, a_0, b_0, g0, Sigma0) {
     # prior mean, precision for gamma_1:K
     prior$g_0      = g_0
     prior$Sigma_0  = Sigma_0
+    
+    # other algorithm-related parameters, 
+    prior$max_iter = max_iter
+    prior$tol      = tol
+    prior$VERBOSE  = VERBOSE
+    
     
     return(prior)
 } # end initPriors() function
