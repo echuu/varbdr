@@ -3,7 +3,6 @@
 # implementation of the densities used in the gaussian mixture problem
 
 
-
 # Mixture density using approximate predictive gaussian distribution
 mixture_pdf_gaussian = function(model, data) {
     mixture = vector(mode = "numeric", length = NROW(data))

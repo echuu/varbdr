@@ -74,7 +74,7 @@ initVarParams = function(N, D, K) {
                  N_k = N_k, beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k, 
                  V_k_inv = V_k_inv, m_k = m_k, a_k = a_k, b_k = b_k, 
                  alpha = alpha, xi = xi, lambda = lambda,
-                 Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k, L = L, curr = 0)
+                 Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k, L = L, curr = curr)
     
     
     return(theta)

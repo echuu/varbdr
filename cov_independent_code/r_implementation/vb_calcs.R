@@ -157,6 +157,14 @@ mStep = function(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m_0) {
     
     
     ## Update expectations over \pi and \Lambda
+    ## ***** these 2 (of the total 3 expectations) are updated here since
+    ## they are used in the calculation of the ELBO
+    ## The last expectation, which isn't needed in the ELBO, is computed
+    ## as needed in the NEXT iteration in the E-step (I think the purpose of
+    ## splitting these calculations is to save the extra computation in case
+    ## the elbo converges, save one expectation calculation)
+    ## see elbo below to verify
+    
     # E [ log(det(Lambda_k)) ]
     for (k in 1:K) {                                               
         log_Lambda[k] = sum(digamma((nu_k[k] + 1 - 1:D) / 2)) + 

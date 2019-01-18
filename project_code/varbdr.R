@@ -52,13 +52,6 @@ varbdr = function(y, X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D,
         # K = number of clusters
     theta = initVarParams(N, D, K)
     
-    # ****
-    # THIS NEEDS TO BE ADDRESSED AND CAREFULLY CONSIDERED
-    # in gmVB_0.R code, we compute two of the three expectations outside of the
-    # cavi loop since these are normally computed at the END of each cavi
-    # iteration, so we need these to have values for the FIRST iteration
-    # ****
-    
     # begin CAVI ---------------------------------------------------------------
     
     # perform coordinate ascent on variational parameters until EITHER:
