@@ -1,11 +1,9 @@
 
-# initVarParams.R
+# initVarParams.R -- covariate-DEPENNDENT case
 
    
 
-# initVarParams() -- initialize the variational parameters, 
-#                       store in master variable to generalize calculations
-    # in the following initializations, we do the following:
+# initVarParams() -- initialize the variational parameters
     # beta_k  : matrix of all 1's (not 0 since we start with X * beta != 0)
     # tau_k   : vector of 1's
     # gamma_k : matrix of all 0's
@@ -19,7 +17,7 @@
     # mu_k    : matrix of 0-mean vectors for gamma_k
 initVarParams = function(N, D, K) {
     
-    I_D   = diag(1, D)  # D X D  identity matrix
+    I_D   = diag(1, D)  # (D X D)  identity matrix
     
     # X = as.matrix(X)                   # (N x D) design matrix of covariates
     # D = NCOL(X)                        # Number of features
@@ -36,7 +34,9 @@ initVarParams = function(N, D, K) {
     
     N_k        = colSums(r_nk) + 1e-10 # (K x 1) : sum of wts for each cluster
     
-    # explicit random variables
+    # explicit random variables -- 
+    #    don't thnk these are used in CAVI, these are used later to 
+    #    generate the model parameters
     beta_k    = matrix(1, D, K)        # (D x K) : each beta_k stored col-wise
     tau_k     = numeric(1, K)          # (1 x K) : scale for precision, V_k
     gamma_k   = matrix(0, D, K)        # (D x K) : each gamma_k stored col-wise
@@ -65,17 +65,18 @@ initVarParams = function(N, D, K) {
     eta_k   = matrix(0, D, K)          # D x K       Q_k_inv * eta_k = mu_k
     mu_k    = matrix(0, D, K)          # D x K       mean of gamma_k
     
-    # current # of CAVI iterations
+    # current iteration of CAVI
     curr = 0
     
     
-    # 19-dim list
-    theta = list(log_rho_nk = log_rho_nk, log_r_nk = log_r_nk, r_nk = r_nk, 
-                 N_k = N_k, beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k, 
-                 V_k_inv = V_k_inv, m_k = m_k, a_k = a_k, b_k = b_k, 
+    # list containing all variational parameters
+    theta = list(beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k,
+                 log_r_nk = log_r_nk, r_nk = r_nk, N_k = N_k, 
+                 V_k_inv = V_k_inv, zeta_k = zeta_k, m_k = m_k, 
+                 a_k = a_k, b_k = b_k, 
                  alpha = alpha, xi = xi, lambda = lambda,
-                 Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k, L = L, curr = curr)
-    
+                 Q_k = Q_k, Q_k_inv = Q_k_inv, eta_k, mu_k = mu_k, 
+                 L = L, curr = curr)
     
     return(theta)
     

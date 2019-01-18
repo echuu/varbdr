@@ -1,5 +1,5 @@
 
-## elbo.R
+## elbo.R -- covariate-DEPENDENT case
 ## calculate the variational lower bound using the current variational params
 
 library(matrixcalc)
@@ -12,8 +12,10 @@ elbo = function(theta, prior) {
     
     X = prior$X
     y = prior$y
-    N = nrow(X)
-    K = ncol(X)
+    N = prior$N
+    D = prior$D
+    K = prior$K
+    
     
     # commonly computed terms
     psi_a = digamma(theta$a_k)    # (K x 1)

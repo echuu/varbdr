@@ -1,20 +1,23 @@
 
-## initPriors.R
+## initPriors.R -- covariate-DEPENDENT case
 
 # create a prior list using the priors passed in for each parameter
 # input:
-        # y        : (N x 1) -- response values
-        # X        : (N x D) -- covariates stored row-wise
-        # K        : # of mixture componenets
-        # m0       : prior mean for beta_k; k = 1,...,K
-        # Lambda0  : prior (scaled) precision matrix for beta_k; k = 1,...,K
-        # a0       : prior shape parameter for tau_k; k = 1,...,K
-        # b0       : prior rate parameter for tau_k; k = 1,...,K
-        # g0       : prior mean for gamma_k; k = 1,...,K
-        # Sigma0   : prior covariance for gamma_k; k = 1,...,K
+        # y         : (N x 1) -- response values
+        # X         : (N x D) -- covariates stored row-wise
+        # K         : # of mixture componenets
+        # m_0       : prior mean for beta_k; k = 1, ... , K
+        # Lambda_0  : prior (scaled) precision matrix for beta_k; k = 1, ... , K
+        # a_0       : prior shape parameter for tau_k; k = 1, ... , K
+        # b_0       : prior rate parameter for tau_k; k = 1, ... , K
+        # g_0       : prior mean for gamma_k; k = 1, ... , K
+        # Sigma_0   : prior covariance for gamma_k; k = 1, ... , K
+        # max_iter  : max # of iters to run CAVI
+        # tol       : tolerlance for evaluating change in elbo
+        # VERBOSE   : if TRUE, then detailed convergence output will be produced
 # output: 
-        # prior    : list containing the prior parameters
-initPriors = function(y, X, m_0, Lambda0, a_0, b_0, g0, Sigma0,
+        # prior     : list containing the prior parameters
+initPriors = function(y, X, K, m_0, Lambda0, a_0, b_0, g0, Sigma0,
                       max_iter, tol, VERBOSE) {
     
     prior = list()
@@ -22,6 +25,11 @@ initPriors = function(y, X, m_0, Lambda0, a_0, b_0, g0, Sigma0,
     # response, design matrix
     prior$y        = y
     prior$X        = X
+    
+    # num observations, dim of covariates, num of clusters
+    prior$N        = N
+    prior$D        = D
+    prior$K        = K
     
     # prior mean and precision for beta_1:K
     prior$m_0      = m_0

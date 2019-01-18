@@ -7,7 +7,8 @@ library(Matrix)
 
 
 # setwd("~/varbdr/r_implementation")
-setwd("C:/Users/chuu/varbdr/cov_independent_code/r_implementation")
+setwd("/home/eric/varbdr/code/vb_gmm/r_imp")
+# setwd("C:/Users/chuu/varbdr/cov_independent_code/r_implementation")
 
 source("densityCalculations.R")
 source("vb_calcs.R")
