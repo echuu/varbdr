@@ -2,6 +2,7 @@
 library(Matrix)
 source("misc.R")
 
+## vb calculations for gaussian mixture model
 
 # initialize variational parameters + related variables
 # intput: 

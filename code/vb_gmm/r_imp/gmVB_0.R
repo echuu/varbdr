@@ -5,6 +5,7 @@ library(purrr)        # overlapping transpose function from data.table
 library(mvtnorm)
 library(Matrix)
 
+## cavi algorithm for gaussian mixture model
 
 # setwd("~/varbdr/r_implementation")
 setwd("/home/eric/varbdr/code/vb_gmm/r_imp")
