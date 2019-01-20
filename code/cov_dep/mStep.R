@@ -80,7 +80,7 @@ mStep() = function(theta, prior) {
     theta$a_k = prior$a_0 + theta$N_k
     for (k in 1:K) {
         theta$b_k[k] = - t(theta$zeta_k[,k]) %*% theta$V_k_inv[,,k] %*% 
-            theta$zeta_k[,k] + sum(r_nk[,k] * y^2)
+            theta$zeta_k[,k] + sum(theta$r_nk[,k] * y^2)
     }
     
     theta$b_k = (b_k + t(prior$m_0) %*% prior$Lambda_0 %*% prior$m_0) / 2 + b_0
