@@ -9,8 +9,13 @@ library(matrixcalc)
 # output:
 #         theta : list of variational parameters with 
 #                 r_nk, log_r_nk, updated
-eStep() = function(theta) {
+eStep() = function(theta, prior) {
     
+    X = prior$X
+    y = prior$y
+    N = prior$N
+    K = prior$K
+    D = prior$D
     
     # initialize local copies of variational parameters to be updated:
     r_nk       = matrix(0, N, K)       # (N x K) : normalized responsibilities
@@ -32,7 +37,7 @@ eStep() = function(theta) {
     # E[ln pi_k] --- vectorized calculation for pi_1, .., pi_K
     e_ln_pi = digamma(theta$alpha_k) - digamma(sum(theta$alpha_k)) # (K x 1)
     
-    X_mu  = X %*% mu                   # (N x K) : (N x D) * (D x K)
+    X_mu  = X %*% theta$mu_k           # (N x K) : (N x D) * (D x K)
     
     # update log_rho_nk (row-wise updates)
     for (n in 1:N) {

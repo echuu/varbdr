@@ -9,8 +9,15 @@ library(matrixcalc)
 # output:
 #         theta : list of variational parameters with 
 #                 r_nk, log_r_nk, updated
-eStep() = function(theta) {
+eStep() = function(theta, prior) {
     
+
+    X = prior$X
+    y = prior$y
+    N = prior$N
+    K = prior$K
+    D = prior$D
+
     
     # initialize local copies of variational parameters to be updated:
     r_nk       = matrix(0, N, K)       # (N x K) : normalized responsibilities

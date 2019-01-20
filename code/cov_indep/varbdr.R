@@ -53,7 +53,7 @@ varbdr = function(y, X, K = 3,
     for (i in 2:max_iter) {
         
         # e-step, m-step
-        theta = eStep(theta)
+        theta = eStep(theta, prior)
         theta = mStep(theta, prior)
         
         # compute ELBO
