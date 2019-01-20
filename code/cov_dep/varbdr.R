@@ -1,9 +1,9 @@
 
 
-# varbdr.R
+# varbdr.R -- covariate-DEPENDENT case
 
 ## conditional density estimation using mixture of experts with covariate 
-## dependent weights + VB for faster inference
+## DEPENDENT weights + VB for faster inference
 
 
 ## global params ---------------------------------------------------------------
