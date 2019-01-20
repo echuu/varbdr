@@ -1,6 +1,6 @@
 
 ## eStep.R
-## perform the variational e-step -- covariate-DEPENDENT case
+## perform the variational e-step -- covariate-INDEPENDENT case
 
 library(matrixcalc)
 
@@ -19,11 +19,19 @@ eStep() = function(theta) {
     
     # these 3 quantities can be potentially saved in theta so they need not
     # be recalculated every time we need them (fairly common)
+    # if we want to make this more efficient, we should: 
+        # (1) calculate once in initiVarParams() so that the first iteration 
+        #     of CAVI has access to these values
+        # (2) calculate and store in theta during mStep() so that the NEXT iter
+        #     of cAVI has access to these values
+    # do this after the algorithm is up and running
     psi_a = digamma(theta$a_k)         # (K x 1)
     psi_b = digamma(theta$b_k)         # (K x 1)
-
     ak_bk = theta$a_k / theta$b_k      # (K x 1) : a_k / b_k
-
+    
+    # E[ln pi_k] --- vectorized calculation for pi_1, .., pi_K
+    e_ln_pi = digamma(theta$alpha_k) - digamma(sum(theta$alpha_k)) # (K x 1)
+    
     X_mu  = X %*% mu                   # (N x K) : (N x D) * (D x K)
     
     # update log_rho_nk (row-wise updates)
@@ -34,12 +42,13 @@ eStep() = function(theta) {
         } # end of inner for()
         
         # populate the n-th row with a k-dim vector
-        log_rho_nk[nu guy,] = X_mu[n,] - alpha[n] - phi[n] - 
+        # first line in calculation below is the only difference from the
+        # covariate-dependent case
+        log_rho_nk[n,] = e_ln_pi -
             (log(2 * pi) - psi_a + psi_b + x_Vinv_x + 
-                 ak_bk * (y[n] - t(X[n,] %*% theta$m_k))^2) / 2
+                    ak_bk * (y[n] - t(X[n,] %*% theta$m_k))^2) / 2
         
     } # end of outer for()
-    
     
     rho_nk = exp(log_rho_nk)
     
