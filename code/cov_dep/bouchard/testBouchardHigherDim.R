@@ -1,7 +1,16 @@
 
+# testBouchardHigherDim.R
 
-testBound_1 = function() {
-    K = 1
+# testing bouchard bound for higher dimensions, i.e., K, d > 1
+# K = number of clusters
+# d = dimension of covariates
+
+library(cubature)
+options(digits = 6)
+
+# testing Bouchard bound for K = 2, d = 1
+testBound_2 = function() {
+    K = 2
     d = 1
     maxIter = 200
     tol     = 1e-4
@@ -13,27 +22,26 @@ testBound_1 = function() {
     xi      = rep(0, K) # xi_k in [0, inf)
     xSigmax = rep(0, K)
     
-    x = runif(1, min = 0, max = 1)      # x ~ unif(0, 1)
+    x = runif(1, min = 0, max = 1)                     # x ~ unif(0, 1)
     
-    mu = rnorm(1, mean = 0, sd = 1)     # mu ~ N(0, 1)
-    sigma_sq = rgamma(1, 1)             # sigma_sq ~ Ga(1, 1)
+    mu = rnorm(K, mean = 0, sd = 1)                    # mu ~ N(0, 1)
+    sigma_sq = rgamma(n = K, shape = 1, rate = 1)      # sigma_sq ~ Ga(1, 1)
     
     f = function(beta) {
-        # print(x)
-        x * beta * dnorm(beta, mean = mu, sd = sqrt(sigma_sq))
+        log_sum_exp(x * beta) * 
+            dnorm(beta[1], mean = mu[1], sd = sqrt(sigma_sq[1])) *
+            dnorm(beta[2], mean = mu[2], sd = sqrt(sigma_sq[2]))
     }
     
-    # analytical value
-    true_val = x * mu
-    
     # numerical integration value
-    numer_val = adaptIntegrate(f, lowerLimit = -Inf, upperLimit = Inf)
-
+    numer_val = adaptIntegrate(f, lowerLimit = rep(-Inf, K), 
+                               upperLimit = rep(Inf, K))
+    
     # precompute some quantities that are used in every iteration of the 
     # variational loop
     mu_x = t(x) %*% mu             # K x 1 vector, k-th element is mu_k'x
     for (k in 1:K) {
-        xSigmax[k] = x^2 * sigma_sq
+        xSigmax[k] = t(x) %*% sigma_sq[k] %*% x    # x' Sigma_k x
     }
     
     ## coordinate ascent to minimize the upper bound
@@ -67,28 +75,23 @@ testBound_1 = function() {
                 #"\txi:\t", xi, 
                 "\tUB:  ", round(bd[i], 5),
                 "\t Numerical:  ", numer_val$integral,
-                "\tTrue:  ", true_val,
-                "\tDelta: ", true_val - bd[i],
+                "\t\t Delta: ", bd[i] - numer_val$integral,
                 "\n")
             break
         }
     } # end of coordinate ascent
     
-    return(bd[i] >= true_val)
+    return(bd[i] >= numer_val$integral)
 }
 
-
 set.seed(1)
-
 for (i in 1:10) {
-    if (testBound()) {
+    if (testBound_2()) {
         # print("bound holds: ")
     } else {
         cat("Iter: ", i, "\t upper bound below the ground truth")
     }
 }
-
-
 
 
 
