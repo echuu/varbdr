@@ -7,7 +7,7 @@ library(ggplot2)
 
 
 D     = 2           # dimension of covariate, 2 <= d <= 100
-K     = 10          # number of clusters
+K     = 5          # number of clusters
 N     = 1           # number of samples
 I_D   = diag(1, D)  # D X D  identity matrix
 df    = 100         # degrees of freedom for Wishart distribution
@@ -28,8 +28,8 @@ x      = mvrnorm(N, rep(0, D), I_D)
 
 # compute the mc-approximate value -- this will be the baseline, what we compare
 # the variational bound to
-R = 1e5
-mc_approx = mcBound(x, K, D, R , mu, Sigma)
+R = 1e4
+mc_approx = mv_mcBound(x, K, D, R , mu, Sigma)
 mc_approx 
 
 # K = 2  : 4.816663
@@ -161,8 +161,8 @@ checkConvergence = function(bound, i, maxIter, tol, VERBOSE = TRUE) {
     # mu     : D x K        mean vector for each of the K clusters
     # Sigma  : K x (D x D)  K-dim array of (D x D) cov matrices for each cluster
 # output: monte carlo estimate of E[log(sum(exp(x'beta)))] 
-mcBound = function(x, K, D, R = 1e5, mu, Sigma, seed = 1) {
-    set.seed(seed)
+mv_mcBound = function(x, K, D, R = 1e5, mu, Sigma) {
+    # set.seed(seed)
     mcSum = 0;
     b_k   =  matrix(0, D, K) # D x K matrix, coefficient vectors stored col-wise
     # outer MC loop
@@ -175,6 +175,27 @@ mcBound = function(x, K, D, R = 1e5, mu, Sigma, seed = 1) {
         
         # mcSum = mcSum + log(sum(exp(t(x) %*% b_k)))     
         mcSum = mcSum + log_sum_exp(t(x) %*% b_k)     # more stable calculation
+    } # end of outer MC loop
+    
+    return(mcSum / R)
+    
+} # end of mcBound() function
+
+
+mcBound = function(x, K, R = 1e5, mu, Sigma) {
+    # set.seed(seed)
+    mcSum = 0;
+    b_k   =  numeric(K) 
+    # outer MC loop
+    for (r in 1:R) {
+        
+        for (k in 1:K) {
+            # sample beta_k ~ N (mu_k, Sigma_k)
+            b_k[k] = rnorm(1, mu[k], Sigma[k]) 
+        }
+        
+        # mcSum = mcSum + log(sum(exp(t(x) %*% b_k)))     
+        mcSum = mcSum + log_sum_exp(x * b_k)     # more stable calculation
     } # end of outer MC loop
     
     return(mcSum / R)

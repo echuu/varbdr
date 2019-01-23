@@ -10,7 +10,7 @@ options(digits = 6)
 
 # testing Bouchard bound for K = 2, d = 1
 testBound_2 = function() {
-    K = 2
+    K = 5
     d = 1
     maxIter = 200
     tol     = 1e-4
@@ -28,14 +28,21 @@ testBound_2 = function() {
     sigma_sq = rgamma(n = K, shape = 1, rate = 1)      # sigma_sq ~ Ga(1, 1)
     
     f = function(beta) {
-        log_sum_exp(x * beta) * 
-            dnorm(beta[1], mean = mu[1], sd = sqrt(sigma_sq[1])) *
-            dnorm(beta[2], mean = mu[2], sd = sqrt(sigma_sq[2]))
+        q_beta = numeric(K)
+        for (k in 1:K) {
+            q_beta[k] =  dnorm(beta[k], mean = mu[k], sd = sqrt(sigma_sq[k]))
+        }
+        log_sum_exp(x * beta) * prod(q_beta)
     }
     
     # numerical integration value
     numer_val = adaptIntegrate(f, lowerLimit = rep(-Inf, K), 
                                upperLimit = rep(Inf, K))
+    
+    # mc approximation:
+    R = 1e5
+    # mc_approx = mcBound(x, K, R , mu, sigma_sq)
+    # mc_approx 
     
     # precompute some quantities that are used in every iteration of the 
     # variational loop
@@ -75,6 +82,7 @@ testBound_2 = function() {
                 #"\txi:\t", xi, 
                 "\tUB:  ", round(bd[i], 5),
                 "\t Numerical:  ", numer_val$integral,
+                "\t MC:  ", mc_approx,
                 "\t\t Delta: ", bd[i] - numer_val$integral,
                 "\n")
             break
