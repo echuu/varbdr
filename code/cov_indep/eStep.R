@@ -9,7 +9,9 @@ library(matrixcalc)
 # output:
 #         theta : list of variational parameters with 
 #                 r_nk, log_r_nk, updated
-eStep() = function(theta, prior) {
+eStep = function(theta, prior) {
+    
+    print("e-step")
     
     X = prior$X
     y = prior$y
@@ -37,13 +39,15 @@ eStep() = function(theta, prior) {
     # E[ln pi_k] --- vectorized calculation for pi_1, .., pi_K
     e_ln_pi = digamma(theta$alpha_k) - digamma(sum(theta$alpha_k)) # (K x 1)
     
-    X_mu  = X %*% theta$mu_k           # (N x K) : (N x D) * (D x K)
+    X_mu  = X %*% theta$m_k            # (N x K) : (N x D) * (D x K)
     
     # update log_rho_nk (row-wise updates)
     for (n in 1:N) {
         x_Vinv_x = numeric(K)
         for (k in 1:K) {
-            x_Vinv_x[k] = X[n,] %*% theta$V_inv[,,k] %*% t(X[n,]) # scalar
+            # print(length(X[n,]))
+            # print(dim(theta$V_k_inv[,,k]))
+            x_Vinv_x[k] = t(X[n,]) %*% theta$V_k_inv[,,k] %*% X[n,] # scalar
         } # end of inner for()
         
         # populate the n-th row with a k-dim vector

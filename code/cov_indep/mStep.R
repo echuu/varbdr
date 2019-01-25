@@ -10,9 +10,11 @@ library(matrixcalc)
 #          theta : list of variational parameters with 
 #                  variational parameters updated
 
-mStep() = function(theta, prior) {
+mStep = function(theta, prior) {
     
-
+    
+    print("m-step")
+    
     X = prior$X
     y = prior$y
     N = prior$N
@@ -20,8 +22,8 @@ mStep() = function(theta, prior) {
     D = prior$D
     
     I_D        = diag(1, D)                      # (D X D) : identity matrix
-    X_mu       = X %*% theta$mu_k                # (N x K) : (N x D) * (D x K)
-    M          = theta$mu_k %*% t(theta$lambda)  # (D x N) : (D x K) * (K x N)
+    # X_m        = X %*% theta$m_k                 # (N x K) : (N x D) * (D x K)
+    # M          = theta$mu_k %*% t(theta$lambda)  # (D x N) : (D x K) * (K x N)
     Lambda0_m0 = prior$Lambda_0 %*% prior$m_0    # (D x 1) : Lambda_0 * m_0    
     
     # update q(pi) = Dir( pi | alpha_k )

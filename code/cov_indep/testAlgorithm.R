@@ -4,8 +4,6 @@
 library(ggplot2)
 library(reshape2)
 
-source("varbdr.R")
-
 
 ## load/generate the data
 
@@ -51,10 +49,11 @@ p + labs(x = "y", y = "p (y | x)",
          title = "Conditional Densities for varying values of x")
 
 
-# run algorithm
-theta = varbdr(y = y, X = X)
 
+## begin VB algorithm for conditional density estimation -----------------------
 
+source("varbdr.R")              # load the CAVI algorithm for BDR
+theta = varbdr(y = y, X = X)    # run algorithm
 
 
 

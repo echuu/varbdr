@@ -3,7 +3,7 @@
 # varbdr.R -- covariate-INDEPENDENT case
 
 source("initPriors.R")
-source("initiVarParams.R")
+source("initVarParams.R")
 source("eStep.R")
 source("mStep.R")
 source("elbo.R")
@@ -13,6 +13,11 @@ source("misc.R")
 ## INDEPENDENT weights + VB for faster inference
 
 ## initialize model parameters -------------------------------------------------
+
+
+## globals
+
+
 
 ## input:
 #         y        : (N x 1) -- response values
@@ -25,7 +30,8 @@ source("misc.R")
 #         b0       : prior rate parameter for tau_k; k = 1,...,K
 varbdr = function(y, X, K = 3, 
                   alpha_0 = rep(1 / K, K),                      # dir param
-                  m_0 = c(colMeans(X)), Lambda_0 = I_D,         # normal params
+                  m_0 = c(colMeans(X)),                         # normal params
+                  Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
                   max_iter = 500, tol = 1e-4, VERBOSE = TRUE) {
     
@@ -41,7 +47,7 @@ varbdr = function(y, X, K = 3,
     #           pi ~ Dir (alpha_0)
     # mu_k | tau_k ~ N  (m0, (tau_k * Lambda0)^{-1})
     #        tau_k ~ Ga (a0, b0)
-
+    
     # intialize prior object using the prior parameters passed in
     prior = initPriors(y, X, K, alpha_0, m_0, Lambda_0, a_0, b_0, 
                        max_iter, tol, VERBOSE)
@@ -50,7 +56,7 @@ varbdr = function(y, X, K = 3,
     #     N = number of observations
     #     D = dimension of covariaftes
     #     K = number of clusters
-    theta = initVarParams(N, D, K)
+    theta = initVarParams(N, D, K, max_iter)
     
     # begin CAVI ---------------------------------------------------------------
     

@@ -10,7 +10,7 @@
 # output: 
 #         theta    : list containing the variational parameters
 
-initVarParams = function(N, D, K) {
+initVarParams = function(N, D, K, max_iter) {
 
     I_D   = diag(1, D)            # (D X D)  identity matrix
     L     = rep(-Inf, max_iter)   # store the variational lower bonuds
@@ -18,9 +18,9 @@ initVarParams = function(N, D, K) {
     # explicit random variables -- 
     #    don't thnk these are used in CAVI, these are used later to 
     #    generate the model parameters
-    pi_k      = numerric(0, K)         # (1 x K) : concentration parameters
+    pi_k      = numeric(K)             # (1 x K) : concentration parameters
     beta_k    = matrix(1, D, K)        # (D x K) : each beta_k stored col-wise
-    tau_k     = numeric(1, K)          # (1 x K) : scale for precision, V_k
+    tau_k     = rep(1, K)              # (1 x K) : scale for precision, V_k
 
 
     # E[z_nk] = r_nk; these quantities are updated during the var e-step
@@ -35,7 +35,7 @@ initVarParams = function(N, D, K) {
     # model parameters for the random variables involved in the model
     
     # (1) variational parameter for pi ~ Dir(alpha_1, ... , alpha_K)
-    alpha_k = numeric(0, K)            # K x 1
+    alpha_k = rep(1 / K, K)            # K x 1
     
     # (2) variational parameters for beta_k | tau_k ~ N(m_k, (tau_k V_k)^{-1})
     V_k     = array(I_D, c(D, D, K))   # K x (D x D)
