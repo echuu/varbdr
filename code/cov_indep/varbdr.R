@@ -2,6 +2,13 @@
 
 # varbdr.R -- covariate-INDEPENDENT case
 
+source("initPriors.R")
+source("initiVarParams.R")
+source("eStep.R")
+source("mStep.R")
+source("elbo.R")
+source("misc.R")
+
 ## conditional density estimation using mixture of experts with covariate 
 ## INDEPENDENT weights + VB for faster inference
 
@@ -19,7 +26,7 @@
 varbdr = function(y, X, K = 3, 
                   alpha_0 = rep(1 / K, K),                      # dir param
                   m_0 = c(colMeans(X)), Lambda_0 = I_D,         # normal params
-                  a_0, b_0,                                     # gamma params
+                  a_0 = 1, b_0 = 1,                             # gamma params
                   max_iter = 500, tol = 1e-4, VERBOSE = TRUE) {
     
     # TODO: set default values for a_0, b_0 
@@ -63,7 +70,7 @@ varbdr = function(y, X, K = 3,
         ## 2 expectations
         
         # check for convergence
-        if (elboConverged(theta, prior)) {
+        if (checkELBO(theta, prior)) {
             break
         }
         

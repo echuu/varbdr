@@ -2,6 +2,13 @@
 
 # varbdr.R -- covariate-DEPENDENT case
 
+source("initPriors.R")
+source("initiVarParams.R")
+source("eStep.R")
+source("mStep.R")
+source("elbo.R")
+source("misc.R")
+
 ## conditional density estimation using mixture of experts with covariate 
 ## DEPENDENT weights + VB for faster inference
 
@@ -70,7 +77,7 @@ varbdr = function(y, X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D,
         ## 2 expectations
         
         # check for convergence
-        if (elboConverged(theta, prior)) {
+        if (checkELBO(theta, prior)) {
             break
         }
         
