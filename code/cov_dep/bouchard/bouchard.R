@@ -122,7 +122,7 @@ computeBound = function(mu_x, xSigmax, xi, lambda_xi, alpha, K) {
     # maxIter  : maximum # of iters to allow
     # tol      : minimum difference between bounds before convergence
     # VERBOSE  : boolean, if TRUE, then display extra details/values
-checkConvergence = function(bound, i, maxIter, tol, VERBOSE = TRUE) {
+checkConvergence = function(bound, i, maxIter, tol, VERBOSE = FALSE) {
     CONVERGE = FALSE
     
     # display current iter, bound for current iter, difference from prev iter

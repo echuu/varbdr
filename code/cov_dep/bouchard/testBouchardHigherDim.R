@@ -8,9 +8,22 @@
 library(cubature)
 options(digits = 6)
 
+# log_sum_exp():
+# calculates expressions of the form log(sum(exp(x)))
+log_sum_exp = function(x) { 
+    offset = max(x)                         
+    s = log(sum(exp(x - offset))) + offset  # scale by max to prevent overflow
+    i = which(!is.finite(s))                # check for any overflow
+    if (length(i) > 0) {                    # replace inf values with max
+        s[i] = offset 
+    }
+    return(s)
+} # end of log_sum_exp()
+
+
 # testing Bouchard bound for K = 2, d = 1
 testBound_2 = function() {
-    K = 5
+    K = 2
     d = 1
     maxIter = 200
     tol     = 1e-4
@@ -82,7 +95,7 @@ testBound_2 = function() {
                 #"\txi:\t", xi, 
                 "\tUB:  ", round(bd[i], 5),
                 "\t Numerical:  ", numer_val$integral,
-                "\t MC:  ", mc_approx,
+                #"\t MC:  ", mc_approx,
                 "\t\t Delta: ", bd[i] - numer_val$integral,
                 "\n")
             break

@@ -3,6 +3,7 @@
 ## perform the variational e-step -- covariate-INDEPENDENT case
 
 library(matrixcalc)
+source("misc.R")
 
 # input: 
 #         theta : list of variational parameters
@@ -39,7 +40,7 @@ eStep = function(theta, prior) {
     # E[ln pi_k] --- vectorized calculation for pi_1, .., pi_K
     e_ln_pi = digamma(theta$alpha_k) - digamma(sum(theta$alpha_k)) # (K x 1)
     
-    X_mu  = X %*% theta$m_k            # (N x K) : (N x D) * (D x K)
+    # X_mu  = X %*% theta$m_k            # (N x K) : (N x D) * (D x K)
     
     # update log_rho_nk (row-wise updates)
     for (n in 1:N) {
@@ -59,23 +60,41 @@ eStep = function(theta, prior) {
         
     } # end of outer for()
     
-    rho_nk = exp(log_rho_nk)
+    for (n in 1:N) {
+        for (k in 1:K) {
+            
+            log_rho_nk[n,k] = -0.5 * log(2 * pi) + 0.5 * (psi_a[k] - psi_b[k]) -
+                0.5 * (theta$a_k[k] / theta$b_k[k] * 
+                           (y[n] - t(X[n,]) %*% theta$m[,k]) + 
+                           t(X[n,]) %*% theta$V_k_inv[,,k] %*% X[n,]) +
+                digamma(theta$alpha_k[k]) - digamma(sum(theta$alpha_k))
+            
+        }
+    }
+    
+    # rho_nk = exp(log_rho_nk)
     
     # compute r_nk = divide each element of rho_nk by the sum of the
     #                corresponding row; each row consists of 'responsibilities'
     #                of each of the clusters for the observation in that row
-    r_nk = sweep(rho_nk, MARGIN = 1, STAT = rowSums(rho_nk), FUN = '/')
+    # r_nk = sweep(rho_nk, MARGIN = 1, STAT = rowSums(rho_nk), FUN = '/')
     
     
     # compute log_r_nk
-    log_r_nk = log(r_nk)
+    # log_r_nk = log(r_nk)
     
-    # this quantity is not used later (i think)
-    # theta$log_rho_rnk = log_rho_nk 
     
-    theta$log_r_nk    = log_r_nk        # (N x K)
-    theta$r_nk        = r_nk            # (N x K)
-    theta$N_k         = colSums(r_nk)   # (K x 1)
+    logZ     = apply(log_rho_nk, 1, log_sum_exp)  # log of normalizing constant
+    log_r_nk = log_rho_nk - logZ                  # log of r_nk
+    r_nk     = apply(log_r_nk, 2, exp)            # exponentiate to recover r_nk
+    
+    cat("difference in r_nk:", sum(theta$r_nk - r_nk), "\n")
+    print(rowSums(r_nk))
+    
+    
+    theta$log_r_nk    = log_r_nk                # (N x K)
+    theta$r_nk        = r_nk                    # (N x K)
+    theta$N_k         = colSums(r_nk) + 1e-10   # (K x 1)
     
     return(theta)
     

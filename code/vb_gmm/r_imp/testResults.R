@@ -4,29 +4,31 @@ run = function() {
     set.seed(12)
     
     # setwd to source file location
-    # setwd("C:/Users/chuu/varbdr/cov_independent_code/r_implementation")
-    setwd("/home/eric/varbdr/code/vb_gmm/r_imp")
+    setwd("C:/Users/chuu/varbdr/code/vb_gmm/r_imp")
+    # setwd("/home/eric/varbdr/code/vb_gmm/r_imp")
     source("displayResults.R")
     source("gmVB_0.R")
     
     
     # View(faithful) # 272 x 2 : duration of eruption, waiting time b/w eruptions
     
+    # X = as.matrix(faithful[1:10,])
     X = as.matrix(faithful)
     K = 25        # Number of clusters
     
-    K = 25
+    K = 3
     alpha_0 = 1e-5
     m_0 = c(colMeans(X))
     beta_0 = 1 
     nu_0 = NCOL(X) + 50
     W_0 = diag(100, NCOL(X))
-    max_iter = 1001
+    max_iter = 500
     epsilon_conv = 1e-4
     is_animation = TRUE
     VERBOSE = TRUE
     
     # Run vb-gmm model model
+    source("gmVB_0.R")
     vb_gmm_model = vb_gmm(X = X, K = K, alpha_0 = 1e-5, max_iter = 1001, 
                            is_animation = TRUE, VERBOSE = TRUE)
     

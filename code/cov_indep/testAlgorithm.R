@@ -52,9 +52,10 @@ p + labs(x = "y", y = "p (y | x)",
 
 ## begin VB algorithm for conditional density estimation -----------------------
 
-source("varbdr.R")              # load the CAVI algorithm for BDR
-theta = varbdr(y = y, X = X)    # run algorithm
-
+run = function() {
+    source("varbdr.R")              # load the CAVI algorithm for BDR
+    theta = varbdr(y = y, X = X)    # run algorithm
+}
 
 
 

@@ -8,8 +8,8 @@ library(Matrix)
 ## cavi algorithm for gaussian mixture model
 
 # setwd("~/varbdr/r_implementation")
-setwd("/home/eric/varbdr/code/vb_gmm/r_imp")
-# setwd("C:/Users/chuu/varbdr/cov_independent_code/r_implementation")
+# setwd("/home/eric/varbdr/code/vb_gmm/r_imp")
+# setwd("C:/Users/chuu/varbdr/code/vb_gmm/r_imp")
 
 source("densityCalculations.R")
 source("vb_calcs.R")
@@ -43,7 +43,7 @@ source("misc.R")
 # nu      : updated degrees of freedom for each Lambda_k
 # L       : variational lower bound at each iteration (ELBO)
 # dt_all  : graphic parameter
-vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1, 
+vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)), beta_0 = 1, 
                   nu_0 = NCOL(X) + 50, W_0 = diag(100, NCOL(X)), max_iter = 500, 
                   epsilon_conv = 1e-4, is_animation = FALSE, VERBOSE = FALSE) {
     
@@ -76,6 +76,7 @@ vb_gmm = function(X, K = 3, alpha_0 = 1 / K, m_0 = c(colMeans(X)), beta_0 = 1,
     
     # initialize variational parameters: for mu_k, lambda_k, alpha_k, pi_k
     m_k       = t(kmeans(X, K, nstart = 25)$centers)  # Mean of Gaussian
+    m_k       = matrix(0, D, K)
     beta_k    = rep(beta_0, K)                        # Scale of precision mat
     nu_k      = rep(nu_0, K)                          # Degrees of freedom
     alpha     = rep(alpha_0, K)                       # Dirichlet parameter

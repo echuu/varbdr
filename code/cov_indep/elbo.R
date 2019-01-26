@@ -32,7 +32,7 @@ elbo = function(theta, prior) {
     
     # expectation of log dirichlet 
     #    E_q [ln pi_k] = digamma(alpha_k) - digamma(sum(alpha)), for all k
-    e_ln_pi = digamma(theta$alpha_k) - digamma(sum(alpha_k)) # (K x 1)
+    e_ln_pi = digamma(theta$alpha_k) - digamma(sum(theta$alpha_k)) # (K x 1)
     
     
     # compute 7 expectations ---------------------------------------------------
@@ -47,7 +47,7 @@ elbo = function(theta, prior) {
     for (n in 1:N) {
         x_Vinv_x = numeric(K)
         for (k in 1:K) {
-            x_Vinv_x[k] = X[n,] %*% theta$V_inv[,,k] %*% t(X[n,]) # scalar
+            x_Vinv_x[k] = t(X[n,]) %*% theta$V_k_inv[,,k] %*% X[n,] # scalar
         } # end of inner for()
         
         # perform the inner k-summation
@@ -89,7 +89,7 @@ elbo = function(theta, prior) {
     #                 note distinction between E[ln p(pi)] and E[ln pi]
     # compute log of dirichlet constant for pi ~ Dir(alpha_0) (prior)
     log_C_alpha_0 = log_dir_const(prior$alpha_0, 1) # log_dir_const() in misc.R
-    e_ln_p_pi = log_C_alpha_0 + (prior$alpha_0 - 1) * sum(e_ln_pi)
+    e_ln_p_pi = log_C_alpha_0 + sum((prior$alpha_0 - 1) * e_ln_pi)
     
 
     # E[ln q(z)] --- same as covariate-dependent case --------------------------
@@ -99,26 +99,35 @@ elbo = function(theta, prior) {
     # E[ln q(pi)] --- does not exist in covariate-dependent case ---------------
     # compute log of dirichlet constant for pi ~ Dir(alpha_k) (var. dist.)
     log_C_alpha_k = log_dir_const(theta$alpha_k, K)
-    e_ln_q_pi = log_C_alpha_k + sum((alpha_k - 1) * e_ln_pi) # k-sum
+    e_ln_q_pi = log_C_alpha_k + sum((theta$alpha_k - 1) * e_ln_pi) # k-sum
     
     
     # E[ln q(beta, tau)] --- same as covariate-dependent case ------------------
-    e7_k = (0.5 * D + a_k - 1) * (psi_a - psi_b) + 
+    e7_k = (0.5 * D + theta$a_k - 1) * (psi_a - psi_b) + 
         theta$a_k * log(theta$b_k) - theta$a_k - lgamma(theta$a_k)  # (K x 1)
     for (k in 1:K) {
-        e6_k[k] = e6_k[k] + log(det(theta$V_k))
+        e7_k[k] = e7_k[k] + log(det(theta$V_k[,,k]))
     }
-    e_ln_q_beta_tau = sum(e6_k) - 0.5 * K * D * (log(2 * pi) + 1)
+    e_ln_q_beta_tau = sum(e7_k) - 0.5 * K * D * (log(2 * pi) + 1)
 
     
     # compute the ELBO, sum of the previous 7 expectations ---------------------
     
     # L = E[ln p(y | X, beta, tau, Z)] + E[ln p(z | pi)] + E[ln p(beta, tau)] + 
     #     E[ln p(pi)] - E[ln q(z)] - E[ln q(pi)] - E[ln q(beta, tau)]
+    
+    cat("len. of E[ln p (y | - )]: ",     (e_ln_p_y), "\n")
+    cat("len. of E[ln p (Z | - )]: ",     (e_ln_p_z), "\n")
+    cat("len. of E[ln p (beta, tau)]: ",  (e_ln_p_beta_tau), "\n")
+    cat("len. of E[ln p (pi)]: ",         (e_ln_p_pi), "\n")
+    cat("len. of E[ln q (Z)]: ",          (e_ln_q_z), "\n")
+    cat("len. of E[ln q (pi)]: ",         (e_ln_q_pi), "\n")
+    cat("len. of E[ln q (beta, tau)]: ",  (e_ln_q_beta_tau), "\n")
+
     vlb = e_ln_p_y + e_ln_p_z + e_ln_p_beta_tau + e_ln_p_pi -
         e_ln_q_z - e_ln_q_pi - e_ln_q_beta_tau
-    
+    cat("ELBO:", vlb, "\n", sep = " ")
     
     return(vlb)
     
-} # end vb_elbo() function
+} # end elbo() function

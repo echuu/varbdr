@@ -49,7 +49,7 @@ initVarParams = function(N, D, K, max_iter) {
     
     
     # current iteration of CAVI
-    curr = 0
+    curr = 1
     
     theta = list(pi_k = pi_k, beta_k = beta_k, tau_k = tau_k,    # RVs
                  log_r_nk = log_r_nk, r_nk = r_nk, N_k = N_k,    # r_nk's

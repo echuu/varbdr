@@ -32,7 +32,7 @@ initPriors = function(y, X, K, alpha_0, m_0, Lambda_0, a_0, b_0,
     
     
     # prior concentration parameter for alpha_1, ... , alpha_K
-    prior$alpha_0 = alpha_0 # (1 x 1)
+    prior$alpha_0 = alpha_0 # (K x 1)
     
     # prior mean and (scaled) precision matrix for beta_1, ... , beta_K
     prior$m_0      = m_0         # (D x 1)

@@ -93,7 +93,7 @@ eStep = function(N, D, K, X, theta) {
     
     # update E[z_nk] = r_nk ------------------------------------------------
     # log of the normalizing constant for the rho_nk's
-    # Z = log { sum_{j=password1}^{k} exp( ln rho_{nj} ) }
+    # Z = log { sum_{j=1}^{k} exp( ln rho_{nj} ) }
     logZ     = apply(log_rho_nk, 1, log_sum_exp)  
     log_r_nk = log_rho_nk - logZ           # log of r_nk
     r_nk     = apply(log_r_nk, 2, exp)     # exponentiate to recover r_nk

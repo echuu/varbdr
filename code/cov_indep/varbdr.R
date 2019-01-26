@@ -76,7 +76,7 @@ varbdr = function(y, X, K = 3,
         ## 2 expectations
         
         # check for convergence
-        if (checkELBO(theta, prior)) {
+        if (checkELBO(theta, prior)) {    # checkElbo() in misc.R
             break
         }
         
