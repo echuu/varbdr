@@ -13,7 +13,9 @@ library(matrixcalc)
 mStep = function(theta, prior) {
     
     
-    print("m-step")
+    PRINT_PARAMS = TRUE
+    
+    # print("m-step")
     
     X = prior$X
     y = prior$y
@@ -28,7 +30,6 @@ mStep = function(theta, prior) {
     
     # update q(pi) = Dir( pi | alpha_k )
     #    parameter to update: alpha_k
-    print(theta$alpha_k)
     theta$alpha_k = prior$alpha_0 + theta$N_k
     
     
@@ -57,8 +58,21 @@ mStep = function(theta, prior) {
     theta$b_k = prior$b_0 + 
         0.5 * (theta$b_k + c(t(prior$m_0) %*% prior$Lambda_0 %*% prior$m_0))
     
-    print(theta$b_k)
+    # print values of b_k
     
+    if (PRINT_PARAMS) {
+        
+        # m_k, V_k are difficult to print in a coherent way, if necessary
+        # we can look at alternatives later to view these per iteration
+        
+        alpha_k_str = vecToStr(theta$alpha_k)
+        a_k_str     = vecToStr(theta$a_k)
+        b_k_str     = vecToStr(theta$b_k)
+        
+        cat("alpha_k =\t", alpha_k_str, "\n", sep = '')
+        cat("a_k =\t\t",     a_k_str,     "\n", sep = '')
+        cat("b_k =\t\t",     b_k_str,     "\n", sep = '')
+    }
     
     # update the current iteration
     theta$curr = theta$curr + 1

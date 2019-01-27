@@ -78,4 +78,20 @@ log_sum_exp = function(x) {
 } # end of log_sum_exp()
 
 
+# printVector():
+# print a K-dim vector in the form: [x1, x2, ..., xK]
+vecToStr = function(x, K) {
+    
+    l     = '['
+    r     = ']'
+    x_str = paste(round(x, 4), collapse = ', ')
+    
+    return(paste(l, paste(x_str, collapse = ', '), r, sep = ' '))
+} # end printVector()
+
+
+
+
+
+
 

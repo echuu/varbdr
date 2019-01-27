@@ -19,6 +19,7 @@ run = function() {
     K = 3
     alpha_0 = 1e-5
     m_0 = c(colMeans(X))
+    # m_0 = rep(0, )
     beta_0 = 1 
     nu_0 = NCOL(X) + 50
     W_0 = diag(100, NCOL(X))

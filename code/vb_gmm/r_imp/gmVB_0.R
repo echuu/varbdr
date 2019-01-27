@@ -76,7 +76,8 @@ vb_gmm = function(X, K = 3, alpha_0 = 1/K, m_0 = c(colMeans(X)), beta_0 = 1,
     
     # initialize variational parameters: for mu_k, lambda_k, alpha_k, pi_k
     m_k       = t(kmeans(X, K, nstart = 25)$centers)  # Mean of Gaussian
-    m_k       = matrix(0, D, K)
+    # m_k       = matrix(0, D, K) ## this line causing issues in convergence
+    
     beta_k    = rep(beta_0, K)                        # Scale of precision mat
     nu_k      = rep(nu_0, K)                          # Degrees of freedom
     alpha     = rep(alpha_0, K)                       # Dirichlet parameter

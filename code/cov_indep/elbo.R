@@ -16,6 +16,9 @@ source("misc.R")   # misc.R contains functions that calculate various quantities
 
 elbo = function(theta, prior) {
     
+    
+    PRINT_ELBO_VALUES = FALSE
+    
     # initialize the 7 expectations to be computed
     e_ln_p_y = e_ln_p_z = e_ln_p_gamma = e_ln_p_beta_tau = 0
     e_ln_q_z = e_ln_q_beta_tau = e_ln_q_gamma = 0
@@ -116,17 +119,19 @@ elbo = function(theta, prior) {
     # L = E[ln p(y | X, beta, tau, Z)] + E[ln p(z | pi)] + E[ln p(beta, tau)] + 
     #     E[ln p(pi)] - E[ln q(z)] - E[ln q(pi)] - E[ln q(beta, tau)]
     
-    cat("len. of E[ln p (y | - )]: ",     (e_ln_p_y), "\n")
-    cat("len. of E[ln p (Z | - )]: ",     (e_ln_p_z), "\n")
-    cat("len. of E[ln p (beta, tau)]: ",  (e_ln_p_beta_tau), "\n")
-    cat("len. of E[ln p (pi)]: ",         (e_ln_p_pi), "\n")
-    cat("len. of E[ln q (Z)]: ",          (e_ln_q_z), "\n")
-    cat("len. of E[ln q (pi)]: ",         (e_ln_q_pi), "\n")
-    cat("len. of E[ln q (beta, tau)]: ",  (e_ln_q_beta_tau), "\n")
-
+    if (PRINT_ELBO_VALUES) {
+        cat("len. of E[ln p (y | - )]: ",     (e_ln_p_y), "\n")
+        cat("len. of E[ln p (Z | - )]: ",     (e_ln_p_z), "\n")
+        cat("len. of E[ln p (beta, tau)]: ",  (e_ln_p_beta_tau), "\n")
+        cat("len. of E[ln p (pi)]: ",         (e_ln_p_pi), "\n")
+        cat("len. of E[ln q (Z)]: ",          (e_ln_q_z), "\n")
+        cat("len. of E[ln q (pi)]: ",         (e_ln_q_pi), "\n")
+        cat("len. of E[ln q (beta, tau)]: ",  (e_ln_q_beta_tau), "\n")
+    }
+    
     vlb = e_ln_p_y + e_ln_p_z + e_ln_p_beta_tau + e_ln_p_pi -
         e_ln_q_z - e_ln_q_pi - e_ln_q_beta_tau
-    cat("ELBO:", vlb, "\n", sep = " ")
+    # cat("ELBO:", vlb, "\n", sep = " ")
     
     return(vlb)
     

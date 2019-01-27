@@ -7,7 +7,7 @@ library(reshape2)
 
 ## load/generate the data
 
-N = 10  # number of observations
+N = 100  # number of observations
 D = 2   # number of covariates 
 # generate X1,...,Xp ~ Unif[0.05, 0.95]
 

@@ -33,7 +33,7 @@ varbdr = function(y, X, K = 3,
                   m_0 = c(colMeans(X)),                         # normal params
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
-                  max_iter = 500, tol = 1e-4, VERBOSE = TRUE) {
+                  max_iter = 15, tol = 1e-4, VERBOSE = TRUE) {
     
     # TODO: set default values for a_0, b_0 
     
@@ -56,7 +56,7 @@ varbdr = function(y, X, K = 3,
     #     N = number of observations
     #     D = dimension of covariaftes
     #     K = number of clusters
-    theta = initVarParams(N, D, K, max_iter)
+    theta = initVarParams(y, X, N, D, K, max_iter)
     
     # begin CAVI ---------------------------------------------------------------
     

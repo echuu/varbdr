@@ -12,7 +12,7 @@ source("misc.R")
 #                 r_nk, log_r_nk, updated
 eStep = function(theta, prior) {
     
-    print("e-step")
+    # print("e-step")
     
     X = prior$X
     y = prior$y
@@ -89,8 +89,6 @@ eStep = function(theta, prior) {
     r_nk     = apply(log_r_nk, 2, exp)            # exponentiate to recover r_nk
     
     cat("difference in r_nk:", sum(theta$r_nk - r_nk), "\n")
-    print(rowSums(r_nk))
-    
     
     theta$log_r_nk    = log_r_nk                # (N x K)
     theta$r_nk        = r_nk                    # (N x K)

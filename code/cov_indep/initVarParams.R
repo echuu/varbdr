@@ -10,12 +10,12 @@
 # output: 
 #         theta    : list containing the variational parameters
 
-initVarParams = function(N, D, K, max_iter) {
+initVarParams = function(y, X, N, D, K, max_iter) {
 
     I_D   = diag(1, D)            # (D X D)  identity matrix
     L     = rep(-Inf, max_iter)   # store the variational lower bonuds
     
-    # explicit random variables -- 
+    # explicit random variables -- ---------------------------------------------
     #    don't thnk these are used in CAVI, these are used later to 
     #    generate the model parameters
     pi_k      = numeric(K)             # (1 x K) : concentration parameters
@@ -34,16 +34,33 @@ initVarParams = function(N, D, K, max_iter) {
     
     # model parameters for the random variables involved in the model
     
-    # (1) variational parameter for pi ~ Dir(alpha_1, ... , alpha_K)
+    # (1) variational parameter for pi -----------------------------------------
+    # q(pi) = Dir( alpha_1, ... , alpha_K )
     alpha_k = rep(1 / K, K)            # K x 1
     
-    # (2) variational parameters for beta_k | tau_k ~ N(m_k, (tau_k V_k)^{-1})
+    # (2) variational parameters for beta_k | tau_k ----------------------------
+    # q ( beta_k | tau_k ) ~ N ( m_k, (tau_k V_k)^{-1} )
     V_k     = array(I_D, c(D, D, K))   # K x (D x D)
     V_k_inv = array(I_D, c(D, D, K))   # K x (D x D) : scaled precision
     zeta_k  = matrix(0, D, K)          # (D x K)     : V_k_inv * zeta_k = m_k
-    m_k     = matrix(0, D, K)          # (D x K)     : mean of gamma_k
     
-    # (3) variational parameters for tau_k
+    # previous initialization doesn't work (as seen when we try to do something 
+    # similar in the GMM model with mean params initialized to all 0)
+    # instead: we replace m_k with the mle estimate for beta (same for all k)
+
+    m_k       = matrix(0, D, K)        # (D x K)     : mean of gamma_k
+    y_kmeans  = kmeans(y, K, nstart = 25)
+    y_k_index = y_kmeans$cluster                      # cluster index
+    for (k in 1:K) {                                  # mle of beta_k --> m_k
+        y_k     = y[y_k_index == k]
+        X_k     = X[y_k_index == k,]                   
+        beta_k  = solve(t(X_k) %*% X_k, t(X_k) %*% y_k)
+        m_k[,k] = beta_k
+    }
+
+
+    # (3) variational parameters for tau_k -------------------------------------
+    # q(tau_k) = Ga ( a_k, b_k )
     a_k = rep(1, K)                    # (K x 1) : shape param for tau_k
     b_k = rep(1, K)                    # (K x 1) : rate param for tau_k
     
@@ -51,6 +68,8 @@ initVarParams = function(N, D, K, max_iter) {
     # current iteration of CAVI
     curr = 1
     
+    # create object with all variational parameters ----------------------------
+
     theta = list(pi_k = pi_k, beta_k = beta_k, tau_k = tau_k,    # RVs
                  log_r_nk = log_r_nk, r_nk = r_nk, N_k = N_k,    # r_nk's
                  alpha_k = alpha_k,                              # dir params
