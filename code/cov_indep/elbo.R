@@ -33,6 +33,9 @@ elbo = function(theta, prior) {
     psi_a = digamma(theta$a_k)    # (K x 1)
     psi_b = digamma(theta$b_k)    # (K x 1)
     
+    ak_bk = theta$a_k / theta$b_k # (K x 1) : a_k / b_k, elementwise division
+    
+    
     # expectation of log dirichlet 
     #    E_q [ln pi_k] = digamma(alpha_k) - digamma(sum(alpha)), for all k
     e_ln_pi = digamma(theta$alpha_k) - digamma(sum(theta$alpha_k)) # (K x 1)
@@ -54,11 +57,12 @@ elbo = function(theta, prior) {
         } # end of inner for()
         
         # perform the inner k-summation
-        e1[n] = sum(theta$r_nk[n,] * log(2 * pi) - psi_a + psi_b + x_Vinv_x + 
-                        theta$a_k / theta$b_k * 
-                        (y[n] - t(X[n,] %*% theta$m_k))^2)
-        
+        e1[n] = sum(theta$r_nk[n,] * 
+                        (log(2 * pi) - psi_a + psi_b +
+                             ak_bk * (y[n] - t(X[n,] %*% theta$m_k))^2 +
+                             x_Vinv_x))
     }
+    # outer n-summation
     e_ln_p_y = -0.5 * sum(e1)
     
     
@@ -67,7 +71,6 @@ elbo = function(theta, prior) {
     for (n in 1:N) {
         e2[n,] = theta$r_nk[n,] * e_ln_pi # (K x 1) element-wise multiplication
     }
-    
     e_ln_p_z = sum(e2) # sum over entire matrix
     
     
@@ -83,7 +86,7 @@ elbo = function(theta, prior) {
         e3_diff_k[k]  = t(diff[,k]) %*% prior$Lambda_0 %*% diff[,k]
         e3_trace_k[k] = matrix.trace(prior$Lambda_0 %*% theta$V_k_inv[,,k])
     }
-    e3_diff_k = theta$a_k / theta$b_k * e3_diff_k # element-wise multiplication
+    e3_diff_k = ak_bk * e3_diff_k # element-wise multiplication
     
     e_ln_p_beta_tau = e3 - 0.5 * sum(e3_diff_k + e3_trace_k)
     

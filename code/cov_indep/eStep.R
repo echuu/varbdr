@@ -88,7 +88,7 @@ eStep = function(theta, prior) {
     log_r_nk = log_rho_nk - logZ                  # log of r_nk
     r_nk     = apply(log_r_nk, 2, exp)            # exponentiate to recover r_nk
     
-    cat("difference in r_nk:", sum(theta$r_nk - r_nk), "\n")
+    # cat("difference in r_nk:", sum(theta$r_nk - r_nk), "\n")
     
     theta$log_r_nk    = log_r_nk                # (N x K)
     theta$r_nk        = r_nk                    # (N x K)

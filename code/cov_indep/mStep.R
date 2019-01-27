@@ -13,7 +13,7 @@ library(matrixcalc)
 mStep = function(theta, prior) {
     
     
-    PRINT_PARAMS = TRUE
+    PRINT_PARAMS = FALSE
     
     # print("m-step")
     

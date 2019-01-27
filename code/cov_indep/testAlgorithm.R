@@ -58,6 +58,18 @@ run = function() {
 }
 
 
+source("varbdr.R")              # load the CAVI algorithm for BDR
+theta = varbdr(y = y, X = X)    # run algorithm
+
+# variational parameters after CAVI finishes
+theta$alpha_k
+
+theta$m_k
+theta$V_k_inv
+
+theta$a_k
+theta$b_k
+
 
 
 

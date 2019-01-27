@@ -33,7 +33,7 @@ varbdr = function(y, X, K = 3,
                   m_0 = c(colMeans(X)),                         # normal params
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
-                  max_iter = 15, tol = 1e-4, VERBOSE = TRUE) {
+                  max_iter = 150, tol = 1e-4, VERBOSE = TRUE) {
     
     # TODO: set default values for a_0, b_0 
     
