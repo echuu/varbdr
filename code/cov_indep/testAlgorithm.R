@@ -22,6 +22,7 @@ shape_mat = matrix(0, N, 2) # hold shape parameters for beta distribution for
 ## generate data
 for (n in 1:N) {
     
+    
     # X_n = (X_n1, X_n2, ... , X_np) ~ Unif [0.05, 0.95]^p
     X[n,] = runif(D, 0.05, 0.95) # could generate all covariates at once, 
                                  # but this seems a little more intuitive
