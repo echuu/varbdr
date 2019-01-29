@@ -1,5 +1,5 @@
 
-# initVarParams.R -- covariate-DEPENNDENT case
+# initVarParams.R -- covariate-DEPENDENT case
 
    
 
@@ -15,31 +15,29 @@
     # xi      : matrix of all 0's (these will be re-estimated using alphas)
     # Q_k_inv : (K x K) identity matrix
     # mu_k    : matrix of 0-mean vectors for gamma_k
-initVarParams = function(N, D, K) {
+initVarParams = function(y, X, N, D, K, max_iter) {
     
-    I_D   = diag(1, D)  # (D X D)  identity matrix
+    I_D   = diag(1, D)                 # (D X D)  identity matrix
+    L     = rep(-Inf, max_iter)        # Store the variational lower bounds
+ 
     
-    # X = as.matrix(X)                   # (N x D) design matrix of covariates
-    # D = NCOL(X)                        # Number of features
-    # N = NROW(X)                        # Number of observations
-    L = rep(-Inf, max_iter)              # Store the variational lower bounds
-    
-    # E[z_nk] = r_nk; these quantities are updated during the var e-step
-        # Note: rho_nk / sum_j rho_nj
-        # can calculate this by exponentiating log_rho_nk, 
-        # dividing each element by the sum of the ROW it belongs in
-    r_nk       = matrix(0, N, K)       # (N x K) : normalized responsibilities
-    log_r_nk   = matrix(0, N, K)       # (N x K) : log(r_nk)
-    log_rho_nk = matrix(0, N, K)       # (N x K) : log(rho_nk)
-    
-    N_k        = colSums(r_nk) + 1e-10 # (K x 1) : sum of wts for each cluster
     
     # explicit random variables -- 
     #    don't thnk these are used in CAVI, these are used later to 
     #    generate the model parameters
-    beta_k    = matrix(1, D, K)        # (D x K) : each beta_k stored col-wise
-    tau_k     = numeric(1, K)          # (1 x K) : scale for precision, V_k
+    pi_k      = rep(1 / K, K)          # (1 x K) : mixing weights
+    beta_k    = matrix(0, D, K)        # (D x K) : each beta_k stored col-wise
+    tau_k     = rep(1, K)              # (1 x K) : scale for precision, V_k
     gamma_k   = matrix(0, D, K)        # (D x K) : each gamma_k stored col-wise
+    
+    # E[z_nk] = r_nk; these quantities are updated during the var e-step
+        # Note: rho_nk / sum_j rho_nj
+        # can    calculate this by exponentiating log_rho_nk, 
+        # dividing each element by the sum of the ROW it belongs in
+    
+    r_nk       = matrix(0, N, K)       # (N x K) : normalized responsibilities
+    log_r_nk   = matrix(0, N, K)       # (N x K) : log(r_nk)
+    N_k        = colSums(r_nk) + 1e-10 # (K x 1) : sum of wts for each cluster
     
     # model parameters for each of the random variables above
     
@@ -65,16 +63,31 @@ initVarParams = function(N, D, K) {
     eta_k   = matrix(0, D, K)          # D x K       Q_k_inv * eta_k = mu_k
     mu_k    = matrix(0, D, K)          # D x K       mean of gamma_k
     
+    
+    # provide better starting values for m_k, mu_k
+    # for now, we use same starting values for both m_k, mu_k
+    # same as in cov-indpt case: replace m_k with mle estimate for beta_k
+    # k is determined by first doing k-means on the y-values
+    
+    y_kmeans  = kmeans(y, K, nstart = 25)
+    y_k_index = y_kmeans$cluster       # cluster index
+    for (k in 1:K) {                   # mle of beta_k --> m_k
+        y_k       = y[y_k_index == k]  # response vector for the k-th cluster
+        X_k       = X[y_k_index == k,] # design matrix for the k-th cluster                   
+        beta_mle  = solve(t(X_k) %*% X_k, t(X_k) %*% y_k)
+        m_k[,k]   = beta_mle
+        mu_k[,k]  = beta_mle
+    }
+    
     # current iteration of CAVI
     curr = 0
     
-    
     # list containing all variational parameters
-    theta = list(beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k,
-                 log_r_nk = log_r_nk, r_nk = r_nk, N_k = N_k, 
-                 V_k_inv = V_k_inv, zeta_k = zeta_k, m_k = m_k, 
+    theta = list(pi_k = pi_k, beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k,
+                 r_nk = r_nk, log_r_nk = log_r_nk, N_k = N_k, 
+                 V_k = V_k, V_k_inv = V_k_inv, zeta_k = zeta_k, m_k = m_k, 
                  a_k = a_k, b_k = b_k, 
-                 alpha = alpha, xi = xi, lambda = lambda,
+                 alpha = alpha, xi = xi, lambda = lambda, phi = phi,
                  Q_k = Q_k, Q_k_inv = Q_k_inv, eta_k, mu_k = mu_k, 
                  L = L, curr = curr)
     
