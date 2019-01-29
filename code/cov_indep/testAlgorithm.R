@@ -2,8 +2,6 @@
 ## testAlgorithm.R -- run vb algorithm for covariate-INDEPENDENT case
 
 library(ggplot2)
-library(reshape2)
-
 
 N = 100  # number of observations
 D = 2    # number of covariates 
@@ -66,18 +64,20 @@ theta$a_k
 theta$b_k
 
 
-source("approxDensity.R")
+## evaluate results ------------------------------------------------------------
 
-data = list(y = y[1], x = X[1,])
-p_y(theta, prior, K, data) # approximate density
-
-dbeta(y[1], shape_mat[1,1], shape_mat[1,2]) # true density
 
 # generate density plots of true density overlayed with approximate density
-n = 83
+
+source("approxDensity.R")
+
+n = 1
+
+## manual way, testing for single observations ---------------------------------
 data_ygrid = list(y = y_grid, x = X[n,])     # covariates for the n-th observ.
 p_ygrid = p_y(theta, prior, K, data_ygrid)
 
+# approximate density dataframe
 apx_beta_n = data.frame(x = y_grid, y = p_ygrid)
 
 # true density plot (indexed by n in the shape parameters)
@@ -90,12 +90,10 @@ beta_n = stat_function(aes(x = y_grid, y = ..y..),
 p = ggplot(apx_beta_n, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
 p + beta_n
 
+## automation of density evaluations, overlay densities way --------------------
+params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
+p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
 
 
 
-# evalulate performance (?); this part still a little unsure of what to do
-# do i need to have a predictive density ready? doesn't really make sense to 
-# look at coefficients because we introduce those artificially as part of
-# the model.
-
-
+# end of testAlgorithm.R file

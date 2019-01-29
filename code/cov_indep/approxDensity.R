@@ -4,12 +4,22 @@
 ## generate the approximating density using a mixture of experts, using
 ## the model parameters from CAVI
 
+## functions included:
+##   (1) p_y           : approximate mixture density
+##   (2) plotDensities : overlay true density and approximate mixture density
 
+
+library(ggplot2)
+
+# p_y(): mixture density used to approximate the true density
 # input:  
-#          theta  : 
-#          prior  : 
-#          K      :
-#          data   :
+#          theta  : variational parameters
+#          prior  : prior-related variables
+#          K      : number of clusters used in the mixture density
+#          data   : LIST containing the response (y) and the covariates (x)
+#                   note: y is a (N x 1) vector, x is (D x 1) vector
+#                         every y value will be evaluated using the same
+#                         covariate vector x
 # output: 
 #          p_y    : approximate conditional density
 p_y = function(theta, prior, K, data) {
@@ -32,22 +42,43 @@ p_y = function(theta, prior, K, data) {
 } # end approxDensity() function
 
 
-# approx_p_y() : evaluate each of the y values using the mixture density 
-# input: 
-#          y_seq    :
-#          x        : 
-#          theta    : 
-#          prior    : 
+
+# plotDensities(): overlay the true density and the (approx) mixture density
+# input:  
+#          y_grid   :  sequence of y-values evaluated using true/approx density
+#          x        :  covariates for the y (response) values
+#          true_d   :  true density function
+#          params   :  parameters for the true density function
+#          approx_d :  approx density function
+#          theta    :  variational parameters
+#          prior    :  prior-related variables
+#          K        :  number of clusters used in the mixture density
 # output: 
-#          p_y_vec  :  p_y(y) values for each of the y_seq inputs 
-approx_p_y = function(y_seq, x, theta, prior) {
+#          d_plot   :  ggplot of overlayed densities (true: red, approx: blue)
+plotDensities = function(y_grid, x,
+                         true_d, params,
+                         approx_d, theta, prior, K) { 
+    
+    data_ygrid = list(y = y_grid, x = x)  # list req'd to use approx density fcn
+    N_evals    = length(y_grid)           # number of evaluations
+    
+    # evaluate points using approx density
+    p_ygrid    = approx_d(theta, prior, K, data_ygrid)
+    approx_df  = data.frame(x = y_grid, y = p_ygrid)   # store y, f(y) values
+    
+    # true density plot (indexed by n in the shape parameters)
+    beta_n = stat_function(aes(x = y_grid, y = ..y..), 
+                           fun = dbeta, colour = 'black', n = N_evals, size = 1,
+                           args = params)  
+    
+    
+    p = ggplot(approx_df, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
+    p = p + beta_n
+    
+    return(p)
+}
 
 
 
 
-
-} # end approx_p_y() function
-
-
-
-
+# end of approxDensity.R file
