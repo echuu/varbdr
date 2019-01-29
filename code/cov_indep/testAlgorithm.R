@@ -71,7 +71,7 @@ theta$b_k
 
 source("approxDensity.R")
 
-n = 1
+n = 10
 
 ## manual way, testing for single observations ---------------------------------
 data_ygrid = list(y = y_grid, x = X[n,])     # covariates for the n-th observ.
@@ -93,7 +93,7 @@ p + beta_n
 ## automation of density evaluations, overlay densities way --------------------
 params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
 p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
-
+p1
 
 
 # end of testAlgorithm.R file

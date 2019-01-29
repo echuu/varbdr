@@ -31,8 +31,8 @@ p_y = function(theta, prior, K, data) {
     
     for (k in 1:K) {
         # k-th gaussion: N ( y | x'beta_k, tau_k^{-1} )
-        tau_k_inv  = theta$b_k[k] / theta$a_k[k]    # precision component
-        beta_k     = theta$m_k[,k]                  # coefficient vector
+        tau_k_inv  = 1 / theta$tau_k[k]             # precision component
+        beta_k     = theta$beta[,k]                 # coefficient vector
         mu_k       = c(t(x) %*% beta_k)             # mean component
         p_y        = p_y + theta$pi_k[k] * dnorm(y, mean = mu_k, tau_k_inv)
     }
