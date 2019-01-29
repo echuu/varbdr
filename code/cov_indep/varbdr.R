@@ -28,7 +28,7 @@ source("misc.R")
 #         Lambda0  : prior (scaled) precision matrix for beta_k; k = 1,...,K
 #         a0       : prior shape parameter for tau_k; k = 1,...,K
 #         b0       : prior rate parameter for tau_k; k = 1,...,K
-varbdr = function(y, X, K = 6, 
+varbdr = function(y, X, K = 4, 
                   alpha_0 = rep(1 / K, K),                      # dir param
                   m_0 = c(colMeans(X)),                         # normal params
                   Lambda_0 = diag(rep(1, ncol(X))), 

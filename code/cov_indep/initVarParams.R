@@ -19,7 +19,7 @@ initVarParams = function(y, X, N, D, K, max_iter) {
     #    don't thnk these are used in CAVI, these are used later to 
     #    generate the model parameters
     pi_k      = numeric(K)             # (1 x K) : concentration parameters
-    beta_k    = matrix(1, D, K)        # (D x K) : each beta_k stored col-wise
+    # beta_k    = matrix(1, D, K)        # (D x K) : each beta_k stored col-wise
     tau_k     = rep(1, K)              # (1 x K) : scale for precision, V_k
 
 
@@ -70,7 +70,7 @@ initVarParams = function(y, X, N, D, K, max_iter) {
     
     # create object with all variational parameters ----------------------------
 
-    theta = list(pi_k = pi_k, beta_k = beta_k, tau_k = tau_k,    # RVs
+    theta = list(pi_k = pi_k, tau_k = tau_k,                     # RVs
                  log_r_nk = log_r_nk, r_nk = r_nk, N_k = N_k,    # r_nk's
                  alpha_k = alpha_k,                              # dir params
                  V_k_inv = V_k_inv, zeta_k = zeta_k, m_k = m_k,  # gaus. params

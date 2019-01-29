@@ -32,6 +32,12 @@ mStep = function(theta, prior) {
     #    parameter to update: alpha_k
     theta$alpha_k = prior$alpha_0 + theta$N_k
     
+    # pi_k = posterior mean of of pi_k
+    theta$pi_k = (prior$alpha_0 + theta$N_k) / (K * prior$alpha_0 + N) # (K x 1)
+    
+    # print(round(theta$pi_k, 4))
+    # cat("Sum of mixing parameters =", sum(theta$pi_k), '\n')
+    
     # update q(beta_k | tau_k) = N ( beta_k | m_k, (tau_k V_k)^{-1} ) 
     #     parameters to update: V_k, V_k^{-1}, zeta_k, m_k
     for (k in 1:K) {
@@ -67,8 +73,11 @@ mStep = function(theta, prior) {
     theta$b_k = prior$b_0 + 
         0.5 * (theta$b_k + c(t(prior$m_0) %*% prior$Lambda_0 %*% prior$m_0))
     
-    # print values of b_k
+    # update precision componenets (posterior mean of tau_k)
+    theta$tau_k = theta$a_k / theta$b_k
     
+    
+    # print values of b_k
     if (PRINT_PARAMS) {
         
         # m_k, V_k are difficult to print in a coherent way, if necessary
