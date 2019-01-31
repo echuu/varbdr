@@ -2,6 +2,8 @@
 ## mStep.R
 ## perform the variational e-step
 
+source("misc.R")
+
 library(matrixcalc)
 
 # input: 
@@ -21,45 +23,50 @@ mStep = function(theta, prior) {
 
     I_D        = diag(1, D)                       # (D X D) : identity matrix
     X_mu       = X %*% theta$mu_k                 # (N x K) : (N x D) * (D x K)
-    M          = theta$mu_k %*% t(theta$lambda)   # (D x N) : (D x K) * (K x N)
+    # M          = theta$mu_k %*% t(theta$lambda)   # (D x N) : (D x K) * (K x N)
     Lambda0_m0 = prior$Lambda_0 %*% prior$m_0     # (D x 1) : Lambda_0 * m_0
     
-    # alpha, xi, phi, related quantities ---------------------------------------
-    # theta$alpha                 # (N x 1)
-    # theta$ xi                   # (N x K)
-    # theta$phi                   # (N x 1)
+    ## update alpha, xi, lambda, phi --------------------------------------------
+    #     (0.1) alpha                 # (N x 1)
+    #     (0.2) xi                    # (N x K)
+    #     (0.3) lambda                # (N x K)
+    #     (0.4) phi                   # (N x 1)
     
-    # update alpha
+    # (0.1) update alpha -------------------------------------------------------------
     for (n in 1:N) {
-        theta$alpha[n] = (0.5 * (0.5 * K - 1) + 
-                              X[n,] %*% M[,n]) / sum(theta$lambda[n,])
+        theta$alpha[n] = 1 / sum(theta$lambda[n,]) * 
+            (0.5 * (0.5 * K - 1) + t(X_mu[n,]) %*% theta$lambda[n,])
     }
     
-    # update xi (computed column-wise)
-    for (k in 1:K) {
-        
-        x_Qk_inv_x = numeric(N)
-        for (n in 1:N) {
-            x_Qk_inv_x[n] = X[n,] %*% theta$Q_k_inv[,,k] %*% t(X[n,])
+    
+    # (0.2) update xi (computed row-wise) --------------------------------------------
+    for (n in 1:N) {
+        xQx = numeric(K)
+        for (k in 1:K) {
+            xQx[k] = quadMult(X[n,], theta$Q_k_inv[,,k]) # function in misc.R
         }
         
-        # populate the k-th column of xi
-        xi[,k] = (X_mu[,k] - theta$alpha)^2  + x_Qk_inv_x  
-    }
+        theta$xi[n,] = sqrt((X_mu[n,] - theta$alpha[n])^2 + xQx)
+    } # end of outer for() update for xi
     
-    # compute lambda(xi) using updated value of xi
-    theta$lambda = 1 / (4 * theta$xi) * tanh(0.5 * theta$xi)    # (N x K)
     
-    # compute phi (function of alpha, xi)
+    # (0.3) compute lambda(xi) using updated value of xi  ----------------------
+    theta$lambda = lambda_xi(theta$xi)              # (N x K), misc.R
+    
+    
+    # (0.4) compute phi (function of alpha, xi) --------------------------------
     for (n in 1:N) {
         theta$phi[n] = sum((X_mu[n,] - theta$alpha[n] - theta$xi[n,]) / 2 + 
                                log(1 + exp(theta$xi[n,])))
-    }
+    } # end for() update for phi
     
     
-    # update variational distributions -----------------------------------------
+    ## update variational distributions ----------------------------------------
+    #     (1.1) q(gamma) 
+    #     (1.2) q(beta|tau)
+    #     (1.3) q(tau)
     
-    # update q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_l
+    # (1.1) update q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_k -----------------------
     for (k in 1:K) {
         theta$Q_k[,,k] = I_D + 
             2 * t(X) %*% diag(theta$r_nk[,k] * lambda[,k]) %*% X
@@ -69,7 +76,7 @@ mStep = function(theta, prior) {
         theta$mu_k[,k] =  theta$Q_k_inv[,,k] %*% theta$eta_k[,k]
     }
     
-    # update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k
+    # (1.2) update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k ------------------
     for (k in 1:K) {
         theta$V_k[,,k] = prior$Lambda_0 + t(X) %*% diag(theta$r_nk[,k]) %*% X
         theta$V_k_inv[,,k] = solve(theta$V_k[,,k])
@@ -78,18 +85,36 @@ mStep = function(theta, prior) {
     }
     
     
-    # update q(tau): a_k, b_k
+    # (1.3) update q(tau): a_k, b_k --------------------------------------------
     theta$a_k = prior$a_0 + theta$N_k
     for (k in 1:K) {
         theta$b_k[k] = - t(theta$zeta_k[,k]) %*% theta$V_k_inv[,,k] %*% 
             theta$zeta_k[,k] + sum(theta$r_nk[,k] * y^2)
     }
-    
     theta$b_k = prior$b_0 + 
         0.5 * (theta$b_k + t(prior$m_0) %*% prior$Lambda_0 %*% prior$m_0)
     
+    
+    # update the random variables using posterior means ------------------------
+    
+    # beta_k  : coefficient vector in the normal density
+    theta$beta_k = theta$m_k                # (D x K)
+    
+    # tau_k   : precision parameter in the normal density
+    theta$tau_k = theta$a_k / theta$b_k     # (K x 1)
+    
+    # gamma_k : coefficient vector in the mixture weights
+    theta$gamma_k = theta$mu_k              # (D x K)
+    
+    
+    # pi_k    : mixing weights (function of the gamma_k's)
+    # maybe don't compute them here because we only need them when we compute
+    # the density after CAVI has converged. If we compute here, then that's
+    # wasted computation
+    
     # update the current iteration
     theta$curr = theta$curr + 1
+    
     
     return(theta)
     

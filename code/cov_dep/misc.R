@@ -2,10 +2,10 @@
 
 ## various checks on the ELBO
 ## input:
-# VERBOSE      : logical, if TRUE, then progress printed each iter
-# i            : current iteration
-# max_iter     : max # of iterations
-# epsilon_conv : tolerance used to assess convergence
+#          VERBOSE      : logical, if TRUE, then progress printed each iter
+#          i            : current iteration
+#          max_iter     : max # of iterations
+#          epsilon_conv : tolerance used to assess convergence
 checkELBO = function(theta, prior) {
     
     CONVERGE = FALSE
@@ -59,4 +59,28 @@ vecToStr = function(x, K) {
     
     return(paste(l, paste(x_str, collapse = ', '), r, sep = ' '))
 } # end printVector()
+
+
+# quadMult(): quadratic form multiplication, e.g., x'Ax
+# input: 
+#         x  : (D x 1) vector
+#         A  : (D x D) matrix
+# output: resulting product of x'Ax
+quadMult = function(x, A) {
+    return(t(x) %*% A %*% x)
+}
+
+
+# lambda_xi(): evaluate: 1 / (4 * theta$xi) * tanh(0.5 * theta$xi)
+# input: 
+#         xi : variational paramter
+# output: 
+#         1 / (4 * theta$xi) * tanh(0.5 * theta$xi)
+lambda_xi = function(xi) {
+    return(1 / (4 * xi) * tanh(0.5 * xi))
+}
+
+
+
+
 

@@ -61,6 +61,16 @@ theta_estep = eStep(theta, prior)
 
 # currently testing functions below --------------------------------------------
 
+source("mStep.R")
+theta = mStep(theta, prior)
+
+
+
+X_mu = X %*% theta$mu_k
+t(X_mu[n,]) %*% theta$lambda[n,]
+
+
+
 
 
 

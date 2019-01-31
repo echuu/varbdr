@@ -25,7 +25,7 @@ initVarParams = function(y, X, N, D, K, max_iter) {
     # explicit random variables -- 
     #    don't thnk these are used in CAVI, these are used later to 
     #    generate the model parameters
-    pi_k      = rep(1 / K, K)          # (1 x K) : mixing weights
+    # pi_k      = rep(1 / K, K)        # (1 x K) : mixing weights
     beta_k    = matrix(0, D, K)        # (D x K) : each beta_k stored col-wise
     tau_k     = rep(1, K)              # (1 x K) : scale for precision, V_k
     gamma_k   = matrix(0, D, K)        # (D x K) : each gamma_k stored col-wise
@@ -83,7 +83,7 @@ initVarParams = function(y, X, N, D, K, max_iter) {
     curr = 0
     
     # list containing all variational parameters
-    theta = list(pi_k = pi_k, beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k,
+    theta = list(beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k,
                  r_nk = r_nk, log_r_nk = log_r_nk, N_k = N_k, 
                  V_k = V_k, V_k_inv = V_k_inv, zeta_k = zeta_k, m_k = m_k, 
                  a_k = a_k, b_k = b_k, 
