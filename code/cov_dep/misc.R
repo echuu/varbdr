@@ -33,3 +33,30 @@ checkELBO = function(theta, prior) {
     
     return(CONVERGE)
 } # end of checkELBO() function
+
+
+# log_sum_exp():
+# calculates expressions of the form log(sum(exp(x)))
+log_sum_exp = function(x) { 
+    offset = max(x)                         # scale by max to prevent overflow
+    s = log(sum(exp(x - offset))) + offset
+    i = which(!is.finite(s))                # check for any overflow
+    if (length(i) > 0) {                    # replace inf values with max
+        s[i] = offset 
+    }
+    
+    return(s)
+} # end of log_sum_exp()
+
+
+# printVector():
+# print a K-dim vector in the form: [x1, x2, ..., xK]
+vecToStr = function(x, K) {
+    
+    l     = '['
+    r     = ']'
+    x_str = paste(round(x, 4), collapse = ', ')
+    
+    return(paste(l, paste(x_str, collapse = ', '), r, sep = ' '))
+} # end printVector()
+

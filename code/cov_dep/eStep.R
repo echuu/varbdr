@@ -3,13 +3,14 @@
 ## perform the variational e-step -- covariate-DEPENDENT case
 
 library(matrixcalc)
+source("misc.R")
 
 # input: 
 #         theta : list of variational parameters
 # output:
 #         theta : list of variational parameters with 
 #                 r_nk, log_r_nk, updated
-eStep() = function(theta, prior) {
+eStep = function(theta, prior) {
     
 
     X = prior$X
@@ -31,36 +32,29 @@ eStep() = function(theta, prior) {
 
     ak_bk = theta$a_k / theta$b_k      # (K x 1) : a_k / b_k
 
-    X_mu  = X %*% mu                   # (N x K) : (N x D) * (D x K)
+    X_mu  = X %*% theta$mu_k           # (N x K) : (N x D) * (D x K)
     
     # update log_rho_nk (row-wise updates)
     for (n in 1:N) {
         x_Vinv_x = numeric(K)
         for (k in 1:K) {
-            x_Vinv_x[k] = X[n,] %*% theta$V_inv[,,k] %*% t(X[n,]) # scalar
+            x_Vinv_x[k] = t(X[n,]) %*% theta$V_k_inv[,,k] %*% X[n,] # scalar
         } # end of inner for()
         
         # populate the n-th row with a k-dim vector
-        log_rho_nk[nu guy,] = X_mu[n,] - alpha[n] - phi[n] - 
-            (log(2 * pi) - psi_a + psi_b + x_Vinv_x + 
-                 ak_bk * (y[n] - t(X[n,] %*% theta$m_k))^2) / 2
+        log_rho_nk[n,] = X_mu[n,] - theta$alpha[n] - theta$phi[n] - 
+            0.5 * (log(2 * pi) - psi_a + psi_b + x_Vinv_x + 
+                 ak_bk * (y[n] - t(X[n,] %*% theta$m_k))^2)
         
     } # end of outer for()
     
-    
-    rho_nk = exp(log_rho_nk)
-    
+
     # compute r_nk = divide each element of rho_nk by the sum of the
     #                corresponding row; each row consists of 'responsibilities'
-    #                of each of the clusters for the observation in that row
-    r_nk = sweep(rho_nk, MARGIN = 1, STAT = rowSums(rho_nk), FUN = '/')
     
-    
-    # compute log_r_nk
-    log_r_nk = log(r_nk)
-    
-    # this quantity is not used later (i think)
-    # theta$log_rho_rnk = log_rho_nk 
+    logZ     = apply(log_rho_nk, 1, log_sum_exp)  # log of normalizing constant
+    log_r_nk = log_rho_nk - logZ                  # log of r_nk
+    r_nk     = apply(log_r_nk, 2, exp)            # exponentiate to recover r_nk
     
     theta$log_r_nk    = log_r_nk        # (N x K)
     theta$r_nk        = r_nk            # (N x K)

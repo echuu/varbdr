@@ -3,7 +3,7 @@
 # varbdr.R -- covariate-DEPENDENT case
 
 source("initPriors.R")
-source("initiVarParams.R")
+source("initVarParams.R")
 source("eStep.R")
 source("mStep.R")
 source("elbo.R")
@@ -15,12 +15,12 @@ source("misc.R")
 
 ## global params ---------------------------------------------------------------
 
-D     = 2           # dimension of covariate, 2 <= d <= 100
-K     = 10          # number of clusters
-N     = 1           # number of samples
-I_D   = diag(1, D)  # D X D  identity matrix
-df    = 100         # degrees of freedom for Wishart distribution
-scale = 1           # scale for the covariance matrix
+# D     = 2           # dimension of covariate, 2 <= d <= 100
+# K     = 10          # number of clusters
+# N     = 1           # number of samples
+# I_D   = diag(1, D)  # D X D  identity matrix
+# df    = 100         # degrees of freedom for Wishart distribution
+# scale = 1           # scale for the covariance matrix
 
 
 ## initialize model parameters -------------------------------------------------
@@ -35,14 +35,17 @@ scale = 1           # scale for the covariance matrix
     # b0       : prior rate parameter for tau_k; k = 1,...,K
     # g0       : prior mean for gamma_k; k = 1,...,K
     # Sigma0   : prior covariance for gamma_k; k = 1,...,K
-varbdr = function(y, X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D, 
-                  a_0, b_0, g_0 = 0, Sigma_0 = I_D, max_iter = 500, 
-                  tol = 1e-4, is_animation = FALSE, VERBOSE = TRUE) {
+varbdr = function(y, X, K = 3, 
+                  m_0 = c(colMeans(X)),                         # normal params              
+                  Lambda_0 = diag(rep(1, ncol(X))), 
+                  a_0 = 1, b_0 = 1,                             # gamma params
+                  g_0 = 0, Sigma_0 = diag(rep(1, ncol(X))),     # normal params
+                  max_iter = 150, tol = 1e-4, VERBOSE = TRUE) {
     
     X = as.matrix(X)         # N X D design matrix of covariates
     D = NCOL(X)              # Number of features
     N = NROW(X)              # Number of observations
-    L = rep(-Inf, max_iter)  # Store the variational lower bounds
+    # L = rep(-Inf, max_iter)  # Store the variational lower bounds
     
     # prior specification: 
         # mu_k | tau_k ~ N  (m0, (tau_k * Lambda0)^{-1})
@@ -57,7 +60,7 @@ varbdr = function(y, X, K = 3, m_0 = c(colMeans(X)), Lambda_0 = I_D,
         # N = number of observations
         # D = dimension of covariaftes
         # K = number of clusters
-    theta = initVarParams(N, D, K)
+    theta = initVarParams(y, X, N, D, K, max_iter)
     
     # begin CAVI ---------------------------------------------------------------
     

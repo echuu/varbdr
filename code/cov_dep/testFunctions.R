@@ -9,6 +9,10 @@ D        = 2    # number of covariates
 K        = 5    # number of clusters
 max_iter = 200  # max number of iterations 
 
+tol = 1e-4
+VERBOSE = TRUE
+
+
 # generate X1,...,Xp ~ Unif[0.05, 0.95]
 ## initialize storage for response, covariates
 y = numeric(N)       # (N x 1) vector of response variables
@@ -17,7 +21,7 @@ X = matrix(0, N, D)  # (N x D) matrix; covariates for y_n are stored row-wise
 shape_mat = matrix(0, N, 2) # hold shape parameters for beta distribution for
 # each observation (Y_n, X_n)
 
-## generate data
+## generate data ---------------------------------------------------------------
 for (n in 1:N) {
     # X_n = (X_n1, X_n2, ... , X_np) ~ Unif [0.05, 0.95]^p
     X[n,] = runif(D, 0.05, 0.95) # could generate all covariates at once, 
@@ -35,6 +39,31 @@ for (n in 1:N) {
 
 source("initVarParams.R")
 
+## prior parameters
+m_0 = c(colMeans(X))                                    
+Lambda_0 = diag(rep(1, ncol(X)))
+a_0 = 1
+b_0 = 1                             
+g_0 = rep(0, ncol(X))
+Sigma_0 = diag(rep(1, ncol(X)))
+
+
+# initPriors() function tested and works
+prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
+                   max_iter, tol, VERBOSE)
+
+# initVarParams() function tested and works
 theta = initVarParams(y, X, N, D, K, max_iter)
+
+
+source("eStep.R")
+theta_estep = eStep(theta, prior)
+
+# currently testing functions below --------------------------------------------
+
+
+
+
+
 
 

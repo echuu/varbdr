@@ -10,7 +10,7 @@ library(matrixcalc)
 #          theta : list of variational parameters with 
 #                  variational parameters updated
 
-mStep() = function(theta, prior) {
+mStep = function(theta, prior) {
     
     
     X = prior$X
