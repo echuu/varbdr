@@ -88,7 +88,7 @@ initVarParams = function(y, X, N, D, K, max_iter) {
                  V_k = V_k, V_k_inv = V_k_inv, zeta_k = zeta_k, m_k = m_k, 
                  a_k = a_k, b_k = b_k, 
                  alpha = alpha, xi = xi, lambda = lambda, phi = phi,
-                 Q_k = Q_k, Q_k_inv = Q_k_inv, eta_k, mu_k = mu_k, 
+                 Q_k = Q_k, Q_k_inv = Q_k_inv, eta_k = eta_k, mu_k = mu_k, 
                  L = L, curr = curr)
     
     return(theta)

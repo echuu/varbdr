@@ -68,13 +68,25 @@ mStep = function(theta, prior) {
     
     # (1.1) update q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_k -----------------------
     for (k in 1:K) {
-        theta$Q_k[,,k] = I_D + 
-            2 * t(X) %*% diag(theta$r_nk[,k] * lambda[,k]) %*% X
+        
+        rl_nk_xx = matrix(0, D, D)
+        for (n in 1:N) {
+            rl_nk_xx = rl_nk_xx + 
+                (theta$r_nk[n,k] * theta$lambda[n,k]) * crossprod(t(X[n,]))
+        }
+        
+        theta$Q_k[,,k] = I_D + rl_nk_xx
+        
         theta$Q_k_inv[,,k] = solve(theta$Q_k[,,k])
+        
         theta$eta_k[,k] = t(X) %*% 
-            c(theta$r_nk[,k] * (0.5 + 2 * theta$lambda[,k] * theta$alpha))
+            (theta$r_nk[,k] * (0.5 + 2 * theta$lambda[,k] * theta$alpha))
+        
         theta$mu_k[,k] =  theta$Q_k_inv[,,k] %*% theta$eta_k[,k]
     }
+    
+    # ------------------------- DONE UP TO HERE ------------------------------ #
+    # ------------------------------------------------------------------------ #
     
     # (1.2) update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k ------------------
     for (k in 1:K) {
