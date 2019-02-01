@@ -71,7 +71,7 @@ theta$b_k
 
 source("approxDensity.R")
 
-n = 10
+n = 7
 
 ## manual way, testing for single observations ---------------------------------
 data_ygrid = list(y = y_grid, x = X[n,])     # covariates for the n-th observ.

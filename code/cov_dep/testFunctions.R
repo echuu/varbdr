@@ -36,7 +36,7 @@ for (n in 1:N) {
 } 
 
 # test functions (covariate-dependent) -----------------------------------------
-
+source("initPriors.R")
 source("initVarParams.R")
 
 ## prior parameters
@@ -81,7 +81,10 @@ for (n in 1:N) {
     loop_res = loop_res + r_vec[n] * (0.5 + 2 * l_vec[n] * a_vec[n]) * X[n,]
 }
 
-
+loop_result = 0
+for (k in 1:K) {
+    loop_result = loop_result + t(theta$m_k[,k]) %*% theta$m_k[,k]
+}
 
 
 

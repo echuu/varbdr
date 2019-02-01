@@ -32,7 +32,6 @@ elbo = function(theta, prior) {
     # pre-compute commonly computed terms
     psi_a = digamma(theta$a_k)    # (K x 1)
     psi_b = digamma(theta$b_k)    # (K x 1)
-    
     ak_bk = theta$a_k / theta$b_k # (K x 1) : a_k / b_k, elementwise division
     
     
@@ -83,10 +82,10 @@ elbo = function(theta, prior) {
     e3_diff_k  = numeric(K)  # store (m_k - m_0)' Lambda_0 (m_k - m_0)
     e3_trace_k = numeric(K)  # store trace(Lambda_0 V_K^{-1})
     for (k in 1:K) {
-        e3_diff_k[k]  = t(diff[,k]) %*% prior$Lambda_0 %*% diff[,k]
+        e3_diff_k[k]  = quadMult(diff[,k], prior$Lambda_0)
         e3_trace_k[k] = matrix.trace(prior$Lambda_0 %*% theta$V_k_inv[,,k])
     }
-    e3_diff_k = ak_bk * e3_diff_k # element-wise multiplication
+    e3_diff_k = ak_bk * (e3_diff_k + prior$b_0) # element-wise multiplication
     
     e_ln_p_beta_tau = e3 - 0.5 * sum(e3_diff_k + e3_trace_k)
     
