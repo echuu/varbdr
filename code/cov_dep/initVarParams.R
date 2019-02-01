@@ -1,7 +1,7 @@
 
 # initVarParams.R -- covariate-DEPENDENT case
 
-   
+source("misc.R")
 
 # initVarParams() -- initialize the variational parameters
     # beta_k  : matrix of all 1's (not 0 since we start with X * beta != 0)
@@ -52,9 +52,11 @@ initVarParams = function(y, X, N, D, K, max_iter) {
     b_k = rep(1, K)                    # K x 1 : rate param for tau_k
     
     # (3) variational parameters for gamma_k (via Bouchard)
+    #     xi     : initialization cannot be 0 because lambda involves 1/xi
+    #     lambda : compute here since alpha is a function of lambda
     alpha   = rep(1, N)                # N x 1 : used to compute xi_{n,1:K}
-    xi      = matrix(0, N, K)          # N x K : nth row used to compute alpha_n
-    lambda  = matrix(0, N, K)          # N x K : matrix of lambda(xi)
+    xi      = matrix(1, N, K)          # N x K : nth row used to compute alpha_n
+    lambda  = lambda_xi(xi)            # N x K : matrix of lambda(xi)
     phi     = numeric(N)               # N x 1 : function of alpha, xi
         
     # variational parameters for gamma_1:K ~ N(gamma_k | mu_k, Q_k^{-1})

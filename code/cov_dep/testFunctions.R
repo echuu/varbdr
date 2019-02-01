@@ -59,10 +59,13 @@ theta = initVarParams(y, X, N, D, K, max_iter)
 source("eStep.R")
 theta_estep = eStep(theta, prior)
 
-# currently testing functions below --------------------------------------------
-
 source("mStep.R")
 theta = mStep(theta, prior)
+
+# currently testing functions below --------------------------------------------
+
+source("elbo.R")
+theta$L[i] = elbo(theta, prior)
 
 
 
@@ -87,9 +90,10 @@ for (k in 1:K) {
 }
 
 
-
-
-
+x_grid = seq(0.1, 100, length = 1000)
+lambda_x = lambda_xi(x_grid)
+xl_df = data.frame(x = x_grid, y = lambda_x)
+ggplot(xl_df, aes(x, y)) + geom_point(size = 0.7)
 
 
 

@@ -14,7 +14,6 @@ library(matrixcalc)
 
 mStep = function(theta, prior) {
     
-    
     X = prior$X
     y = prior$y
     N = prior$N
@@ -23,23 +22,23 @@ mStep = function(theta, prior) {
 
     I_D        = diag(1, D)                       # (D X D) : identity matrix
     X_mu       = X %*% theta$mu_k                 # (N x K) : (N x D) * (D x K)
-    # M          = theta$mu_k %*% t(theta$lambda)   # (D x N) : (D x K) * (K x N)
+    #M          = theta$mu_k %*% t(theta$lambda)   # (D x N) : (D x K) * (K x N)
     Lambda0_m0 = prior$Lambda_0 %*% prior$m_0     # (D x 1) : Lambda_0 * m_0
     
-    ## update alpha, xi, lambda, phi --------------------------------------------
+    ## update alpha, xi, lambda, phi -------------------------------------------
     #     (0.1) alpha                 # (N x 1)
     #     (0.2) xi                    # (N x K)
     #     (0.3) lambda                # (N x K)
     #     (0.4) phi                   # (N x 1)
     
-    # (0.1) update alpha -------------------------------------------------------------
+    # (0.1) update alpha -------------------------------------------------------
     for (n in 1:N) {
         theta$alpha[n] = 1 / sum(theta$lambda[n,]) * 
             (0.5 * (0.5 * K - 1) + t(X_mu[n,]) %*% theta$lambda[n,])
     }
     
     
-    # (0.2) update xi (computed row-wise) --------------------------------------------
+    # (0.2) update xi (computed row-wise) --------------------------------------
     for (n in 1:N) {
         xQx = numeric(K)
         for (k in 1:K) {
