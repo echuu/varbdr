@@ -70,6 +70,20 @@ X_mu = X %*% theta$mu_k
 t(X_mu[n,]) %*% theta$lambda[n,]
 
 
+r_vec = rnorm(N)
+l_vec = rnorm(N)
+a_vec = rnorm(N)
+    
+mat_result = t(X) %*% (r_vec * (0.5 + 2 * (l_vec * a_vec)))
+
+loop_res = 0
+for (n in 1:N) {
+    loop_res = loop_res + r_vec[n] * (0.5 + 2 * l_vec[n] * a_vec[n]) * X[n,]
+}
+
+
+
+
 
 
 

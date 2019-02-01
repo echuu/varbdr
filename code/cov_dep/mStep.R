@@ -85,26 +85,34 @@ mStep = function(theta, prior) {
         theta$mu_k[,k] =  theta$Q_k_inv[,,k] %*% theta$eta_k[,k]
     }
     
-    # ------------------------- DONE UP TO HERE ------------------------------ #
-    # ------------------------------------------------------------------------ #
-    
     # (1.2) update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k ------------------
     for (k in 1:K) {
-        theta$V_k[,,k] = prior$Lambda_0 + t(X) %*% diag(theta$r_nk[,k]) %*% X
+        
+        r_nk_xx = matrix(0, nrow = D, ncol = D)
+        # r_nk_yx = 0
+        for (n in 1:N) {
+            r_nk_xx = r_nk_xx + theta$r_nk[n,k] * crossprod(t(X[n,]))
+            # r_nk_yx = r_nk_yx + theta$r_nk[n,k] * y[n] * X[n,]
+        }
+        
+        # theta$V_k[,,k] = prior$Lambda_0 + t(X) %*% diag(theta$r_nk[,k]) %*% X
+        
+        theta$V_k[,,k]     = prior$Lambda_0 + r_nk_xx
         theta$V_k_inv[,,k] = solve(theta$V_k[,,k])
         theta$zeta_k[,k] = Lambda0_m0 + t(X) %*% (theta$r_nk[,k] * y)
         theta$m_k[,k] = theta$V_k_inv[,,k] %*% theta$zeta_k[,k]
     }
     
-    
     # (1.3) update q(tau): a_k, b_k --------------------------------------------
-    theta$a_k = prior$a_0 + theta$N_k
+    theta$a_k = prior$a_0 + 0.5 * theta$N_k
     for (k in 1:K) {
-        theta$b_k[k] = - t(theta$zeta_k[,k]) %*% theta$V_k_inv[,,k] %*% 
-            theta$zeta_k[,k] + sum(theta$r_nk[,k] * y^2)
+        # theta$b_k[k] = - t(theta$zeta_k[,k]) %*% theta$V_k_inv[,,k] %*% 
+        #    theta$zeta_k[,k] + sum(theta$r_nk[,k] * y^2)
+        theta$b_k[k] = - quadMult(theta$zeta_k[,k], theta$V_k_inv[,,k]) + 
+            sum(theta$r_nk[,k] * y^2)
     }
     theta$b_k = prior$b_0 + 
-        0.5 * (theta$b_k + t(prior$m_0) %*% prior$Lambda_0 %*% prior$m_0)
+        0.5 * (theta$b_k + c(quadMult(prior$m_0,  prior$Lambda_0)))
     
     
     # update the random variables using posterior means ------------------------
