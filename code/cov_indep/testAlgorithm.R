@@ -16,6 +16,7 @@ shape_mat = matrix(0, N, 2) # hold shape parameters for beta distribution for
                             # each observation (Y_n, X_n)
 
 ## generate data
+set.seed(100)
 for (n in 1:N) {
     # X_n = (X_n1, X_n2, ... , X_np) ~ Unif [0.05, 0.95]^p
     X[n,] = runif(D, 0.05, 0.95) # could generate all covariates at once, 
@@ -63,15 +64,59 @@ theta$tau_k
 theta$a_k
 theta$b_k
 
+p_ygrid    = p_y(theta, prior, K, data_ygrid)
+approx_df  = data.frame(x = y_grid, y = p_ygrid)   # store y, f(y) values
+
+p = qplot(y_grid, geom = "blank")
+p = p + geom_line(aes(x = approx_df$x, y = approx_df$y),
+                   colour = "blue", size = 0.9)
+approx_i = geom_line(aes(x = approx_df$x, y = approx_df$y),
+                     colour = "blue", size = 0.9)
 
 ## evaluate results ------------------------------------------------------------
+
+# look at the density plots for observation n = 63 per iteration of cavi
+source("approxDensity.R")
+n = 30
+p = qplot(y_grid, geom = "blank")
+
+iters = seq(2, theta$curr, 5)
+overlays = vector("list", length(iters))
+
+beta_n = stat_function(aes(x = y_grid, y = ..y..), 
+                       fun = dbeta, colour = 'red', n = 500, size = 1,
+                       args = list(shape1 = shape_mat[n,1], 
+                                   shape2 = shape_mat[n,2]))  
+
+for (i in 1:length(iters)) {
+    overlays[[i]] = p + theta$dc[[iters[i]]] + beta_n
+    print(overlays[[i]])
+}
+
+
+
+n = 32
+for (n in 1:nrow(X)) {
+    cat("iter:", n)
+    params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
+    print(plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K))
+    Sys.sleep(0.25)
+}
+
+n = 30
+params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
+p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
+p1
+
+
+# ------------------------------------------------------------------------------
 
 
 # generate density plots of true density overlayed with approximate density
 
 source("approxDensity.R")
 
-n = 63
+n = 78
 
 ## manual way, testing for single observations ---------------------------------
 data_ygrid = list(y = y_grid, x = X[n,])     # covariates for the n-th observ.
@@ -91,6 +136,7 @@ p = ggplot(apx_beta_n, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
 p + beta_n
 
 ## automation of density evaluations, overlay densities way --------------------
+n = 4
 params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
 p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
 p1

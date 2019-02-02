@@ -57,10 +57,40 @@ theta = initVarParams(y, X, N, D, K, max_iter)
 
 
 source("eStep.R")
-theta_estep = eStep(theta, prior)
+theta = eStep(theta, prior)
 
 source("mStep.R")
 theta = mStep(theta, prior)
+
+run_emStep = function(n = 10) {
+    for (i in 1:n) {
+        theta = eStep(theta, prior)
+        theta = mStep(theta, prior)
+    }
+    return(theta)
+}
+
+theta = run_emStep()
+
+theta$alpha
+theta$xi
+theta$lambda
+theta$Q_k
+theta$Q_k_inv
+theta$curr
+
+theta$mu_k
+theta$m_k
+
+source("approxDensity.R")
+## automation of density evaluations, overlay densities way --------------------
+n = 11
+y_grid = seq(0, 1, len = 500)
+params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
+p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
+p1
+
+
 
 # currently testing functions below --------------------------------------------
 

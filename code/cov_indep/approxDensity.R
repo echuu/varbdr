@@ -33,7 +33,7 @@ p_y = function(theta, prior, K, data) {
         tau_k_inv  = 1 / theta$tau_k[k]             # precision component
         beta_k     = theta$beta[,k]                 # coefficient vector
         mu_k       = c(t(x) %*% beta_k)             # mean component
-        p_y        = p_y + theta$pi_k[k] * dnorm(y, mu_k, sqrt(tau_k_inv)))
+        p_y        = p_y + theta$pi_k[k] * dnorm(y, mu_k, sqrt(tau_k_inv))
     }
 
     return(p_y)
@@ -76,6 +76,28 @@ plotDensities = function(y_grid, x,
     
     return(p)
 }
+
+
+
+
+densityCurve = function(approx_d, theta, prior, x, K,
+                        y_grid = seq(0, 1, len = 500)) {
+    
+    data_ygrid = list(y = y_grid, x = x)  
+    p_ygrid    = approx_d(theta, prior, K, data_ygrid)
+    approx_df  = data.frame(x = y_grid, y = p_ygrid)
+    
+    approx_i   = geom_line(aes(x = approx_df$x, y = approx_df$y),
+                           colour = "blue", size = 0.9)
+    
+    return(approx_i)
+    
+}
+
+
+
+
+
 
 
 

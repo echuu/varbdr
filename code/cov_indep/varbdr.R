@@ -8,6 +8,9 @@ source("eStep.R")
 source("mStep.R")
 source("elbo.R")
 source("misc.R")
+source("approxDensity.R")
+
+library(ggplot2)
 
 ## conditional density estimation using mixture of experts with covariate 
 ## INDEPENDENT weights + VB for faster inference
@@ -35,9 +38,10 @@ varbdr = function(y, X, K = 4,
                   a_0 = 1, b_0 = 1,                             # gamma params
                   max_iter = 150, tol = 1e-4, VERBOSE = TRUE) {
     
+    
+    
+    
     # TODO: set default values for a_0, b_0 
-    
-    
     X = as.matrix(X)         # N X D design matrix of covariates
     D = NCOL(X)              # Number of features
     N = NROW(X)              # Number of observations
@@ -58,6 +62,11 @@ varbdr = function(y, X, K = 4,
     #     K = number of clusters
     theta = initVarParams(y, X, N, D, K, max_iter)
     
+    
+    # generate sequence of y-values to be evaluated using the conditional 
+    # density estimate
+    n = 30 # observation for which we want to look at the density plots
+    
     # begin CAVI ---------------------------------------------------------------
     
     # perform coordinate ascent on variational parameters until EITHER:
@@ -72,8 +81,10 @@ varbdr = function(y, X, K = 4,
         # compute ELBO
         theta$L[i] = elbo(theta, prior)
         
-        ## some calculation is done here in cov-independent code to recompute
-        ## 2 expectations
+        # generate conditional density plot using current variational parameters
+        # eventually we can just pass in all the rows of X and generate a 
+        # density curve for each of the observations (maybe every 5 iterations)
+        theta$dc[[i]] = densityCurve(p_y, theta, prior, X[n,], K)
         
         # check for convergence
         if (checkELBO(theta, prior)) {    # checkElbo() in misc.R
