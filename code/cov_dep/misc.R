@@ -13,8 +13,11 @@ checkELBO = function(theta, prior) {
     i = theta$curr
     
     # display iteration, ELBO, change in ELBO
-    if (theta$VERBOSE) {
-        cat("It:\t",i,"\tLB:\t",L[i], "\tLB_diff:\t",L[i] - L[i - 1],"\n")
+    if (prior$VERBOSE) {
+        cat("It:\t",        i,
+            "\tLB:\t",      theta$L[i], 
+            "\tLB_diff:\t", theta$L[i] - theta$L[i - 1],
+            "\n")
     }
     
     # Check if lower bound decreases
@@ -22,12 +25,12 @@ checkELBO = function(theta, prior) {
         message("Warning: Lower bound decreases!\n")
     }
     # Check for convergence
-    if (abs(theta$L[i] - theta$L[i - 1]) < theta$epsilon_conv) { 
+    if (abs(theta$L[i] - theta$L[i - 1]) < prior$tol) { 
         CONVERGE = TRUE 
     }
     
     # Check if VB converged in the given maximum iterations
-    if (i == theta$max_iter) {
+    if (i == prior$max_iter) {
         warning("VB did not converge!\n")
     }
     

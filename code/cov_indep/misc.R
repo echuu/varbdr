@@ -90,6 +90,15 @@ vecToStr = function(x, K) {
 } # end printVector()
 
 
+# quadMult(): quadratic form multiplication, e.g., x'Ax
+# input: 
+#         x  : (D x 1) vector
+#         A  : (D x D) matrix
+# output: resulting product of x'Ax
+quadMult = function(x, A) {
+    return(t(x) %*% A %*% x)
+}
+
 
 
 

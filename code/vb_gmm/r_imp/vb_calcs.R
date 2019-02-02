@@ -138,7 +138,7 @@ mStep = function(N, K, D, X, theta, alpha_0, beta_0, nu_0, W_0_inv, m_0) {
     
     ## Update Dirichlet parameter
     alpha = alpha_0 + N_k                                # (K x 1) -- 10.58
-    ## Expectation of mixing proportions: E(pi_k)            
+    ## Expectation of mixing proportions: Ewher (pi_k)            
     pi_k = (alpha_0 + N_k) / (K * alpha_0 + N)           # (K x 1) -- 10.69
     
     ## Update parameters for G-W distribution

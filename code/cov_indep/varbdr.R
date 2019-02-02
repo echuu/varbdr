@@ -41,7 +41,7 @@ varbdr = function(y, X, K = 4,
     X = as.matrix(X)         # N X D design matrix of covariates
     D = NCOL(X)              # Number of features
     N = NROW(X)              # Number of observations
-    L = rep(-Inf, max_iter)  # Store the variational lower bounds
+    # L = rep(-Inf, max_iter)  # Store the variational lower bounds
     
     # prior specification: 
     #           pi ~ Dir (alpha_0)

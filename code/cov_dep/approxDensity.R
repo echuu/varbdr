@@ -1,5 +1,5 @@
 
-## approxDensity.R -- covariate INDEPENDENT case
+## approxDensity.R -- covariate DEPENDENT case
 ## generate the approximating density using a mixture of experts, using
 ## the model parameters from CAVI
 
@@ -10,7 +10,7 @@
 
 library(ggplot2)
 
-# p_y(): mixture density used to approximate the true density
+# p_y(): mixture density used to approximate the true density (cov-dep weights)
 # input:  
 #          theta  : variational parameters
 #          prior  : prior-related variables
@@ -22,20 +22,24 @@ library(ggplot2)
 # output: 
 #          p_y    : approximate conditional density
 p_y = function(theta, prior, K, data) {
-        
+    
     y = data$y    # (1 x 1) response variable
     x = data$x    # (D x 1) covariate vector 
-
-    p_y = 0
     
+    
+    # calculate pi_k
+    x_gamma = t(x) %*% theta$gamma_k           # (1 x K)
+    pi_k = exp(x_gamma - log_sum_exp(x_gamma)) # (1 x K) : normalize the weights 
+    
+    p_y = 0
     for (k in 1:K) {
         # k-th gaussion: N ( y | x'beta_k, tau_k^{-1} )
         tau_k_inv  = 1 / theta$tau_k[k]             # precision component
         beta_k     = theta$beta[,k]                 # coefficient vector
         mu_k       = c(t(x) %*% beta_k)             # mean component
-        p_y        = p_y + theta$pi_k[k] * dnorm(y, mu_k, sqrt(tau_k_inv)))
+        p_y        = p_y + pi_k[k] * dnorm(y, mean = mu_k, sd = sqrt(tau_k_inv))
     }
-
+    
     return(p_y)
     
 } # end approxDensity() function
@@ -76,8 +80,3 @@ plotDensities = function(y_grid, x,
     
     return(p)
 }
-
-
-
-
-# end of approxDensity.R file

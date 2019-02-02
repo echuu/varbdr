@@ -82,7 +82,7 @@ initVarParams = function(y, X, N, D, K, max_iter) {
     }
     
     # current iteration of CAVI
-    curr = 0
+    curr = 1
     
     # list containing all variational parameters
     theta = list(beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k,
