@@ -65,7 +65,7 @@ varbdr = function(y, X, K = 4,
     
     # generate sequence of y-values to be evaluated using the conditional 
     # density estimate
-    n = 30 # observation for which we want to look at the density plots
+    # n = 30 # observation for which we want to look at the density plots
     
     # begin CAVI ---------------------------------------------------------------
     
@@ -84,7 +84,12 @@ varbdr = function(y, X, K = 4,
         # generate conditional density plot using current variational parameters
         # eventually we can just pass in all the rows of X and generate a 
         # density curve for each of the observations (maybe every 5 iterations)
-        theta$dc[[i]] = densityCurve(p_y, theta, prior, X[n,], K)
+        
+        # dc[[iter]] --> (N x length of grid) dataframe
+        # to get the sequential changes for the n-th iteration, have to search
+        # along the n-th row dc[[i]], i \in [2, curr]
+        
+        theta$dc[[i]] = densityCurve(p_y, theta, prior, X, K)
         
         # check for convergence
         if (checkELBO(theta, prior)) {    # checkElbo() in misc.R

@@ -71,32 +71,49 @@ plotDensities = function(y_grid, x,
                            args = params)  
     
     
-    p = ggplot(approx_df, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
+    p_line = geom_line(aes(x = approx_df$x, y = approx_df$y),
+                       colour = "blue", size = 0.9)
+    # p = ggplot(approx_df, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
+    p = ggplot(approx_df, aes(x, y)) + 
+        geom_line(aes(x = approx_df$x, y = approx_df$y),
+                  colour = "blue", size = 0.9)
     p = p + beta_n
     
-    return(p)
+    return(list(p = p, p_line = p_line))
 }
 
 
 
-
-densityCurve = function(approx_d, theta, prior, x, K,
+# densityCurve(): return density curves for each obs using mixture approx
+# input:  
+#          approx_d :  approx density function
+#          theta    :  variational parameters
+#          prior    :  prior-related variables
+#          X        :  (N x D) design mat w/ covariates stacked row-wise
+#          K        :  number of clusters used in the mixture density
+#          y_grid   :  sequence of y-values evaluated using true/approx density
+# output: 
+#          approx   :  N-dim LIST of geom_line() objects for each observation
+densityCurve = function(approx_d, theta, prior, X, K,
                         y_grid = seq(0, 1, len = 500)) {
     
-    data_ygrid = list(y = y_grid, x = x)  
-    p_ygrid    = approx_d(theta, prior, K, data_ygrid)
-    approx_df  = data.frame(x = y_grid, y = p_ygrid)
+    N = nrow(X)
+    # N = 1
     
-    approx_i   = geom_line(aes(x = approx_df$x, y = approx_df$y),
-                           colour = "blue", size = 0.9)
+    approx_t = matrix(0, nrow = N, ncol = length(y_grid))
+      
+    # obtain density curve estimates for each of the n observations in 
+    # design matrix X
+    for (n in 1:N) {
+        data_ygrid  = list(y = y_grid, x = X[n,])
+        # print(data_ygrid$x)
+        p_ygrid     = approx_d(theta, prior, K, data_ygrid)
+        # approx_df   = data.frame(x = y_grid, y = p_ygrid)
+        approx_t[n,] = p_ygrid
+    }
     
-    return(approx_i)
-    
-}
-
-
-
-
+    return(approx_t)
+} # end of densityCurve() function
 
 
 

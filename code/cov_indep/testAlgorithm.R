@@ -64,50 +64,73 @@ theta$tau_k
 theta$a_k
 theta$b_k
 
-p_ygrid    = p_y(theta, prior, K, data_ygrid)
-approx_df  = data.frame(x = y_grid, y = p_ygrid)   # store y, f(y) values
-
-p = qplot(y_grid, geom = "blank")
-p = p + geom_line(aes(x = approx_df$x, y = approx_df$y),
-                   colour = "blue", size = 0.9)
-approx_i = geom_line(aes(x = approx_df$x, y = approx_df$y),
-                     colour = "blue", size = 0.9)
 
 ## evaluate results ------------------------------------------------------------
 
-# look at the density plots for observation n = 63 per iteration of cavi
-source("approxDensity.R")
-n = 30
-p = qplot(y_grid, geom = "blank")
+# examine observation n = 32, per every 2 iteration of CAVI
+n = 32
+y_grid = seq(0, 1, len = 500)
+iters = seq(2, theta$curr, 2)
 
-iters = seq(2, theta$curr, 5)
-overlays = vector("list", length(iters))
-
+# true density
 beta_n = stat_function(aes(x = y_grid, y = ..y..), 
-                       fun = dbeta, colour = 'red', n = 500, size = 1,
+                       fun = dbeta, colour = 'black', n = 500, size = 1,
                        args = list(shape1 = shape_mat[n,1], 
-                                   shape2 = shape_mat[n,2]))  
+                                   shape2 = shape_mat[n,2])) 
+i = 2
+i = 4
+i = 6
+i = 10
+i = 20
+i = 52
 
 for (i in 1:length(iters)) {
-    overlays[[i]] = p + theta$dc[[iters[i]]] + beta_n
-    print(overlays[[i]])
+    # look in the n-th row of each data frame: theta$dc
+    curve_1 = data.frame(x = y_grid, y = theta$dc[[iters[1]]][n,])
+    py_plot1 = geom_line(aes(x = curve_1$x, y = curve_1$y), 
+                        colour = "blue", size = 0.9)
+    p + py_plot + beta_n
+    
+    curve_26 = data.frame(x = y_grid, y = theta$dc[[iters[26]]][n,])
+    py_plot26 = geom_line(aes(x = curve_26$x, y = curve_26$y), 
+                        colour = "red", size = 0.9)
+    p + py_plot1 + py_plot26 + beta_n
+    
+    
 }
 
 
 
-n = 32
-for (n in 1:nrow(X)) {
-    cat("iter:", n)
-    params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
-    print(plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K))
-    Sys.sleep(0.25)
-}
 
-n = 30
+
+### testing --------------------------------------------------------------------
+
+
+# look at the density plots for observation n = 63 per iteration of cavi
+source("approxDensity.R")
+
+p = qplot(y_grid, geom = "blank")
+
+curves_approx = densityCurve(p_y, theta, prior, X, K,
+                             y_grid = seq(0, 1, len = 500))
+
+n = 33
 params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
 p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
-p1
+p1$p
 
+
+beta_n = stat_function(aes(x = y_grid, y = ..y..), 
+                       fun = dbeta, colour = 'blue', n = 500, size = 1,
+                       args = list(shape1 = shape_mat[n,1], 
+                                   shape2 = shape_mat[n,2])) 
+
+for (n in 1:N) {
+    py_df = data.frame(x = y_grid, y = curves_approx[n,])
+    
+    p + geom_line(aes(x = py_df$x, y = py_df$y), colour = "red", size = 0.9) +
+        beta_n
+}
 
 # ------------------------------------------------------------------------------
 
@@ -116,24 +139,6 @@ p1
 
 source("approxDensity.R")
 
-n = 78
-
-## manual way, testing for single observations ---------------------------------
-data_ygrid = list(y = y_grid, x = X[n,])     # covariates for the n-th observ.
-p_ygrid = p_y(theta, prior, K, data_ygrid)
-
-# approximate density dataframe
-apx_beta_n = data.frame(x = y_grid, y = p_ygrid)
-
-# true density plot (indexed by n in the shape parameters)
-beta_n = stat_function(aes(x = y_grid, y = ..y..), 
-                       fun = dbeta, colour = 'red', n = 500, size = 1,
-                       args = list(shape1 = shape_mat[n,1], 
-                                   shape2 = shape_mat[n,2]))  
-
-
-p = ggplot(apx_beta_n, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
-p + beta_n
 
 ## automation of density evaluations, overlay densities way --------------------
 n = 4
