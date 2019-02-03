@@ -70,7 +70,7 @@ theta$gamma_k
 theta$a_k
 theta$b_k
 
-n = 30
+n = 24
 params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
 p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
 p1$overlay
@@ -108,7 +108,11 @@ curve_152 = data.frame(x = y_grid, y = theta$dc[[7]][n,])
 py_plot152 = geom_line(aes(x = curve_152$x, y = curve_152$y), 
                        colour = "purple", size = 0.9)
 
+curve_153 = data.frame(x = y_grid, y = theta$dc[[30]][n,])
+py_plot153 = geom_line(aes(x = curve_153$x, y = curve_153$y), 
+                       colour = "pink", size = 0.9)
+
 p + py_plot2 + py_plot50 + py_plot100 + py_plot150 + py_plot151 + 
-    py_plot152 + beta_n
+    py_plot152 + py_plot153 + beta_n + p1$approx
 
 

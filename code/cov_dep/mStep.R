@@ -74,7 +74,7 @@ mStep = function(theta, prior) {
                 (theta$r_nk[n,k] * theta$lambda[n,k]) * crossprod(t(X[n,]))
         }
         
-        theta$Q_k[,,k] = I_D + rl_nk_xx
+        theta$Q_k[,,k] = I_D + 2 * rl_nk_xx
         
         theta$Q_k_inv[,,k] = solve(theta$Q_k[,,k])
         
@@ -98,8 +98,8 @@ mStep = function(theta, prior) {
         
         theta$V_k[,,k]     = prior$Lambda_0 + r_nk_xx
         theta$V_k_inv[,,k] = solve(theta$V_k[,,k])
-        theta$zeta_k[,k] = Lambda0_m0 + t(X) %*% (theta$r_nk[,k] * y)
-        theta$m_k[,k] = theta$V_k_inv[,,k] %*% theta$zeta_k[,k]
+        theta$zeta_k[,k]   = Lambda0_m0 + t(X) %*% (theta$r_nk[,k] * y)
+        theta$m_k[,k]      = theta$V_k_inv[,,k] %*% theta$zeta_k[,k]
     }
     
     # (1.3) update q(tau): a_k, b_k --------------------------------------------

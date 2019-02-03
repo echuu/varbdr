@@ -32,7 +32,7 @@ varbdr = function(y, X, K = 3,
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
                   g_0 = 0, Sigma_0 = diag(rep(1, ncol(X))),     # normal params
-                  max_iter = 150, tol = 1e-4, VERBOSE = TRUE) {
+                  max_iter = 50, tol = 1e-4, VERBOSE = TRUE) {
     
     X = as.matrix(X)         # N X D design matrix of covariates
     D = NCOL(X)              # Number of features
