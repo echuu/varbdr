@@ -68,9 +68,15 @@ theta$b_k
 ## evaluate results ------------------------------------------------------------
 
 # examine observation n = 32, per every 2 iteration of CAVI
-n = 32
+n = 30
 y_grid = seq(0, 1, len = 500)
 iters = seq(2, theta$curr, 2)
+
+
+params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
+p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
+p1$overlay
+
 
 # true density
 beta_n = stat_function(aes(x = y_grid, y = ..y..), 
@@ -89,14 +95,13 @@ for (i in 1:length(iters)) {
     curve_1 = data.frame(x = y_grid, y = theta$dc[[iters[1]]][n,])
     py_plot1 = geom_line(aes(x = curve_1$x, y = curve_1$y), 
                         colour = "blue", size = 0.9)
-    p + py_plot + beta_n
+    # p + py_plot + beta_n
     
-    curve_26 = data.frame(x = y_grid, y = theta$dc[[iters[26]]][n,])
+    curve_26 = data.frame(x = y_grid, y = theta$dc[[53]][n,])
     py_plot26 = geom_line(aes(x = curve_26$x, y = curve_26$y), 
                         colour = "red", size = 0.9)
     p + py_plot1 + py_plot26 + beta_n
-    
-    
+    p + py_plot26 + beta_n
 }
 
 
@@ -117,34 +122,14 @@ curves_approx = densityCurve(p_y, theta, prior, X, K,
 n = 33
 params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
 p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
-p1$p
+p + p1$approx
+p1$overlay
 
 
 beta_n = stat_function(aes(x = y_grid, y = ..y..), 
                        fun = dbeta, colour = 'blue', n = 500, size = 1,
                        args = list(shape1 = shape_mat[n,1], 
                                    shape2 = shape_mat[n,2])) 
-
-for (n in 1:N) {
-    py_df = data.frame(x = y_grid, y = curves_approx[n,])
-    
-    p + geom_line(aes(x = py_df$x, y = py_df$y), colour = "red", size = 0.9) +
-        beta_n
-}
-
-# ------------------------------------------------------------------------------
-
-
-# generate density plots of true density overlayed with approximate density
-
-source("approxDensity.R")
-
-
-## automation of density evaluations, overlay densities way --------------------
-n = 4
-params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
-p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
-p1
 
 
 # end of testAlgorithm.R file

@@ -19,7 +19,8 @@ initVarParams = function(y, X, N, D, K, max_iter) {
     
     I_D   = diag(1, D)                 # (D X D)  identity matrix
     L     = rep(-Inf, max_iter)        # Store the variational lower bounds
- 
+    dc    = vector("list", max_iter)   # store density curves for each iter, 
+                                       # in the form of a matrix 
     
     
     # explicit random variables -- 

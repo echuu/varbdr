@@ -85,10 +85,10 @@ varbdr = function(y, X, K = 4,
         # eventually we can just pass in all the rows of X and generate a 
         # density curve for each of the observations (maybe every 5 iterations)
         
-        # dc[[iter]] --> (N x length of grid) dataframe
-        # to get the sequential changes for the n-th iteration, have to search
-        # along the n-th row dc[[i]], i \in [2, curr]
-        
+        # obtain current density curves using each of the covariates -> N curves
+        #     note: dc[[iter]] --> (N x length of grid) dataframe
+        #           to get the sequential changes for the n-th iteration, 
+        #           have to search along the n-th row dc[[i]], i in [2, curr]
         theta$dc[[i]] = densityCurve(p_y, theta, prior, X, K)
         
         # check for convergence

@@ -62,7 +62,7 @@ theta = eStep(theta, prior)
 source("mStep.R")
 theta = mStep(theta, prior)
 
-run_emStep = function(n = 10) {
+run_emStep = function(n = 50) {
     for (i in 1:n) {
         theta = eStep(theta, prior)
         theta = mStep(theta, prior)
@@ -88,42 +88,11 @@ n = 11
 y_grid = seq(0, 1, len = 500)
 params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
 p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
-p1
+p1$p
 
 
 
-# currently testing functions below --------------------------------------------
 
-source("elbo.R")
-theta$L[i] = elbo(theta, prior)
-
-
-
-X_mu = X %*% theta$mu_k
-t(X_mu[n,]) %*% theta$lambda[n,]
-
-
-r_vec = rnorm(N)
-l_vec = rnorm(N)
-a_vec = rnorm(N)
-    
-mat_result = t(X) %*% (r_vec * (0.5 + 2 * (l_vec * a_vec)))
-
-loop_res = 0
-for (n in 1:N) {
-    loop_res = loop_res + r_vec[n] * (0.5 + 2 * l_vec[n] * a_vec[n]) * X[n,]
-}
-
-loop_result = 0
-for (k in 1:K) {
-    loop_result = loop_result + t(theta$m_k[,k]) %*% theta$m_k[,k]
-}
-
-
-x_grid = seq(0.1, 100, length = 1000)
-lambda_x = lambda_xi(x_grid)
-xl_df = data.frame(x = x_grid, y = lambda_x)
-ggplot(xl_df, aes(x, y)) + geom_point(size = 0.7)
 
 
 

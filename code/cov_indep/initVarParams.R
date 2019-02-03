@@ -14,7 +14,8 @@ initVarParams = function(y, X, N, D, K, max_iter) {
 
     I_D   = diag(1, D)                 # (D X D)  identity matrix
     L     = rep(-Inf, max_iter)        # store the variational lower bonuds
-    dc    = vector("list", max_iter)   # store density curves for each iter
+    dc    = vector("list", max_iter)   # store density curves for each iter,
+                                       # in the form of a matrix 
     
     # explicit random variables -- ---------------------------------------------
     #    don't thnk these are used in CAVI, these are used later to 

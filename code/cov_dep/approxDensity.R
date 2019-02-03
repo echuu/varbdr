@@ -75,8 +75,54 @@ plotDensities = function(y_grid, x,
                            args = params)  
     
     
-    p = ggplot(approx_df, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
+    p_line = geom_line(aes(x = approx_df$x, y = approx_df$y),
+                       colour = "blue", size = 0.9)
+    # p = ggplot(approx_df, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
+    p = ggplot(approx_df, aes(x, y)) + 
+        geom_line(aes(x = approx_df$x, y = approx_df$y),
+                  colour = "blue", size = 0.9)
     p = p + beta_n
     
-    return(p)
+    return(list(overlay = p, approx = p_line))
 }
+
+
+
+# densityCurve(): return density curve for each set of N covariates
+# input:  
+#          approx_d :  approx density function
+#          theta    :  variational parameters
+#          prior    :  prior-related variables
+#          X        :  (N x D) design mat w/ covariates stacked row-wise
+#          K        :  number of clusters used in the mixture density
+#          y_grid   :  sequence of y-values evaluated using true/approx density
+# output: 
+#          approx   :  N x len dataframe of p_y evaluations -> density curve
+densityCurve = function(approx_d, theta, prior, X, K,
+                        y_grid = seq(0, 1, len = 500)) {
+    
+    N = nrow(X)
+    # N = 1
+    
+    approx_t = matrix(0, nrow = N, ncol = length(y_grid))
+    
+    # obtain density curve estimates for each of the n observations in 
+    # design matrix X
+    for (n in 1:N) {
+        data_ygrid  = list(y = y_grid, x = X[n,])
+        # print(data_ygrid$x)
+        p_ygrid     = approx_d(theta, prior, K, data_ygrid)
+        # approx_df   = data.frame(x = y_grid, y = p_ygrid)
+        approx_t[n,] = p_ygrid
+    }
+    
+    return(approx_t)
+} # end of densityCurve() function
+
+
+
+
+
+
+
+

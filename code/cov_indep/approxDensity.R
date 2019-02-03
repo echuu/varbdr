@@ -79,12 +79,12 @@ plotDensities = function(y_grid, x,
                   colour = "blue", size = 0.9)
     p = p + beta_n
     
-    return(list(p = p, p_line = p_line))
+    return(list(overlay = p, approx = p_line))
 }
 
 
 
-# densityCurve(): return density curves for each obs using mixture approx
+# densityCurve(): return density curve for each set of N covariates
 # input:  
 #          approx_d :  approx density function
 #          theta    :  variational parameters
@@ -93,7 +93,7 @@ plotDensities = function(y_grid, x,
 #          K        :  number of clusters used in the mixture density
 #          y_grid   :  sequence of y-values evaluated using true/approx density
 # output: 
-#          approx   :  N-dim LIST of geom_line() objects for each observation
+#          approx   :  N x len dataframe of p_y evaluations -> density curve
 densityCurve = function(approx_d, theta, prior, X, K,
                         y_grid = seq(0, 1, len = 500)) {
     

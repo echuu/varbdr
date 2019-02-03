@@ -1,6 +1,10 @@
 
 
 # varbdr.R -- covariate-DEPENDENT case
+## conditional density estimation using mixture of experts with covariate 
+## DEPENDENT weights + VB for faster inference
+
+
 
 source("initPriors.R")
 source("initVarParams.R")
@@ -8,19 +12,7 @@ source("eStep.R")
 source("mStep.R")
 source("elbo.R")
 source("misc.R")
-
-## conditional density estimation using mixture of experts with covariate 
-## DEPENDENT weights + VB for faster inference
-
-
-## global params ---------------------------------------------------------------
-
-# D     = 2           # dimension of covariate, 2 <= d <= 100
-# K     = 10          # number of clusters
-# N     = 1           # number of samples
-# I_D   = diag(1, D)  # D X D  identity matrix
-# df    = 100         # degrees of freedom for Wishart distribution
-# scale = 1           # scale for the covariance matrix
+source("approxDensity.R")
 
 
 ## initialize model parameters -------------------------------------------------
@@ -76,8 +68,12 @@ varbdr = function(y, X, K = 3,
         # compute ELBO
         theta$L[i] = elbo(theta, prior)
         
-        ## some calculation is done here in cov-independent code to recompute
-        ## 2 expectations
+        # obtain current density curves using each of the covariates -> N curves
+        #     note: dc[[iter]] --> (N x length of grid) dataframe
+        #           to get the sequential changes for the n-th iteration, 
+        #           have to search along the n-th row dc[[i]], i in [2, curr]
+        theta$dc[[i]] = densityCurve(p_y, theta, prior, X, K)
+        
         
         # check for convergence
         if (checkELBO(theta, prior)) {
