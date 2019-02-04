@@ -6,7 +6,7 @@ setwd("C:/Users/chuu/varbdr/code/cov_dep")
 
 library(ggplot2)
 
-N = 100  # number of observations
+N = 1000  # number of observations
 D = 2    # number of covariates 
 K = 5    # number of clusters
 
@@ -57,6 +57,12 @@ run = function() {
 
 theta = run()                   # run algorithm
 
+elbo_df = data.frame(iter = 2:theta$curr, elbo = theta$L[2:theta$curr])
+ggplot(elbo_df, aes(x = iter, y = elbo)) + geom_point()
+
+source("misc.R")
+plotELBO(theta)
+
 # variational parameters after CAVI finishes
 
 theta$alpha
@@ -70,7 +76,7 @@ theta$gamma_k
 theta$a_k
 theta$b_k
 
-n = 24
+n = 411
 params = list(shape1 = shape_mat[n,1], shape2 = shape_mat[n,2])
 p1 = plotDensities(y_grid, X[n,], dbeta, params, p_y, theta, prior, K)
 p1$overlay
@@ -100,17 +106,19 @@ curve_150 = data.frame(x = y_grid, y = theta$dc[[5]][n,])
 py_plot150 = geom_line(aes(x = curve_150$x, y = curve_150$y), 
                       colour = "green", size = 0.9)
 
-curve_151 = data.frame(x = y_grid, y = theta$dc[[6]][n,])
+curve_151 = data.frame(x = y_grid, y = theta$dc[[150]][n,])
 py_plot151 = geom_line(aes(x = curve_151$x, y = curve_151$y), 
                        colour = "blue", size = 0.9)
 
-curve_152 = data.frame(x = y_grid, y = theta$dc[[7]][n,])
+curve_152 = data.frame(x = y_grid, y = theta$dc[[250]][n,])
 py_plot152 = geom_line(aes(x = curve_152$x, y = curve_152$y), 
                        colour = "purple", size = 0.9)
 
-curve_153 = data.frame(x = y_grid, y = theta$dc[[30]][n,])
+curve_153 = data.frame(x = y_grid, y = theta$dc[[600]][n,])
 py_plot153 = geom_line(aes(x = curve_153$x, y = curve_153$y), 
                        colour = "pink", size = 0.9)
+
+
 
 p + py_plot2 + py_plot50 + py_plot100 + py_plot150 + py_plot151 + 
     py_plot152 + py_plot153 + beta_n + p1$approx

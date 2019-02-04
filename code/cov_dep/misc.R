@@ -1,6 +1,19 @@
 
+## misc.R -- helper functions
 
-## various checks on the ELBO
+## included functions:
+##     checkELBO       : various checks on the ELBO (convergence, etc.)
+##     plotELBO()      : plot the ELBO over the iterations of CAVI
+##     log_sum_exp()   : log(sum(exp(x)))
+##     vecToStr()      : print a K-dim vector in the form: [x1, x2, ..., xK]
+##     quadMult()      : quadratic form multiplication, e.g., x'Ax
+##     lambda_xi()     : evaluate: 1 / (4 * theta$xi) * tanh(0.5 * theta$xi)
+
+
+library(ggplot2)
+
+
+## checkELBO() : various checks on the ELBO
 ## input:
 #          VERBOSE      : logical, if TRUE, then progress printed each iter
 #          i            : current iteration
@@ -36,6 +49,23 @@ checkELBO = function(theta, prior) {
     
     return(CONVERGE)
 } # end of checkELBO() function
+
+
+## plotELBO() : plot the ELBO over the iterations
+## input:
+#           theta      : object containing variational parameters
+## output: 
+#           ggplot plot/object with the ELBO value at each iter until converge
+plotELBO = function(theta) {
+    
+    elbo_df = data.frame(iter = 2:theta$curr, elbo = theta$L[2:theta$curr])
+    
+    elbo_plot = ggplot(elbo_df, aes(x = iter, y = elbo)) + 
+        geom_point(size = 0.9)
+    
+    return(elbo_plot)
+}
+
 
 
 # log_sum_exp():
