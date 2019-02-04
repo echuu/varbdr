@@ -15,8 +15,7 @@ K = 5    # number of clusters
 y = numeric(N)       # (N x 1) vector of response variables
 X = matrix(0, N, D)  # (N x D) matrix; covariates for y_n are stored row-wise  
 
-shape_mat = matrix(0, N, 2) # hold shape parameters for beta distribution for
-# each observation (Y_n, X_n)
+shape_mat = matrix(0, N, 2) # shape parameters for beta distribution 
 
 ## generate data
 set.seed(100)

@@ -17,7 +17,7 @@
         # VERBOSE   : if TRUE, then detailed convergence output will be produced
 # output: 
         # prior     : list containing the prior parameters
-initPriors = function(y, X, K, m_0, Lambda0, a_0, b_0, g0, Sigma0,
+initPriors = function(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
                       max_iter, tol, VERBOSE) {
     
     prior = list()
@@ -27,8 +27,8 @@ initPriors = function(y, X, K, m_0, Lambda0, a_0, b_0, g0, Sigma0,
     prior$X        = X
     
     # num observations, dim of covariates, num of clusters
-    prior$N        = N
-    prior$D        = D
+    prior$N        = nrow(X)
+    prior$D        = ncol(X)
     prior$K        = K
     
     # prior mean and precision for beta_1:K

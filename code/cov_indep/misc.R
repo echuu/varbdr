@@ -4,6 +4,8 @@
 ## misc calculations performed in CAVI for covariate-INDEPENDENT case
 
 
+library(ggplot2)
+
 ## various checks on the ELBO
 ## input:
 # VERBOSE      : logical, if TRUE, then progress printed each iter
@@ -40,6 +42,23 @@ checkELBO = function(theta, prior) {
     
     return(CONVERGE)
 } # end of checkELBO() function
+
+
+## plotELBO() : plot the ELBO over the iterations
+## input:
+#           theta      : object containing variational parameters
+## output: 
+#           ggplot plot/object with the ELBO value at each iter until converge
+plotELBO = function(theta) {
+    
+    elbo_df = data.frame(iter = 2:theta$curr, elbo = theta$L[2:theta$curr])
+    
+    elbo_plot = ggplot(elbo_df, aes(x = iter, y = elbo)) + 
+        geom_point(size = 0.9)
+    
+    return(elbo_plot)
+}
+
 
 
 # computes the log of the normalizing constant of the Dirichlet density

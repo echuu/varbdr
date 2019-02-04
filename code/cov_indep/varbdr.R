@@ -1,6 +1,7 @@
 
-
 # varbdr.R -- covariate-INDEPENDENT case
+
+setwd("~/varbdr/code/cov_indep") # linux directory, change for windows
 
 source("initPriors.R")
 source("initVarParams.R")
@@ -8,21 +9,14 @@ source("eStep.R")
 source("mStep.R")
 source("elbo.R")
 source("misc.R")
-source("approxDensity.R")
+source("~/varbdr/code/density.R")
 
 library(ggplot2)
 
 ## conditional density estimation using mixture of experts with covariate 
 ## INDEPENDENT weights + VB for faster inference
 
-## initialize model parameters -------------------------------------------------
-
-
-## globals
-
-
-
-## input:
+## input: 
 #         y        : (N x 1) -- response values
 #         X        : (N x D) -- covariates stored row-wise
 #         K        : # of mixture componenets

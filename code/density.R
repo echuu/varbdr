@@ -1,16 +1,18 @@
 
-## approxDensity.R -- covariate INDEPENDENT case
+## approxDensity.R -- for ALL cases
 ## generate the approximating density using a mixture of experts, using
 ## the model parameters from CAVI
 
 ## functions included:
-##   (1) p_y           : approximate mixture density
-##   (2) plotDensities : overlay true density and approximate mixture density
+##   (1) py_0          : approximate mixture density (cov-indep)
+##   (2) py_bouch      : approximate mixture density (cov-dep, bouchard)
+##   (3) plotDensities : overlay true density and approximate mixture density
 
 
 library(ggplot2)
 
-# p_y(): mixture density used to approximate the true density
+# py_0(): mixture density used to approximate the true density,
+#        covariate-INDEPENDENT weights
 # input:  
 #          theta  : variational parameters
 #          prior  : prior-related variables
@@ -21,11 +23,11 @@ library(ggplot2)
 #                         covariate vector x
 # output: 
 #          p_y    : approximate conditional density
-p_y = function(theta, prior, K, data) {
-        
+py_0 = function(theta, prior, K, data) {
+    
     y = data$y    # (1 x 1) response variable
     x = data$x    # (D x 1) covariate vector 
-
+    
     p_y = 0
     
     for (k in 1:K) {
@@ -35,7 +37,44 @@ p_y = function(theta, prior, K, data) {
         mu_k       = c(t(x) %*% beta_k)             # mean component
         p_y        = p_y + theta$pi_k[k] * dnorm(y, mu_k, sqrt(tau_k_inv))
     }
+    
+    return(p_y)
+    
+} # end approxDensity() function
 
+
+
+# py_bouch(): mixture density used to approximate the true density,
+#             using covariate-dependent weights (Bouchard bound)
+# input:  
+#          theta  : variational parameters
+#          prior  : prior-related variables
+#          K      : number of clusters used in the mixture density
+#          data   : LIST containing the response (y) and the covariates (x)
+#                   note: y is a (N x 1) vector, x is (D x 1) vector
+#                         every y value will be evaluated using the same
+#                         covariate vector x
+# output: 
+#          p_y    : approximate conditional density
+py_bouch = function(theta, prior, K, data) {
+    
+    y = data$y    # (1 x 1) response variable
+    x = data$x    # (D x 1) covariate vector 
+    
+    
+    # calculate pi_k
+    x_gamma = t(x) %*% theta$gamma_k           # (1 x K)
+    pi_k = exp(x_gamma - log_sum_exp(x_gamma)) # (1 x K) : normalize the weights 
+    
+    p_y = 0
+    for (k in 1:K) {
+        # k-th gaussion: N ( y | x'beta_k, tau_k^{-1} )
+        tau_k_inv  = 1 / theta$tau_k[k]             # precision component
+        beta_k     = theta$beta[,k]                 # coefficient vector
+        mu_k       = c(t(x) %*% beta_k)             # mean component
+        p_y        = p_y + pi_k[k] * dnorm(y, mean = mu_k, sd = sqrt(tau_k_inv))
+    }
+    
     return(p_y)
     
 } # end approxDensity() function
@@ -101,7 +140,7 @@ densityCurve = function(approx_d, theta, prior, X, K,
     # N = 1
     
     approx_t = matrix(0, nrow = N, ncol = length(y_grid))
-      
+    
     # obtain density curve estimates for each of the n observations in 
     # design matrix X
     for (n in 1:N) {
@@ -119,4 +158,6 @@ densityCurve = function(approx_d, theta, prior, X, K,
 
 
 
-# end of approxDensity.R file
+
+
+
