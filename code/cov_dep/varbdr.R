@@ -4,7 +4,11 @@
 ## conditional density estimation using mixture of experts with covariate 
 ## DEPENDENT weights + VB for faster inference
 
-setwd("~/varbdr/code/cov_dep")
+HOME_DIR    = "~/varbdr/code"              # linux
+HOME_DIR    = "C:/Users/chuu/varbdr/code"  # windows
+COV_DEP_DIR = paste(HOME_DIR, "/cov_dep", sep = '')
+
+setwd(COV_DEP_DIR)
 
 source("initPriors.R")
 source("initVarParams.R")
@@ -12,7 +16,7 @@ source("eStep.R")
 source("mStep.R")
 source("elbo.R")
 source("misc.R")
-source("~/varbdr/code/density.R")
+source(paste(HOME_DIR, "/density.R", sep = ''))
 
 
 ## initialize model parameters -------------------------------------------------
@@ -72,7 +76,7 @@ varbdr = function(y, X, K = 3,
         #     note: dc[[iter]] --> (N x length of grid) dataframe
         #           to get the sequential changes for the n-th iteration, 
         #           have to search along the n-th row dc[[i]], i in [2, curr]
-        theta$dc[[i]] = densityCurve(py_bouch, theta, X, K)
+        # theta$dc[[i]] = densityCurve(py_bouch, theta, X, K)
         
         
         # check for convergence

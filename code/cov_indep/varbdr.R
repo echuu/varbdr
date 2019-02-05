@@ -1,7 +1,13 @@
 
 # varbdr.R -- covariate-INDEPENDENT case
 
-setwd("~/varbdr/code/cov_indep") # linux directory, change for windows
+
+HOME_DIR    = "~/varbdr/code"              # linux
+HOME_DIR    = "C:/Users/chuu/varbdr/code"  # windows
+COV_INDEP_DIR = paste(HOME_DIR, "/cov_indep", sep = '')
+
+setwd(COV_INDEP_DIR)
+
 
 source("initPriors.R")
 source("initVarParams.R")
@@ -9,7 +15,7 @@ source("eStep.R")
 source("mStep.R")
 source("elbo.R")
 source("misc.R")
-source("~/varbdr/code/density.R")
+source(paste(HOME_DIR, "/density.R", sep = ''))
 
 library(ggplot2)
 
@@ -83,7 +89,7 @@ varbdr = function(y, X, K = 4,
         #     note: dc[[iter]] --> (N x length of grid) dataframe
         #           to get the sequential changes for the n-th iteration, 
         #           have to search along the n-th row dc[[i]], i in [2, curr]
-        theta$dc[[i]] = densityCurve(py_0, theta, X, K)
+        # theta$dc[[i]] = densityCurve(py_0, theta, X, K)
         
         # check for convergence
         if (checkELBO(theta, prior)) {    # checkElbo() in misc.R

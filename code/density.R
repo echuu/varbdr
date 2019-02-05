@@ -183,11 +183,10 @@ plotDensities = function(y_grid, x,
 #          y_grid   :  sequence of y-values evaluated using true/approx density
 # output: 
 #          approx   :  N x len dataframe of p_y evaluations -> density curve
-densityCurve = function(approx_d, theta, prior, X, K,
+densityCurve = function(approx_d, theta, X, K,
                         y_grid = seq(0, 1, len = 500)) {
     
     N = nrow(X)
-    # N = 1
     
     approx_t = matrix(0, nrow = N, ncol = length(y_grid))
     
