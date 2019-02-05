@@ -1,10 +1,8 @@
 
-## mStep.R
+## mStep.R -- cov-dependent version
 ## perform the variational e-step
 
-source("misc.R")
-
-library(matrixcalc)
+source(paste(COV_DEP, MISC_FUNCS, sep = '/'))
 
 # input: 
 #          theta : list of variational parameters

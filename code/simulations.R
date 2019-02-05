@@ -1,11 +1,10 @@
 
 ## simulations.R
 
-HOME_DIR = "~/varbdr/code"              # linux
-HOME_DIR = "C:/Users/chuu/varbdr/code"  # windows
+source("globals.R")
 
 setwd(HOME_DIR)
-source("beta1.R")    # beta1() used to generate synthetic data
+source(BETA_1)                                   # data generating scheme # 1
 
 ## run the VB algorithms and compare performance via:
 ##     (1) overlayed densities (true, vb1, vb2)
@@ -16,29 +15,26 @@ source("beta1.R")    # beta1() used to generate synthetic data
 
 
 # (0) simulate first set of synthetic data (beta1)
-N           = 1000                     # number of observations
-K           = 5                        # number of clusters
+N           = 100                                # number of observations
+K           = 5                                  # number of clusters
 synth_data1 = beta1(N)
-y1          = synth_data1$y            # (N x 1)
-X1          = synth_data1$X            # (N x 2)
-param_mat   = synth_data1$shape        # (N x 2)
+y1          = synth_data1$y                      # (N x 1)
+X1          = synth_data1$X                      # (N x 2)
+param_mat   = synth_data1$shape                  # (N x 2)
 
 # (1) covariate-INDEPENENT vb
-setwd(HOME_DIR)                        # navigate back to parent directory
-source("cov_indep/varbdr.R")           # navigate to directory that has algo (1)
-theta1 = varbdr(y = y1, X = X1, K = K) # store results of CAVI converges
+source(paste(COV_INDEP, VARBDR, sep = '/'))      # load cov-indep varbdr.R
+theta1 = varbdr(y = y1, X = X1, K = K)           # store CAVI results
 
 # (2) covariate-DEPENDENT vb
-setwd(HOME_DIR)                         # navigate back to parent directory
-source("cov_dep/varbdr.R")             # navigate to directory that has algo (1)
-theta2 = varbdr(y = y1, X = X1, K = K) # store results of CAVI converges
+source(paste(COV_DEP, VARBDR, sep = '/'))        # load cov-dep varbdr.R
+theta2 = varbdr(y = y1, X = X1, K = K)           # store CAVI results
 
 
 # (3) overlay corresponding densities obtained from steps (1) and (2)
-setwd(HOME_DIR)                 # navigate back to parent directory
-source("density.R")
+source(DENSITY)
 
-n = 421
+n = 30
 y_grid = seq(0, 1, len = 500)
 params = list(shape1 = param_mat[n,1], shape2 = param_mat[n,2])
 

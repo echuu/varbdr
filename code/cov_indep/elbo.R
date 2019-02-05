@@ -10,9 +10,7 @@
 ##       in the sense that the updates shouldn't strongly influence other
 ##       variational updates.
 
-library(matrixcalc)
-
-source("misc.R")   # misc.R contains functions that calculate various quantities
+source(paste(COV_INDEP, MISC_FUNCS, sep = '/'))
 
 elbo = function(theta, prior) {
     

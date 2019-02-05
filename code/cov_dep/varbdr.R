@@ -1,25 +1,16 @@
 
 
-# varbdr.R -- covariate-DEPENDENT case
-## conditional density estimation using mixture of experts with covariate 
-## DEPENDENT weights + VB for faster inference
+## varbdr.R -- covariate-DEPENDENT case
+##     conditional density estimation using mixture of experts with covariate 
+##     DEPENDENT weights + VB for faster inference
 
-HOME_DIR    = "~/varbdr/code"              # linux
-HOME_DIR    = "C:/Users/chuu/varbdr/code"  # windows
-COV_DEP_DIR = paste(HOME_DIR, "/cov_dep", sep = '')
-
-setwd(COV_DEP_DIR)
-
-source("initPriors.R")
-source("initVarParams.R")
-source("eStep.R")
-source("mStep.R")
-source("elbo.R")
-source("misc.R")
-source(paste(HOME_DIR, "/density.R", sep = ''))
-
-
-## initialize model parameters -------------------------------------------------
+source(paste(COV_DEP,  INIT_PRIORS,     sep = '/'))
+source(paste(COV_DEP,  INIT_VAR_PARAMS, sep = '/'))
+source(paste(COV_DEP,  E_STEP,          sep = '/'))
+source(paste(COV_DEP,  M_STEP,          sep = '/'))
+source(paste(COV_DEP,  ELBO,            sep = '/'))
+source(paste(COV_DEP,  MISC_FUNCS,      sep = '/'))
+source(paste(HOME_DIR, DENSITY,         sep = '/'))
 
 ## input:
     # y        : (N x 1) -- response values
@@ -31,7 +22,7 @@ source(paste(HOME_DIR, "/density.R", sep = ''))
     # b0       : prior rate parameter for tau_k; k = 1,...,K
     # g0       : prior mean for gamma_k; k = 1,...,K
     # Sigma0   : prior covariance for gamma_k; k = 1,...,K
-varbdr = function(y, X, K = 3, 
+varbdr = function(y, X, K = 4, 
                   m_0 = c(colMeans(X)),                         # normal params              
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params

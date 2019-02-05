@@ -2,22 +2,14 @@
 # varbdr.R -- covariate-INDEPENDENT case
 
 
-HOME_DIR    = "~/varbdr/code"              # linux
-HOME_DIR    = "C:/Users/chuu/varbdr/code"  # windows
-COV_INDEP_DIR = paste(HOME_DIR, "/cov_indep", sep = '')
-
-setwd(COV_INDEP_DIR)
-
-
-source("initPriors.R")
-source("initVarParams.R")
-source("eStep.R")
-source("mStep.R")
-source("elbo.R")
-source("misc.R")
-source(paste(HOME_DIR, "/density.R", sep = ''))
-
-library(ggplot2)
+# currently in /code directory; load files in the /cov_indep directory
+source(paste(COV_INDEP, INIT_PRIORS,     sep = '/'))
+source(paste(COV_INDEP, INIT_VAR_PARAMS, sep = '/'))
+source(paste(COV_INDEP, E_STEP,          sep = '/'))
+source(paste(COV_INDEP, M_STEP,          sep = '/'))
+source(paste(COV_INDEP, ELBO,            sep = '/'))
+source(paste(COV_INDEP, MISC_FUNCS,      sep = '/'))
+source(paste(HOME_DIR,  DENSITY,         sep = '/'))
 
 ## conditional density estimation using mixture of experts with covariate 
 ## INDEPENDENT weights + VB for faster inference
@@ -37,9 +29,6 @@ varbdr = function(y, X, K = 4,
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
                   max_iter = 600, tol = 1e-4, VERBOSE = TRUE) {
-    
-    
-    
     
     # TODO: set default values for a_0, b_0 
     X = as.matrix(X)         # N X D design matrix of covariates

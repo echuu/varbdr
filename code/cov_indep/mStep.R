@@ -2,9 +2,9 @@
 ## mStep.R
 ## perform the variational m-step -- covariate-INDEPENDENT case
 
-source("misc.R")
+# library(matrixcalc)
 
-library(matrixcalc)
+source(paste(COV_INDEP, MISC_FUNCS, sep = '/'))
 
 # input: 
 #          theta : list of variational parameters

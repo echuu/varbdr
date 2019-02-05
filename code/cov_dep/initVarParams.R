@@ -1,7 +1,7 @@
 
 # initVarParams.R -- covariate-DEPENDENT case
 
-source("misc.R")
+# source("misc.R")
 
 # initVarParams() -- initialize the variational parameters
     # beta_k  : matrix of all 1's (not 0 since we start with X * beta != 0)

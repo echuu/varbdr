@@ -2,9 +2,7 @@
 ## eStep.R
 ## perform the variational e-step -- covariate-INDEPENDENT case
 
-library(matrixcalc)
-source("misc.R")
-
+source(paste(COV_INDEP, MISC_FUNCS, sep = '/'))
 # input: 
 #         theta : list of variational parameters
 # output:

@@ -2,9 +2,7 @@
 ## elbo.R -- covariate-DEPENDENT case
 ## calculate the variational lower bound using the current variational params
 
-library(matrixcalc)
-
-source("misc.R")
+source(paste(COV_DEP, MISC_FUNCS, sep = '/'))
 
 elbo = function(theta, prior) {
     
