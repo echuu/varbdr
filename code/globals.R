@@ -26,6 +26,8 @@ DENSITY          =  "density.R"
 
 # data-generating schemes
 BETA_1 = "beta1.R"
+BETA_2 = "beta2.R"
+
 
 
 
