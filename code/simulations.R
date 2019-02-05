@@ -39,12 +39,30 @@ n = 32
 y_grid = seq(0, 1, len = 500)
 params = list(shape1 = param_mat[n,1], shape2 = param_mat[n,2])
 
-p1 = plotDensities(y_grid, X1[n,], dbeta, params, py_0, theta1, prior, K)
+p1 = plotDensities(y_grid, X1[n,], dbeta, params, py_0, theta1, K)
 p1$overlay
 
-p2 = plotDensities(y_grid, X1[n,], dbeta, params, py_bouch, theta2, prior, K)
+p2 = plotDensities(y_grid, X1[n,], dbeta, params, py_bouch, theta2, K)
 p2$overlay
 
+
+# ------------------------------------------------------------------------------
+library(reshape2)
+n = 32
+x       = X1[n,]
+y_grid  = seq(0, 1, len = 500)
+
+theta     = list(theta1, theta2)          # list of var. params for each alg
+approx_d  = list(py_0, py_bouch)          # list of approx density functions
+den_label = c("cov-indep", "cov-dep (b)") # labels for each approx density
+
+
+source("~/varbdr/code/density.R")
+
+compareDensities(y_grid, x, 
+                 dbeta, params,
+                 approx_d, den_label, 
+                 theta, K)
 
 
 # (4) look at convergence of elbo for (1) and (2)

@@ -10,6 +10,7 @@
 
 
 library(ggplot2)
+library(reshape2)
 
 # py_0(): mixture density used to approximate the true density,
 #        covariate-INDEPENDENT weights
@@ -23,7 +24,7 @@ library(ggplot2)
 #                         covariate vector x
 # output: 
 #          p_y    : approximate conditional density
-py_0 = function(theta, prior, K, data) {
+py_0 = function(theta, K, data) {
     
     y = data$y    # (1 x 1) response variable
     x = data$x    # (D x 1) covariate vector 
@@ -40,7 +41,7 @@ py_0 = function(theta, prior, K, data) {
     
     return(p_y)
     
-} # end approxDensity() function
+} # end py_0() function
 
 
 
@@ -56,7 +57,7 @@ py_0 = function(theta, prior, K, data) {
 #                         covariate vector x
 # output: 
 #          p_y    : approximate conditional density
-py_bouch = function(theta, prior, K, data) {
+py_bouch = function(theta, K, data) {
     
     y = data$y    # (1 x 1) response variable
     x = data$x    # (D x 1) covariate vector 
@@ -77,9 +78,58 @@ py_bouch = function(theta, prior, K, data) {
     
     return(p_y)
     
-} # end approxDensity() function
+} # end py_bouch() function
 
 
+
+# compareDensities() : compare approximating densities to true (beta1) density
+# input:  
+#          y_grid     :  sequence of y-values evaluated using each density
+#          x          :  covariates for the y (response) values
+#          true_d     :  true density function
+#          params     :  parameters for the true density function
+#          den_list   :  list of each approximating density to use to evaluate
+#          true_den   :  true density
+#          den_label  :  names of each density (plotting purposes)
+#          theta_list :  variational parameters
+#          K          :  number of clusters used in the mixture density
+#        
+# output: 
+#          d_plot     :  ggplot of overlayed densities
+compareDensities = function(y_grid, x, 
+                            true_d, params,
+                            den_list, den_label, 
+                            theta_list, K) {
+    
+    N_evals    = length(y_grid)           # number of evaluations
+    n_den      = length(den_label)        # number of densities to evaluate
+    data_ygrid = list(y = y_grid, x = x)  # fixed for all evaluations
+    
+    # approx_mat: store density evaluation results (N_evals) x (n_den + 1)
+    #     store y_grid in the first column
+    #     store the density evaluations in rows 2 to n_den + 1
+    #     extra column for the true density evaluations
+    approx_mat = matrix(0, nrow = N_evals, ncol = n_den + 1)
+    # approx_mat[,n_den] = y_grid
+    
+    # evaluate using each of the approximating densities
+    for (d_i in 1:n_den) {
+        approx_mat[, d_i] = den_list[[d_i]](theta_list[[d_i]], K, data_ygrid)
+    }
+    
+    # true density
+    approx_mat[,n_den + 1] = true_d(y_grid, 
+                                    shape1 = params[[1]], shape2 = params[[2]])
+    
+    approx_df = data.frame(y_grid, approx_mat)
+    names(approx_df) = c("y", den_label, "true")
+    
+    approx_df_long = melt(approx_df, measure.vars = c(den_label, "true"))
+    
+    ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
+        geom_point(size = 0.7) + labs(x = "y", y = "p(y)") + theme_bw()
+    
+}
 
 # plotDensities(): overlay the true density and the (approx) mixture density
 # input:  
@@ -95,13 +145,13 @@ py_bouch = function(theta, prior, K, data) {
 #          d_plot   :  ggplot of overlayed densities (true: red, approx: blue)
 plotDensities = function(y_grid, x,
                          true_d, params,
-                         approx_d, theta, prior, K) { 
+                         approx_d, theta, K) { 
     
     data_ygrid = list(y = y_grid, x = x)  # list req'd to use approx density fcn
     N_evals    = length(y_grid)           # number of evaluations
     
     # evaluate points using approx density
-    p_ygrid    = approx_d(theta, prior, K, data_ygrid)
+    p_ygrid    = approx_d(theta, K, data_ygrid)
     approx_df  = data.frame(x = y_grid, y = p_ygrid)   # store y, f(y) values
     
     # true density plot (indexed by n in the shape parameters)
@@ -119,7 +169,7 @@ plotDensities = function(y_grid, x,
     p = p + beta_n
     
     return(list(overlay = p, approx = p_line))
-}
+} # end of plotDensities() function
 
 
 
@@ -146,7 +196,7 @@ densityCurve = function(approx_d, theta, prior, X, K,
     for (n in 1:N) {
         data_ygrid  = list(y = y_grid, x = X[n,])
         # print(data_ygrid$x)
-        p_ygrid     = approx_d(theta, prior, K, data_ygrid)
+        p_ygrid     = approx_d(theta, K, data_ygrid)
         # approx_df   = data.frame(x = y_grid, y = p_ygrid)
         approx_t[n,] = p_ygrid
     }
@@ -158,6 +208,4 @@ densityCurve = function(approx_d, theta, prior, X, K,
 
 
 
-
-
-
+# end of density.R
