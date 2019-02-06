@@ -28,7 +28,7 @@ varbdr = function(y, X, K = 4,
                   m_0 = c(colMeans(X)),                         # normal params
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
-                  max_iter = 600, tol = 1e-3, VERBOSE = TRUE) {
+                  max_iter = 1000, tol = 1e-3, VERBOSE = TRUE) {
     
     # TODO: set default values for a_0, b_0 
     X = as.matrix(X)         # N X D design matrix of covariates
