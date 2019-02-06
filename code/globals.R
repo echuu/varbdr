@@ -7,8 +7,8 @@ library(reshape2)
 library(matrixcalc)
 
 # home directory of all the code
-HOME_DIR = "~/varbdr/code"                # linux
-# HOME_DIR = "C:/Users/chuu/varbdr/code"  # windows
+# HOME_DIR = "~/varbdr/code"                # linux
+HOME_DIR = "C:/Users/chuu/varbdr/code"  # windows
 
 # directories of each of the different algorithms
 COV_INDEP = paste(HOME_DIR, "/cov_indep", sep = '')
@@ -25,9 +25,10 @@ MISC_FUNCS       =  "misc.R"
 DENSITY          =  "density.R"
 
 # data-generating schemes
-BETA_1 = "beta1.R"
-BETA_2 = "beta2.R"
-
+BETA_1           = "beta1.R"
+BETA_2           = "beta2.R"
+BETA_2_MODIFIED  = "beta2_modified.R"
+    
 
 
 
