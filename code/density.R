@@ -117,7 +117,8 @@ compareDensities = function(y_grid, x,
         approx_mat[, d_i] = den_list[[d_i]](theta_list[[d_i]], K, data_ygrid)
     }
     
-    # true density
+    # true density -- this line needs to be changed depending on 
+    # what the true density is
     approx_mat[,n_den + 1] = true_d(y_grid, 
                                     shape1 = params[[1]], shape2 = params[[2]])
     
@@ -177,7 +178,6 @@ plotDensities = function(y_grid, x,
 # input:  
 #          approx_d :  approx density function
 #          theta    :  variational parameters
-#          prior    :  prior-related variables
 #          X        :  (N x D) design mat w/ covariates stacked row-wise
 #          K        :  number of clusters used in the mixture density
 #          y_grid   :  sequence of y-values evaluated using true/approx density
@@ -202,6 +202,44 @@ densityCurve = function(approx_d, theta, X, K,
     
     return(approx_t)
 } # end of densityCurve() function
+
+
+
+# queryDensity() : for a given observation(s), generate the corresponding 
+#                  density plot(s) and overlay with the true density
+# input:  
+#          X        :  (N x D) design mat w/ covariates stacked row-wise
+#          n_set    :  row indices of X to plot conditional densities
+#          params   :  matrix of parameters for the true density
+#          true_d   :  true density
+#          approx_d :  approx density function
+#          d_label  :  vector of strings of names of each of the algorithms
+#          theta    :  list of variational parameters (for diff vb algos)
+#          K        :  number of clusters used in the mixture density
+#          y_grid   :  sequence of y-values evaluated using true/approx density
+# output: 
+#          approx   :  N x len dataframe of p_y evaluations -> density curve
+queryDensity = function(X, n_set, params, true_d,
+                        approx_d, d_label, theta, K,
+                        y_grid = seq(0, 1, len = 500)) {
+    
+    num_plots = length(n_set)
+    plot_list = vector("list", num_plots)
+    
+    for (i in 1:num_plots) {
+        
+        param_n = list(shape1 = params[n_set[i], 1], 
+                       shape2 = params[n_set[i], 2])
+        
+        plot_list[[i]] = compareDensities(y_grid, X[n_set[i],], 
+                                          true_d, param_n,
+                                          approx_d, d_label, 
+                                          theta, K)
+    }
+    
+    return(plot_list)
+}
+
 
 
 # multiplot() : plot multiple ggplot2 objects in the same figure

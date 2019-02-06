@@ -25,9 +25,9 @@ MISC_FUNCS       =  "misc.R"
 DENSITY          =  "density.R"
 
 # data-generating schemes
-BETA_1           = "beta1.R"
-BETA_2           = "beta2.R"
-BETA_2_MODIFIED  = "beta2_modified.R"
+BETA_1           = "data_gen/beta1.R"
+BETA_2           = "data_gen/beta2.R"
+BETA_2_MODIFIED  = "data_gen/beta2_modified.R"
     
 
 
