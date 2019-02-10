@@ -24,10 +24,17 @@ ELBO             =  "elbo.R"
 MISC_FUNCS       =  "misc.R"
 DENSITY          =  "density.R"
 
+
+# ID's for data generating schemes
+BETA    = 0
+DP_MIX1 = 1
+DP_MIX2 = 2
+
 # data-generating schemes
 BETA_1           = "data_gen/beta1.R"
 BETA_2           = "data_gen/beta2.R"
 BETA_2_MODIFIED  = "data_gen/beta2_modified.R"
+DP_BDR           = "data_gen/dp_bdr.R"
     
 
 

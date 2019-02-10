@@ -11,6 +11,8 @@
 
 ## first set directory to /code directory
 
+setwd(getwd())
+
 source("globals.R")
 
 setwd(HOME_DIR)
@@ -56,10 +58,13 @@ y1          = synth_data1$y                 # (N x 1)
 X1          = synth_data1$X                 # (N x 2)
 param_mat1  = synth_data1$shape             # (N x 2)
 theta1      = list(theta1_1, theta1_2)      # list of var. params for each alg
+DATA_GEN_ID = BETA
+
 
 n_set1   = c(10, 30, 42, 88)
 p_list1 = queryDensity(X1, n_set1, param_mat1, dbeta,
-                      approx_d, den_label, theta1, K)
+                      approx_d, den_label, theta1, K,
+                      BETA)
 
 multiplot(plotlist = p_list1, cols = 2)
 
@@ -74,7 +79,8 @@ theta2      = list(theta2_1, theta2_2)
 
 n_set2  = c(100, 200, 312, 400)
 p_list2 = queryDensity(X2, n_set2, param_mat2, dbeta,
-                      approx_d, den_label, theta2, K)
+                      approx_d, den_label, theta2, K,
+                      DATA_GEN_ID)
 
 multiplot(plotlist = p_list2, cols = 2)
 
@@ -90,7 +96,8 @@ theta3      = list(theta3_1, theta3_2)
 
 n_set3  = c(250, 500, 111, 291)
 p_list3 = queryDensity(X3, n_set3, param_mat3, dbeta,
-                      approx_d, den_label, theta3, K)
+                      approx_d, den_label, theta3, K,
+                      DATA_GEN_ID)
 
 multiplot(plotlist = p_list3, cols = 2)
 
