@@ -13,6 +13,6 @@ install.packages("reshape2")
 install.packages("matrixcalc")
 ```
 
-In order to make sure everything runs as expected, you need to set the `HOME_DIR` variable in `globals.R` to the directory `varbdr/`. Once `globals.R` is sourced, then all the simulation files should run without problems. 
+In order to make sure everything runs as expected, you need to set the `HOME_DIR` variable in `globals.R` to the directory `varbdr/code`. Once `globals.R` is sourced, then all the simulation files should run without problems. 
 
 
