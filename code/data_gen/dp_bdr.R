@@ -14,6 +14,7 @@
 #          X     : (N x 2) design matrix, covariates stored row-wise
 #          shape : (N x 2) shape parameters for each y_n
 r_dpmix1 = function(N, seed = 100) {
+    set.seed(seed)
     sigma_sq = 0.01
     x_i1 = rep(1, N) # 1st column of X
     x_i2 = runif(N)  # 2nd column of X

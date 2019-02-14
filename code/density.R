@@ -100,7 +100,7 @@ d_dpmix1 = function(y_grid, x, mu1, sigma_sq = 0.01) {
     
     N_evals = length(y_grid)
     
-    p = exp(-2 * x[2])               # probability of drawing from mixture 1
+    # p = exp(-2 * x[2])               # probability of drawing from mixture 1
     
     f_y = dnorm(y_grid, mean = mu1, sd = sqrt(sigma_sq))
     
@@ -120,7 +120,7 @@ d_dpmix1 = function(y_grid, x, mu1, sigma_sq = 0.01) {
 #          sigsq_1  : (1 x 1) variance of 2nd mixture component
 # output: 
 #          f_y      : f(y) for each grid point y
-d_dpmix2 = function(y_grid, x, params, sigsq_1 = 0.01, sig_sq_2 = 0.04) {
+d_dpmix2 = function(y_grid, x, params, sigsq_1 = 0.01, sigsq_2 = 0.04) {
     
     mu_1    = params[1]
     mu_2    = params[2]
@@ -192,7 +192,8 @@ compareDensities = function(y_grid, x,
     approx_df_long = melt(approx_df, measure.vars = c(den_label, "true"))
     
     ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
-        geom_point(size = 0.7) + labs(x = "y", y = "p(y)") + theme_bw()
+        geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() +
+        theme(legend.position = "none")
     
 }
 
@@ -210,7 +211,8 @@ compareDensities = function(y_grid, x,
 #          d_plot   :  ggplot of overlayed densities (true: red, approx: blue)
 plotDensities = function(y_grid, x,
                          true_d, params,
-                         approx_d, theta, K) { 
+                         approx_d, theta, K,
+                         LEGEND_ON = FALSE) { 
     
     data_ygrid = list(y = y_grid, x = x)  # list req'd to use approx density fcn
     N_evals    = length(y_grid)           # number of evaluations
@@ -227,11 +229,10 @@ plotDensities = function(y_grid, x,
     
     p_line = geom_line(aes(x = approx_df$x, y = approx_df$y),
                        colour = "blue", size = 0.9)
-    # p = ggplot(approx_df, aes(x, y)) + geom_point(colour = 'blue', size = 0.9)
     p = ggplot(approx_df, aes(x, y)) + 
         geom_line(aes(x = approx_df$x, y = approx_df$y),
                   colour = "blue", size = 0.9)
-    p = p + beta_n
+    p = p + beta_n + guides(fill = LEGEND_ON)
     
     return(list(overlay = p, approx = p_line))
 } # end of plotDensities() function
@@ -248,7 +249,7 @@ plotDensities = function(y_grid, x,
 # output: 
 #          approx   :  N x len dataframe of p_y evaluations -> density curve
 densityCurve = function(approx_d, theta, X, K,
-                        y_grid = seq(0, 1, len = 500)) {
+                        y_grid = seq(-1.5, 1.5, length.out = 500)) {
     
     N = nrow(X)
     
@@ -288,14 +289,19 @@ densityCurve = function(approx_d, theta, X, K,
 xQuantileDensity = function(x, params, true_d,
                             approx_d, d_label, theta, K,
                             DATA_GEN_ID,
-                            y_grid = seq(0, 1, len = 500)) {
+                            y_grid = seq(0, 1, len = 500),
+                            DP2 = FALSE) {
     
     num_plots = length(x)
     plot_list = vector("list", num_plots)
     
     for (i in 1:length(x)) {
         
-        param_n = c(x[i], x[i]^4)
+        if (DP2) {
+            param_n = c(x[i], x[i]^4)
+        } else {
+            param_n = params[i]
+        }
         
         plot_list[[i]] = compareDensities(y_grid, c(1, x[i]), 
                                           true_d, param_n,
@@ -362,7 +368,8 @@ multiplot = function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
         # ncol: Number of columns of plots
         # nrow: Number of rows needed, calculated from # of cols
         layout = matrix(seq(1, cols * ceiling(numPlots/cols)),
-                         ncol = cols, nrow = ceiling(numPlots/cols))
+                        ncol = cols, nrow = ceiling(numPlots/cols),
+                        byrow = TRUE)
     }
     
     if (numPlots == 1) {
