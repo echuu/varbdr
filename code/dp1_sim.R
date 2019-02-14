@@ -102,6 +102,8 @@ ggplot(df_long, aes(x = x, y = value)) +
 # by 40 iterations, the approx is already same as iteration 400
 
 
+# compare with np results ------------------------------------------------------
+
 
 
 # dp1_sim.R
