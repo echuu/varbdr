@@ -191,9 +191,11 @@ compareDensities = function(y_grid, x,
     
     approx_df_long = melt(approx_df, measure.vars = c(den_label, "true"))
     
-    ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
+    p = ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
         geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() +
         theme(legend.position = "none")
+    
+    return(list(plot = p, approx_df = approx_df))
     
 }
 

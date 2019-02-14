@@ -74,20 +74,40 @@ DATA_GEN_ID = DP_MIX2
 
 # generate plot overlays of the percentiles
 source(DENSITY)
-x = c(0.10, 0.25, 0.49, 0.75, 0.88, 0.95)
+x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
 approx_d  = list(py_0, py_bouch)            # list of approx density functions
 den_label = c("cov-indep", "cov-dep (b)")   # labels for each approx density
-p_list1 = xQuantileDensity(x, params, d_dpmix2,
+p_list2 = xQuantileDensity(x, params, d_dpmix2,
                            approx_d, den_label, theta1, K,
                            DP_MIX2,
                            y_grid,
                            DP2 = TRUE)
 
 # p_list1[[3]]
-multiplot(plotlist = p_list1, cols = 3)
+multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), cols = 3)
 
 
+# compare with np results ------------------------------------------------------
+library("np")
+X = data.frame(X[,2])
+y = data.frame(y)
+xy_df = data.frame(y = y, x = X)
+names(xy_df) = c("x", "y")
 
+fy.x = npcdens(y ~ x, xy_df)
+y_eval = data.frame(y = y_grid, x = 0.95)
+fy_eval = predict(fy.x, newdata = y_eval)
 
+fy_df = data.frame(y = y_grid, np = fy_eval)
 
+ggplot(fy_df, aes(x = y, y = np)) + geom_line()
 
+# overlay np estimate with the other approximations ----------------------------
+
+full_approx_df = merge(p_list1[[3]]$approx_df, fy_df, by = "y")
+approx_df_long = melt(full_approx_df, measure.vars = c(den_label, "true", "np"))
+
+p = ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
+    geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() +
+    theme(legend.position = "none")
+p
