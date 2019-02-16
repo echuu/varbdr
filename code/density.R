@@ -138,6 +138,37 @@ d_dpmix2 = function(y_grid, x, params, sigsq_1 = 0.01, sigsq_2 = 0.04) {
 } # end of dp_mix2() function
 
 
+
+# d_binorm()        : true mixture density used in the bimodal conditional 
+#                     density example in Shape-Constrained Univariate Density 
+#                     Estimation (Dasgupta, Pati, Jermyn, Srivastava)
+# input:  
+#          y_grid   : sequence of y-points to evaluate to get cond. density
+#          x        : (1 x 1) covariate in (0, 1)
+#          params   : (1 x 1) means of mixture components stored col-wise
+#          sigma_1  : (1 x 1) sd of 1st mixture component
+#          sigma_2  : (1 x 1) sd of 2nd mixture component
+# output: 
+#          f_y      : f(y) for each grid point y
+d_binorm = function(y_grid, x, params, sigma_1 = 0.5, sigma_2 = 0.5) {
+    
+    p = 0.5
+    
+    mu_1 = x[2] - 1.5
+    mu_2 = x[2] + 1.5
+    
+    N_evals = length(y_grid)
+    f_y = numeric(N_evals)
+    
+    f_y = p * dnorm(y_grid, mean = mu_1, sd = sigma_1) + 
+        (1 - p) * dnorm(y_grid, mean = mu_2, sd = sigma_2)
+    
+    return(f_y)
+    
+} # end of d_binorm() function
+
+
+
 # compareDensities() : compare approximating densities to true (beta1) density
 # input:  
 #          y_grid      :  sequence of y-values evaluated using each density
@@ -183,6 +214,8 @@ compareDensities = function(y_grid, x,
     } else if (DATA_GEN_ID == 1) {          # true density: dp ex. 1
         approx_mat[,n_den + 1] = true_d(y_grid, x, params)
     } else if (DATA_GEN_ID == 2) {          # true density: dp ex. 2
+        approx_mat[,n_den + 1] = true_d(y_grid, x, params)
+    } else if (DATA_GEN_ID == 3) {          # true density: dp ex. 2
         approx_mat[,n_den + 1] = true_d(y_grid, x, params)
     }
     
@@ -291,18 +324,19 @@ densityCurve = function(approx_d, theta, X, K,
 xQuantileDensity = function(x, params, true_d,
                             approx_d, d_label, theta, K,
                             DATA_GEN_ID,
-                            y_grid = seq(0, 1, len = 500),
-                            DP2 = FALSE) {
+                            y_grid = seq(0, 1, len = 500)) {
     
     num_plots = length(x)
     plot_list = vector("list", num_plots)
     
     for (i in 1:length(x)) {
         
-        if (DP2) {
+        if (DATA_GEN_ID == DP_MIX2) {
             param_n = c(x[i], x[i]^4)
-        } else {
+        } else if (DATA_GEN_ID == DP_MIX1) { 
             param_n = params[i]
+        } else if (DATA_GEN_ID == BIMODAL1) {
+            param_n = c(x - 1.5, x + 1.5)
         }
         
         plot_list[[i]] = compareDensities(y_grid, c(1, x[i]), 

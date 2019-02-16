@@ -17,11 +17,11 @@ dp1_synth = r_dpmix1(N)
 y0        = dp1_synth$y
 X0        = dp1_synth$X
 mu1       = dp1_synth$param_vec
-y_grid    = seq(-1.5, 1.5, length.out = 500)
+y_grid    = seq(-1.5, 1.5, length.out = 1000)
 
 ## generate figures for conditional density for increasing values of x -----
 x         = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
-f_yx      = matrix(0, nrow = N, ncol = length(x))
+f_yx      = matrix(0, nrow = length(y_grid), ncol = length(x))
 for(i in 1:length(x)) {
     f_yx[,i]      = d_dpmix1(y_grid, x[i], -1 + 2 * x[i])
 }
@@ -32,7 +32,7 @@ df_y_long = melt(df_y, id.vars = "x")
 levels(df_y_long$variable) = c("x = 0.15", "x = 0.25", "x = 0.49",
                                "x = 0.75", "x = 0.88", "x = 0.95")
 ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
-    scale_x_continuous(breaks = seq(-1.5, 1.5, by = 0.5)) + 
+    scale_x_continuous(breaks = seq(min(y_grid), max(y_grid), by = 1)) + 
     facet_wrap(~variable)
 
 df_yx = data.frame(x = X0[,2], y = y0)
@@ -54,8 +54,8 @@ theta1_2 = varbdr(y = y0, X = X0, K)             # store CAVI results
 # saveRDS(theta1_1, file = "dp_results/theta_indep_dp1_K4.RDS")
 # saveRDS(theta1_2, file = "dp_results/theta_dep_dp1_K4.RDS")
 
-# theta1_1 = readRDS(file = "dp_results/theta_indep_dp1_K4.RDS")
-# theta1_2 = readRDS(file = "dp_results/theta_dep_dp1_K4.RDS")
+theta1_1 = readRDS(file = "dp_results/theta_indep_dp1_K4.RDS")
+theta1_2 = readRDS(file = "dp_results/theta_dep_dp1_K4.RDS")
 
 
 
@@ -66,6 +66,7 @@ plotELBO(theta1_2)
 
 # generate plots ---------------------------------------------------------------
 source(DENSITY)
+source(paste(COV_DEP, VARBDR, sep = '/'))
 theta1      = list(theta1_1, theta1_2)      # list of var. params for each alg
 DATA_GEN_ID = DP_MIX1
 
@@ -124,9 +125,9 @@ for (i in 1:length(x)) {
     
     fy_df = data.frame(y = y_grid, np = fy_eval)
     
-    ggplot(fy_df, aes(x = y, y = np)) + geom_line()
+    # ggplot(fy_df, aes(x = y, y = np)) + geom_line()
     
-    # overlay np estimate with the other approximations ----------------------------
+    # overlay np estimate with the other approximations ------------------------
     
     # x = 0.15
     full_approx_df = merge(p_list1[[i]]$approx_df, fy_df, by = "y")
