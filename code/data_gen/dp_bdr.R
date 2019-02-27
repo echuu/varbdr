@@ -48,7 +48,7 @@ r_dpmix2 = function(N, seed = 100) {
     
     # mixture parameters
     mu_1    = X[,2]
-    mu_2    = X[,2]^4
+    mu_2    = -2 * X[,2]
     sigsq_1 = 0.01
     sigsq_2 = 0.04
     

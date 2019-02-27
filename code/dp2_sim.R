@@ -9,16 +9,18 @@ source(DP_BDR)
 source(DENSITY)
 
 
-N = 1000
+N = 5000
 K = 2
 synth_data_1d = r_dpmix2(N)
 
 y      = synth_data_1d$y
+# X      = as.matrix((synth_data_1d$X)[,2])
 X      = synth_data_1d$X
 params = synth_data_1d$param_mat
-y_grid = seq(-0.5, 1.5, length.out = 1000)
+y_grid = seq(-3, 1.5, length.out = 1000)
 
 # 6th sublot in Figure 3
+# df_yx = data.frame(x = X[,2], y = y)
 df_yx = data.frame(x = X[,2], y = y)
 ggplot(df_yx, aes(x = x, y = y)) + geom_point() + stat_smooth() + theme_bw()
 
@@ -31,7 +33,7 @@ f_yx      = matrix(0, nrow = length(y_grid), ncol = length(x))
 for(i in 1:length(x)) {
     # f_yx[,i] = d_dpmix2(y_grid, x[i], -1 + 2 * x[i])
     f_yx[,i] = d_dpmix2(y_grid = y_grid, x = c(1, x[i]), 
-                        params = c(x[i], x[i]^4))
+                        params = c(x[i], -2 * x[i]))
 }
 
 df_y      = data.frame(x = y_grid, f_yx)
@@ -43,7 +45,7 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
     facet_wrap(~variable)
 
 
-df_yx = data.frame(x = X[,2], y = y)
+df_yx = data.frame(x = X[,1], y = y)
 ggplot(df_yx, aes(x, y)) + geom_point() + ggtitle("response vs. covariate") + 
     stat_smooth(se = FALSE) + theme_bw()
 
@@ -64,8 +66,8 @@ theta1_2 = varbdr(y = y, X = X, K)               # store CAVI results
 # saveRDS(theta1_2, file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
 
 
-theta1_1 = readRDS(file = "dp_results/theta_indep_dp2_K2_N1000.RDS")
-theta1_2 = readRDS(file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
+old1_1 = readRDS(file = "dp_results/theta_indep_dp2_K2_N1000.RDS")
+old1_2 = readRDS(file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
 
 plotELBO(theta1_1)
 plotELBO(theta1_2)
@@ -73,15 +75,15 @@ plotELBO(theta1_2)
 
 # generate plots ---------------------------------------------------------------
 
-theta1      = list(theta1_1, theta1_2)      # list of var. params for each alg
+# theta1      = list(old1_2)      # list of var. params for each alg
+theta1      = list(theta1_2)
 DATA_GEN_ID = DP_MIX2
 
 # generate plot overlays of the percentiles
 source(DENSITY)
 x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
-y_grid = seq(-0.5, 1.5, length.out = 1000)
-approx_d  = list(py_0, py_bouch)            # list of approx density functions
-den_label = c("cov-indep", "cov-dep (b)")   # labels for each approx density
+approx_d  = list(py_bouch)            # list of approx density functions
+den_label = c("cov-dep (b)")          # labels for each approx density
 p_list2 = xQuantileDensity(x, params, d_dpmix2,
                            approx_d, den_label, theta1, K,
                            DP_MIX2,

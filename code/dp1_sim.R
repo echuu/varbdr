@@ -54,8 +54,8 @@ theta1_2 = varbdr(y = y0, X = X0, K)             # store CAVI results
 # saveRDS(theta1_1, file = "dp_results/theta_indep_dp1_K4.RDS")
 # saveRDS(theta1_2, file = "dp_results/theta_dep_dp1_K4.RDS")
 
-theta1_1 = readRDS(file = "dp_results/theta_indep_dp1_K4.RDS")
-theta1_2 = readRDS(file = "dp_results/theta_dep_dp1_K4.RDS")
+theta1_1   = readRDS(file = "dp_results/theta_indep_dp1_K4.RDS")
+old_theta2 = readRDS(file = "dp_results/theta_dep_dp1_K4.RDS")
 
 
 
@@ -67,13 +67,13 @@ plotELBO(theta1_2)
 # generate plots ---------------------------------------------------------------
 source(DENSITY)
 source(paste(COV_DEP, VARBDR, sep = '/'))
-theta1      = list(theta1_1, theta1_2)      # list of var. params for each alg
+theta1      = list(theta1_2)      # list of var. params for each alg
 DATA_GEN_ID = DP_MIX1
 
 # generate plot overlays of the percentiles
 x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
-approx_d  = list(py_0, py_bouch)            # list of approx density functions
-den_label = c("cov-indep", "cov-dep (b)")   # labels for each approx density
+approx_d  = list(py_bouch)        # list of approx density functions
+den_label = c("cov-dep")          # labels for each approx density
 params = c(-1 + 2 * x)
 p_list1 = xQuantileDensity(x, params, d_dpmix1,
                            approx_d, den_label, theta1, K,
