@@ -9,7 +9,7 @@ source(DP_BDR)
 source(DENSITY)
 
 
-N = 5000
+N = 500
 K = 2
 synth_data_1d = r_dpmix2(N)
 
@@ -52,10 +52,6 @@ ggplot(df_yx, aes(x, y)) + geom_point() + ggtitle("response vs. covariate") +
 
 # run cavi ---------------------------------------------------------------------
 
-# (1.1) covariate-INDEPENENT vb
-source(paste(COV_INDEP, VARBDR, sep = '/'))      # load cov-indep varbdr.R
-theta1_1 = varbdr(y = y, X = X, K)               # store CAVI results
-
 # (1.2) covariate-DEPENDENT vb
 source(paste(COV_DEP, VARBDR, sep = '/'))        # load cov-dep varbdr.R
 theta1_2 = varbdr(y = y, X = X, K)               # store CAVI results
@@ -63,13 +59,12 @@ theta1_2 = varbdr(y = y, X = X, K)               # store CAVI results
 
 # save variational parameters
 # saveRDS(theta1_1, file = "dp_results/theta_indep_dp2_K2_N1000.RDS")
-# saveRDS(theta1_2, file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
+saveRDS(theta1_2, file = "dp_results/theta_2.27_N_1e4_int.RDS")
 
 
-old1_1 = readRDS(file = "dp_results/theta_indep_dp2_K2_N1000.RDS")
-old1_2 = readRDS(file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
+# old1_1 = readRDS(file = "dp_results/theta_indep_dp2_K2_N1000.RDS")
+# old1_2 = readRDS(file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
 
-plotELBO(theta1_1)
 plotELBO(theta1_2)
 
 
@@ -90,6 +85,12 @@ p_list2 = xQuantileDensity(x, params, d_dpmix2,
                            y_grid)
 
 multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), cols = 3)
+
+
+
+
+
+
 
 
 # compare with np results ------------------------------------------------------

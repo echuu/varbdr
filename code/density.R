@@ -332,7 +332,7 @@ xQuantileDensity = function(x, params, true_d,
     for (i in 1:length(x)) {
         
         if (DATA_GEN_ID == DP_MIX2) {
-            param_n = c(x[i], x[i]^4)
+            param_n = c(x[i], -2 * x[i])
         } else if (DATA_GEN_ID == DP_MIX1) { 
             param_n = params[i]
         } else if (DATA_GEN_ID == BIMODAL1) {
