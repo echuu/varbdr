@@ -67,6 +67,19 @@ initVarParams = function(y, X, N, D, K, max_iter) {
     mu_k    = matrix(0, D, K)          # D x K       mean of gamma_k
     
     
+    # store the differences between parameters
+    # Q_k, mu_k, V_k, m_k
+    
+    # (D x max_iter) matrix for each cluster; contains each iter's value for
+    # the mean vector
+    m_k_hist  = array(0, c(D, max_iter, K))
+    mu_k_hist = array(0, c(D, max_iter, K)) 
+    
+    # store frob norm of matrix per iteration for each cluster
+    V_k_hist = matrix(0, K, max_iter)
+    Q_k_hist = matrix(0, K, max_iter)   
+    
+    
     # provide better starting values for m_k, mu_k
     # for now, we use same starting values for both m_k, mu_k
     # same as in cov-indpt case: replace m_k with mle estimate for beta_k
@@ -92,7 +105,9 @@ initVarParams = function(y, X, N, D, K, max_iter) {
                  a_k = a_k, b_k = b_k, 
                  alpha = alpha, xi = xi, lambda = lambda, phi = phi,
                  Q_k = Q_k, Q_k_inv = Q_k_inv, eta_k = eta_k, mu_k = mu_k, 
-                 L = L, curr = curr)
+                 L = L, curr = curr,
+                 m_k_hist = m_k_hist, mu_k_hist = mu_k_hist, 
+                 V_k_hist = V_k_hist, Q_k_hist = Q_k_hist)
     
     return(theta)
     

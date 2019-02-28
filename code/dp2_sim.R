@@ -14,14 +14,14 @@ K = 2
 synth_data_1d = r_dpmix2(N)
 
 y      = synth_data_1d$y
-# X      = as.matrix((synth_data_1d$X)[,2])
-X      = synth_data_1d$X
+X      = as.matrix((synth_data_1d$X)[,2])
+# X      = synth_data_1d$X
 params = synth_data_1d$param_mat
 y_grid = seq(-3, 1.5, length.out = 1000)
 
 # 6th sublot in Figure 3
+df_yx = data.frame(x = X[,1], y = y)
 # df_yx = data.frame(x = X[,2], y = y)
-df_yx = data.frame(x = X[,2], y = y)
 ggplot(df_yx, aes(x = x, y = y)) + geom_point() + stat_smooth() + theme_bw()
 
 
@@ -32,7 +32,7 @@ f_yx      = matrix(0, nrow = length(y_grid), ncol = length(x))
 
 for(i in 1:length(x)) {
     # f_yx[,i] = d_dpmix2(y_grid, x[i], -1 + 2 * x[i])
-    f_yx[,i] = d_dpmix2(y_grid = y_grid, x = c(1, x[i]), 
+    f_yx[,i] = d_dpmix2(y_grid = y_grid, x = c(x[i]), 
                         params = c(x[i], -2 * x[i]))
 }
 
@@ -66,6 +66,9 @@ saveRDS(theta1_2, file = "dp_results/theta_2.27_N_1e4_int.RDS")
 # old1_2 = readRDS(file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
 
 plotELBO(theta1_2)
+
+
+
 
 
 # generate plots ---------------------------------------------------------------

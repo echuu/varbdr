@@ -85,7 +85,8 @@ elbo = function(theta, prior) {
     e6_k = (0.5 * D + theta$a_k - 1) * (psi_a - psi_b) + 
         theta$a_k * log(theta$b_k) - theta$a_k - lgamma(theta$a_k)  # (K x 1)
     for (k in 1:K) {
-        e6_k[k] = e6_k[k] + log(det(theta$V_k[,,k]))
+        # print(class(theta$V_k[,,k]))
+        e6_k[k] = e6_k[k] + log(det(as.matrix(theta$V_k[,,k])))
     }
     e_ln_q_beta_tau = sum(e6_k) - 0.5 * K * D * (log(2 * pi) + 1)
     
@@ -93,7 +94,7 @@ elbo = function(theta, prior) {
     # (7) E [ ln q(gamma) ] ----------------------------------------------------
     e7 = - 0.5 * K * D * (log(2 * pi) + 1)
     for (k in 1:K) {
-        e7 = e7 + log(det(theta$Q_k[,,k]))
+        e7 = e7 + log(det(as.matrix(theta$Q_k[,,k])))
     }
     e_ln_q_gamma = e7
     

@@ -127,8 +127,9 @@ d_dpmix2 = function(y_grid, x, params, sigsq_1 = 0.01, sigsq_2 = 0.04) {
     
     N_evals = length(y_grid)
     
-    p = exp(-2 * x[2])               # probability of drawing from mixture 1
-
+    # p = exp(-2 * x[2])               # probability of drawing from mixture 1
+    p = exp(-2 * x)
+    
     f_y = numeric(N_evals)
     f_y = p * dnorm(y_grid, mean = mu_1, sd = sqrt(sigsq_1)) + 
         (1 - p) * dnorm(y_grid, mean = mu_2, sd = sqrt(sigsq_2))
@@ -333,13 +334,14 @@ xQuantileDensity = function(x, params, true_d,
         
         if (DATA_GEN_ID == DP_MIX2) {
             param_n = c(x[i], -2 * x[i])
+            x_vec = x[i]
         } else if (DATA_GEN_ID == DP_MIX1) { 
             param_n = params[i]
         } else if (DATA_GEN_ID == BIMODAL1) {
             param_n = c(x - 1.5, x + 1.5)
         }
         
-        plot_list[[i]] = compareDensities(y_grid, c(1, x[i]), 
+        plot_list[[i]] = compareDensities(y_grid, x_vec, 
                                           true_d, param_n,
                                           approx_d, d_label, 
                                           theta, K,

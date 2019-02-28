@@ -73,13 +73,19 @@ mStep = function(theta, prior) {
         }
         
         theta$Q_k[,,k] = I_D + 2 * rl_nk_xx
-        
         theta$Q_k_inv[,,k] = solve(theta$Q_k[,,k])
         
         theta$eta_k[,k] = t(X) %*% 
             (theta$r_nk[,k] * (0.5 + 2 * theta$lambda[,k] * theta$alpha))
         
         theta$mu_k[,k] =  theta$Q_k_inv[,,k] %*% theta$eta_k[,k]
+        
+        # store mu_k, frob norm of Q_k for k-th cluster, for current iteration
+        # theta$mu_k_hist[,,k][,theta$curr] = theta$mu_k[,k]
+        theta$mu_k_hist[,,k][theta$curr] = theta$mu_k[,k]
+        theta$Q_k_hist[k, theta$curr] = norm(as.matrix(theta$Q_k[,,k]), 
+                                             type = 'F')
+        
     }
     
     # (1.2) update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k ------------------
@@ -94,10 +100,15 @@ mStep = function(theta, prior) {
         
         # theta$V_k[,,k] = prior$Lambda_0 + t(X) %*% diag(theta$r_nk[,k]) %*% X
         
-        theta$V_k[,,k]     = prior$Lambda_0 + r_nk_xx
+        theta$V_k[,,k]     = as.matrix(prior$Lambda_0 + r_nk_xx)
         theta$V_k_inv[,,k] = solve(theta$V_k[,,k])
         theta$zeta_k[,k]   = Lambda0_m0 + t(X) %*% (theta$r_nk[,k] * y)
         theta$m_k[,k]      = theta$V_k_inv[,,k] %*% theta$zeta_k[,k]
+        
+        # store m_k, frob norm of V_k for k-th cluster, for current iteration
+        theta$m_k_hist[,,k][theta$curr] = theta$m_k[,k]
+        theta$V_k_hist[k, theta$curr] = norm(as.matrix(theta$V_k[,,k]), 
+                                             type = 'F')
     }
     
     # (1.3) update q(tau): a_k, b_k --------------------------------------------
