@@ -44,12 +44,6 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
     scale_x_continuous(breaks = seq(min(y_grid), max(y_grid), by = 1)) + 
     facet_wrap(~variable)
 
-
-df_yx = data.frame(x = X[,1], y = y)
-ggplot(df_yx, aes(x, y)) + geom_point() + ggtitle("response vs. covariate") + 
-    stat_smooth(se = FALSE) + theme_bw()
-
-
 # run cavi ---------------------------------------------------------------------
 
 # (1.2) covariate-DEPENDENT vb

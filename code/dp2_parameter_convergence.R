@@ -34,6 +34,12 @@ ggplot(Q_k_conv_long, aes(x = iter, y = value, col = factor(cluster))) +
 m_1_conv = theta1_2$m_k_hist[,,1][1:theta1_2$curr-1]
 m_2_conv = theta1_2$m_k_hist[,,2][1:theta1_2$curr-1]
 
+
+m_1_conv = t(theta1_2$m_k_hist[,,1][1:theta1_2$curr-1])
+m1_long = melt(m_1_conv)
+
+
+
 mu_1_conv = theta1_2$mu_k_hist[,,1][1:theta1_2$curr-1]
 mu_2_conv = theta1_2$mu_k_hist[,,2][1:theta1_2$curr-1]
 
@@ -50,10 +56,20 @@ mu_long$iter = rep(1:nrow(mu_df), 2)
 names(mu_long) = c("cluster", "value", "iter")
 
 ggplot(m_long, aes(x = iter, y = value, col = factor(cluster))) + 
-    geom_point(size = 1) + theme_bw() + ggtitle("values of each component m_k")
+    geom_point(size = 1) + theme_bw() + 
+    ggtitle("values of each component m_k")
 
 ggplot(mu_long, aes(x = iter, y = value, col = factor(cluster))) + 
     geom_point(size = 1) + theme_bw() + ggtitle("values of each component mu_k")
+
+
+# ------------------------------------------------------------------------------
+
+
+
+param_plots = plotParams(theta, 2, 1)
+
+
 
 
 
