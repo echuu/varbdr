@@ -47,8 +47,8 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
 # run cavi ---------------------------------------------------------------------
 
 # (1.2) covariate-DEPENDENT vb
-source(paste(COV_DEP, VARBDR, sep = '/'))        # load cov-dep varbdr.R
-theta1_2 = varbdr(y = y, X = X, K)               # store CAVI results
+source(paste(COV_DEP, VARBDR, sep = '/'))    # load cov-dep varbdr.R
+theta1_2 = varbdr(y, X, K)                   # store CAVI results
 
 
 # save variational parameters
@@ -69,7 +69,6 @@ plotELBO(theta1_2)
 
 # theta1      = list(old1_2)      # list of var. params for each alg
 theta1      = list(theta1_2)
-DATA_GEN_ID = DP_MIX2
 
 # generate plot overlays of the percentiles
 source(DENSITY)
@@ -78,13 +77,9 @@ approx_d  = list(py_bouch)            # list of approx density functions
 den_label = c("cov-dep (b)")          # labels for each approx density
 p_list2 = xQuantileDensity(x, params, d_dpmix2,
                            approx_d, den_label, theta1, K,
-                           DP_MIX2,
                            y_grid)
 
 multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), cols = 3)
-
-
-
 
 
 

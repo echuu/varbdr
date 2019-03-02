@@ -96,13 +96,13 @@ py_bouch = function(theta, K, data) {
 #          f_y      : f(y) for each grid point y
 d_dpmix1 = function(y_grid, x, mu1, sigma_sq = 0.01) {
     
-    # mu_1    = -1 + 2 * x[2]
+    if (length(x) > 1) {
+        x = x[2]  # ignore the intercept term
+    }
     
+    mu_1    = -1 + 2 * x
     N_evals = length(y_grid)
-    
-    # p = exp(-2 * x[2])               # probability of drawing from mixture 1
-    
-    f_y = dnorm(y_grid, mean = mu1, sd = sqrt(sigma_sq))
+    f_y     = dnorm(y_grid, mean = mu1, sd = sqrt(sigma_sq))
     
     return(f_y)
     
@@ -120,16 +120,18 @@ d_dpmix1 = function(y_grid, x, mu1, sigma_sq = 0.01) {
 #          sigsq_1  : (1 x 1) variance of 2nd mixture component
 # output: 
 #          f_y      : f(y) for each grid point y
-d_dpmix2 = function(y_grid, x, params, sigsq_1 = 0.01, sigsq_2 = 0.04) {
+d_dpmix2 = function(y_grid, x, sigsq_1 = 0.01, sigsq_2 = 0.04) {
     
-    mu_1    = params[1]
-    mu_2    = params[2]
+    if (length(x) > 1) {
+        x = x[2]  # ignore the intercept term
+    }
+    
+    mu_1    = x
+    mu_2    = - 2 * x
+    p       = exp(-2 * x)
     
     N_evals = length(y_grid)
-    
-    # p = exp(-2 * x[2])               # probability of drawing from mixture 1
-    p = exp(-2 * x)
-    
+
     f_y = numeric(N_evals)
     f_y = p * dnorm(y_grid, mean = mu_1, sd = sqrt(sigsq_1)) + 
         (1 - p) * dnorm(y_grid, mean = mu_2, sd = sqrt(sigsq_2))
@@ -151,7 +153,7 @@ d_dpmix2 = function(y_grid, x, params, sigsq_1 = 0.01, sigsq_2 = 0.04) {
 #          sigma_2  : (1 x 1) sd of 2nd mixture component
 # output: 
 #          f_y      : f(y) for each grid point y
-d_binorm = function(y_grid, x, params, sigma_1 = 0.5, sigma_2 = 0.5) {
+d_binorm = function(y_grid, x, sigma_1 = 0.5, sigma_2 = 0.5) {
     
     p = 0.5
     
@@ -170,68 +172,6 @@ d_binorm = function(y_grid, x, params, sigma_1 = 0.5, sigma_2 = 0.5) {
 
 
 
-# compareDensities() : compare approximating densities to true (beta1) density
-# input:  
-#          y_grid      :  sequence of y-values evaluated using each density
-#          x           :  covariates for the y (response) values
-#          true_d      :  true density function
-#          params      :  parameters for the true density function
-#          den_list    :  list of each approximating density to use to evaluate
-#          true_den    :  true density
-#          den_label   :  names of each density (plotting purposes)
-#          theta_list  :  variational parameters
-#          K           :  number of clusters used in the mixture density
-#          DATA_GEN_ID :  ID for the true density function to call
-#        
-# output: 
-#          d_plot     :  ggplot of overlayed densities
-compareDensities = function(y_grid, x, 
-                            true_d, params,
-                            den_list, den_label, 
-                            theta_list, K,
-                            DATA_GEN_ID) {
-    
-    N_evals    = length(y_grid)             # number of evaluations
-    n_den      = length(den_label)          # number of densities to evaluate
-    data_ygrid = list(y = y_grid, x = x)    # fixed for all evaluations
-    
-    # approx_mat: store density evaluation results (N_evals) x (n_den + 1)
-    #     store y_grid in the first column
-    #     store the density evaluations in rows 2 to n_den + 1
-    #     extra column for the true density evaluations
-    approx_mat = matrix(0, nrow = N_evals, ncol = n_den + 1)
-    # approx_mat[,n_den] = y_grid
-    
-    # evaluate using each of the approximating densities
-    for (d_i in 1:n_den) {
-        approx_mat[, d_i] = den_list[[d_i]](theta_list[[d_i]], K, data_ygrid)
-    }
-    
-    # true density -- determine the true density to use
-    if (DATA_GEN_ID == 0) {                 # true density: beta
-        approx_mat[,n_den + 1] = true_d(y_grid, 
-                                        shape1 = params[[1]], 
-                                        shape2 = params[[2]])
-    } else if (DATA_GEN_ID == 1) {          # true density: dp ex. 1
-        approx_mat[,n_den + 1] = true_d(y_grid, x, params)
-    } else if (DATA_GEN_ID == 2) {          # true density: dp ex. 2
-        approx_mat[,n_den + 1] = true_d(y_grid, x, params)
-    } else if (DATA_GEN_ID == 3) {          # true density: dp ex. 2
-        approx_mat[,n_den + 1] = true_d(y_grid, x, params)
-    }
-    
-    approx_df = data.frame(y_grid, approx_mat)
-    names(approx_df) = c("y", den_label, "true")
-    
-    approx_df_long = melt(approx_df, measure.vars = c(den_label, "true"))
-    
-    p = ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
-        geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() +
-        theme(legend.position = "none")
-    
-    return(list(plot = p, approx_df = approx_df))
-    
-}
 
 # plotDensities(): overlay the true density and the (approx) mixture density
 # input:  
@@ -306,6 +246,59 @@ densityCurve = function(approx_d, theta, X, K,
 
 
 
+# compareDensities() : compare approximating densities to true (beta1) density
+# input:  
+#          y_grid      :  sequence of y-values evaluated using each density
+#          x           :  covariates for the y (response) values
+#          true_d      :  true density function
+#          params      :  parameters for the true density function
+#          den_list    :  list of each approximating density to use to evaluate
+#          true_den    :  true density
+#          den_label   :  names of each density (plotting purposes)
+#          theta_list  :  variational parameters
+#          K           :  number of clusters used in the mixture density
+#          DATA_GEN_ID :  ID for the true density function to call
+#        
+# output: 
+#          d_plot     :  ggplot of overlayed densities
+compareDensities = function(y_grid, x, 
+                            true_d,
+                            den_list, den_label, 
+                            theta_list, K) {
+    
+    N_evals    = length(y_grid)             # number of evaluations
+    n_den      = length(den_label)          # number of densities to evaluate
+    data_ygrid = list(y = y_grid, x = x)    # fixed for all evaluations
+    
+    # approx_mat: store density evaluation results (N_evals) x (n_den + 1)
+    #     store y_grid in the first column
+    #     store the density evaluations in rows 2 to n_den + 1
+    #     extra column for the true density evaluations
+    approx_mat = matrix(0, nrow = N_evals, ncol = n_den + 1)
+
+    # evaluate using each of the approximating densities
+    for (d_i in 1:n_den) {
+        approx_mat[, d_i] = den_list[[d_i]](theta_list[[d_i]], K, data_ygrid)
+    }
+    
+    approx_mat[, n_den + 1] = true_d(y_grid, x)  # density parameters should be
+                                                 # specified in each individual
+                                                 # density function; may not be
+                                                 # completely updated
+    
+    approx_df = data.frame(y_grid, approx_mat)
+    names(approx_df) = c("y", den_label, "true")
+    
+    approx_df_long = melt(approx_df, measure.vars = c(den_label, "true"))
+    
+    p = ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
+        geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() +
+        theme(legend.position = "none")
+    
+    return(list(plot = p, approx_df = approx_df))
+} # end compareDensities() function
+
+
 # xQuantileDensity()   :  for a given x, generate the corresponding density
 #                         plots using the variational parameters and overlay
 #                         with the true denstiy
@@ -324,28 +317,25 @@ densityCurve = function(approx_d, theta, X, K,
 #          approx   :  N x len dataframe of p_y evaluations -> density curve
 xQuantileDensity = function(x, params, true_d,
                             approx_d, d_label, theta, K,
-                            DATA_GEN_ID,
-                            y_grid = seq(0, 1, len = 500)) {
+                            y_grid) {
     
     num_plots = length(x)
     plot_list = vector("list", num_plots)
     
+    if (theta[[1]]$intercept) {    
+        x_mat = as.matrix(cbind(1, x))    
+    } else {    
+        x_mat = as.matrix(x)              
+    }
+    
     for (i in 1:length(x)) {
         
-        if (DATA_GEN_ID == DP_MIX2) {
-            param_n = c(x[i], -2 * x[i])
-            x_vec = x[i]
-        } else if (DATA_GEN_ID == DP_MIX1) { 
-            param_n = params[i]
-        } else if (DATA_GEN_ID == BIMODAL1) {
-            param_n = c(x - 1.5, x + 1.5)
-        }
-        
+        x_vec = x_mat[i,]
+
         plot_list[[i]] = compareDensities(y_grid, x_vec, 
-                                          true_d, param_n,
+                                          true_d,
                                           approx_d, d_label, 
-                                          theta, K,
-                                          DATA_GEN_ID)
+                                          theta, K)
     }
     
     return(plot_list)

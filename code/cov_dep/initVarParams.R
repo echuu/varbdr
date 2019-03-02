@@ -15,13 +15,12 @@
     # xi      : matrix of all 0's (these will be re-estimated using alphas)
     # Q_k_inv : (K x K) identity matrix
     # mu_k    : matrix of 0-mean vectors for gamma_k
-initVarParams = function(y, X, N, D, K, max_iter) {
+initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter) {
     
     I_D   = diag(1, D)                 # (D X D)  identity matrix
     L     = rep(-Inf, max_iter)        # Store the variational lower bounds
     dc    = vector("list", max_iter)   # store density curves for each iter, 
                                        # in the form of a matrix 
-    
     
     # explicit random variables -- 
     #    don't thnk these are used in CAVI, these are used later to 
@@ -107,7 +106,8 @@ initVarParams = function(y, X, N, D, K, max_iter) {
                  Q_k = Q_k, Q_k_inv = Q_k_inv, eta_k = eta_k, mu_k = mu_k, 
                  L = L, curr = curr,
                  m_k_hist = m_k_hist, mu_k_hist = mu_k_hist, 
-                 V_k_hist = V_k_hist, Q_k_hist = Q_k_hist)
+                 V_k_hist = V_k_hist, Q_k_hist = Q_k_hist,
+                 intercept = intercept)
     
     return(theta)
     

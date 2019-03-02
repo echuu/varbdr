@@ -22,17 +22,22 @@ source(paste(HOME_DIR, DENSITY,         sep = '/'))
     # b0       : prior rate parameter for tau_k; k = 1,...,K
     # g0       : prior mean for gamma_k; k = 1,...,K
     # Sigma0   : prior covariance for gamma_k; k = 1,...,K
-varbdr = function(y, X, K = 4, 
+varbdr = function(y, X, K = 4, intercept = FALSE,
                   m_0 = c(colMeans(X)),                         # normal params              
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
                   g_0 = 0, Sigma_0 = diag(rep(1, ncol(X))),     # normal params
                   max_iter = 10000, tol = 1e-3, VERBOSE = TRUE) {
     
-    X = as.matrix(X)         # N X D design matrix of covariates
-    D = NCOL(X)              # Number of features
-    N = NROW(X)              # Number of observations
-    # L = rep(-Inf, max_iter)  # Store the variational lower bounds
+    
+    if (intercept) {
+        X = as.matrix(cbind(1, X))  # (N X (D + 1)) design matrix of covariates
+    } else {
+        X = as.matrix(X)            # (N X D) design matrix of covariates
+    }
+    
+    D = NCOL(X)                 # Number of features
+    N = NROW(X)                 # Number of observations
     
     # prior specification: 
         # mu_k | tau_k ~ N  (m0, (tau_k * Lambda0)^{-1})
@@ -47,7 +52,7 @@ varbdr = function(y, X, K = 4,
         # N = number of observations
         # D = dimension of covariaftes
         # K = number of clusters
-    theta = initVarParams(y, X, N, D, K, max_iter)
+    theta = initVarParams(y, X, N, D, K, intercept, max_iter)
     
     # begin CAVI ---------------------------------------------------------------
     
