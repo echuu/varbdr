@@ -14,26 +14,22 @@ K = 2
 synth_data_1d = r_dpmix2(N)
 
 y      = synth_data_1d$y
-X      = as.matrix((synth_data_1d$X)[,2])
-# X      = synth_data_1d$X
+X      = synth_data_1d$X
 params = synth_data_1d$param_mat
 y_grid = seq(-3, 1.5, length.out = 1000)
 
 # 6th sublot in Figure 3
 df_yx = data.frame(x = X[,1], y = y)
-# df_yx = data.frame(x = X[,2], y = y)
 ggplot(df_yx, aes(x = x, y = y)) + geom_point() + stat_smooth() + theme_bw()
 
 
 # 1st subplot
-
 x         = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
 f_yx      = matrix(0, nrow = length(y_grid), ncol = length(x))
 
 for(i in 1:length(x)) {
     # f_yx[,i] = d_dpmix2(y_grid, x[i], -1 + 2 * x[i])
-    f_yx[,i] = d_dpmix2(y_grid = y_grid, x = c(x[i]), 
-                        params = c(x[i], -2 * x[i]))
+    f_yx[,i] = d_dpmix2(y_grid = y_grid, x = c(x[i]))
 }
 
 df_y      = data.frame(x = y_grid, f_yx)
@@ -48,8 +44,14 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
 
 # (1.2) covariate-DEPENDENT vb
 source(paste(COV_DEP, VARBDR, sep = '/'))    # load cov-dep varbdr.R
-theta1_2 = varbdr(y, X, K)                   # store CAVI results
 
+start_time <- Sys.time()
+theta1_2 = varbdr(y, X, K)                   # store CAVI results
+end_time <- Sys.time()
+
+diff_og  = end_time - start_time              # 15.35435 secs
+
+(diff_fix = end_time - start_time)
 
 # save variational parameters
 # saveRDS(theta1_1, file = "dp_results/theta_indep_dp2_K2_N1000.RDS")
@@ -60,8 +62,6 @@ saveRDS(theta1_2, file = "dp_results/theta_2.27_N_1e4_int.RDS")
 # old1_2 = readRDS(file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
 
 plotELBO(theta1_2)
-
-
 
 
 
@@ -80,8 +80,6 @@ p_list2 = xQuantileDensity(x, params, d_dpmix2,
                            y_grid)
 
 multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), cols = 3)
-
-
 
 
 

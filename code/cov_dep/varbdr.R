@@ -27,7 +27,7 @@ varbdr = function(y, X, K = 4, intercept = FALSE,
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
                   g_0 = 0, Sigma_0 = diag(rep(1, ncol(X))),     # normal params
-                  max_iter = 10000, tol = 1e-3, VERBOSE = TRUE) {
+                  max_iter = 100000, tol = 1e-3, VERBOSE = TRUE) {
     
     
     if (intercept) {

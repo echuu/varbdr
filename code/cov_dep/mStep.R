@@ -20,7 +20,7 @@ mStep = function(theta, prior) {
 
     I_D        = diag(1, D)                       # (D X D) : identity matrix
     X_mu       = X %*% theta$mu_k                 # (N x K) : (N x D) * (D x K)
-    #M          = theta$mu_k %*% t(theta$lambda)   # (D x N) : (D x K) * (K x N)
+    #M          = theta$mu_k %*% t(theta$lambda)  # (D x N) : (D x K) * (K x N)
     Lambda0_m0 = prior$Lambda_0 %*% prior$m_0     # (D x 1) : Lambda_0 * m_0
     
     ## update alpha, xi, lambda, phi -------------------------------------------
@@ -33,19 +33,16 @@ mStep = function(theta, prior) {
     for (n in 1:N) {
         theta$alpha[n] = 1 / sum(theta$lambda[n,]) * 
             (0.5 * (0.5 * K - 1) + t(X_mu[n,]) %*% theta$lambda[n,])
-    }
-    
-    
-    # (0.2) update xi (computed row-wise) --------------------------------------
-    for (n in 1:N) {
+        
+        # (0.2) update xi (computed row-wise) ----------------------------------
         xQx = numeric(K)
         for (k in 1:K) {
             xQx[k] = quadMult(X[n,], theta$Q_k_inv[,,k]) # function in misc.R
         }
         
         theta$xi[n,] = sqrt((X_mu[n,] - theta$alpha[n])^2 + xQx)
-    } # end of outer for() update for xi
-    
+        
+    }
     
     # (0.3) compute lambda(xi) using updated value of xi  ----------------------
     theta$lambda = lambda_xi(theta$xi)              # (N x K), misc.R
@@ -64,14 +61,23 @@ mStep = function(theta, prior) {
     #     (1.3) q(tau)
     
     # (1.1) update q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_k -----------------------
+    # (1.2) update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k ------------------
     for (k in 1:K) {
         
-        rl_nk_xx = matrix(0, D, D)
+        rl_nk_xx = matrix(0, D, D)               # used to calculate q(gamma)
+        r_nk_xx = matrix(0, nrow = D, ncol = D)  # used to calculate q(beta|tau)
+
         for (n in 1:N) {
-            rl_nk_xx = rl_nk_xx + 
-                (theta$r_nk[n,k] * theta$lambda[n,k]) * crossprod(t(X[n,]))
+            
+            r_x = theta$r_nk[n,k] * crossprod(t(X[n,]))
+            
+            rl_nk_xx = rl_nk_xx + r_x * theta$lambda[n,k]
+            
+            r_nk_xx = r_nk_xx + r_x
         }
         
+        
+        # (1.1) update q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_k ------------------
         theta$Q_k[,,k] = I_D + 2 * rl_nk_xx
         theta$Q_k_inv[,,k] = solve(theta$Q_k[,,k])
         
@@ -80,37 +86,28 @@ mStep = function(theta, prior) {
         
         theta$mu_k[,k] =  theta$Q_k_inv[,,k] %*% theta$eta_k[,k]
         
-        # store mu_k, frob norm of Q_k for k-th cluster, for current iteration
-        # theta$mu_k_hist[,,k][,theta$curr] = theta$mu_k[,k]
-        theta$mu_k_hist[,,k][theta$curr] = theta$mu_k[,k]
-        theta$Q_k_hist[k, theta$curr] = norm(as.matrix(theta$Q_k[,,k]), 
-                                             type = 'F')
         
-    }
-    
-    # (1.2) update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k ------------------
-    for (k in 1:K) {
-        
-        r_nk_xx = matrix(0, nrow = D, ncol = D)
-        # r_nk_yx = 0
-        for (n in 1:N) {
-            r_nk_xx = r_nk_xx + theta$r_nk[n,k] * crossprod(t(X[n,]))
-            # r_nk_yx = r_nk_yx + theta$r_nk[n,k] * y[n] * X[n,]
-        }
-        
-        # theta$V_k[,,k] = prior$Lambda_0 + t(X) %*% diag(theta$r_nk[,k]) %*% X
-        
+        # (1.2) update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k --------------
         theta$V_k[,,k]     = as.matrix(prior$Lambda_0 + r_nk_xx)
         theta$V_k_inv[,,k] = solve(theta$V_k[,,k])
         theta$zeta_k[,k]   = Lambda0_m0 + t(X) %*% (theta$r_nk[,k] * y)
         theta$m_k[,k]      = theta$V_k_inv[,,k] %*% theta$zeta_k[,k]
         
+        
+        # store mu_k, frob norm of Q_k for k-th cluster, for current iteration
+        theta$mu_k_hist[,,k][theta$curr] = theta$mu_k[,k]
+        theta$Q_k_hist[k, theta$curr] = norm(as.matrix(theta$Q_k[,,k]), 
+                                             type = 'F')
+        
         # store m_k, frob norm of V_k for k-th cluster, for current iteration
         theta$m_k_hist[,,k][theta$curr] = theta$m_k[,k]
         theta$V_k_hist[k, theta$curr] = norm(as.matrix(theta$V_k[,,k]), 
                                              type = 'F')
-    }
+        
+        
+    } # end of q(gamma), q(beta|tau) updates
     
+
     # (1.3) update q(tau): a_k, b_k --------------------------------------------
     theta$a_k = prior$a_0 + 0.5 * theta$N_k
     for (k in 1:K) {

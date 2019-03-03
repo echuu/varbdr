@@ -41,18 +41,18 @@ r_dpmix2 = function(N, seed = 100) {
     
     set.seed(seed)
     
-    x_i1 = rep(1, N) # 1st column of X
+    # x_i1 = rep(1, N) # 1st column of X
     x_i2 = runif(N)  # 2nd column of X
     
-    X = matrix(c(x_i1, x_i2), nrow = N, byrow = FALSE)
+    X = matrix(c(x_i2), nrow = N, byrow = FALSE)
     
     # mixture parameters
-    mu_1    = X[,2]
-    mu_2    = -2 * X[,2]
+    mu_1    = X[,1]
+    mu_2    = -2 * X[,1]
     sigsq_1 = 0.01
     sigsq_2 = 0.04
     
-    p = exp(-2 * X[,2])        # probability of drawing from mixture 1
+    p = exp(-2 * X[,1])        # probability of drawing from mixture 1
     mix_indic = runif(N) >= p  # determine which density to draw from
     
     N_mix1 = sum(!mix_indic)   # number of draws from first mixture density
