@@ -8,7 +8,6 @@ setwd(HOME_DIR)
 source(DP_BDR) 
 source(DENSITY)
 
-
 N = 500
 K = 2
 synth_data_1d = r_dpmix2(N)
@@ -43,43 +42,93 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
 # run cavi ---------------------------------------------------------------------
 
 # (1.2) covariate-DEPENDENT vb
-source(paste(COV_DEP, VARBDR, sep = '/'))    # load cov-dep varbdr.R
+source(paste(COV_DEP, VARBDR, sep = '/'))         # load cov-dep varbdr.R
+source(paste(COV_DEP, FAST_VARBDR, sep = '/'))    # load cov-dep fast varbdr.R
 
 start_time <- Sys.time()
-theta1_2 = varbdr(y, X, K)                   # store CAVI results
+theta0 = varbdr(y, X, K)                   # store CAVI results
 end_time <- Sys.time()
-
-diff_og  = end_time - start_time              # 15.35435 secs
-
 (diff_fix = end_time - start_time)
 
+
+microbenchmark(varbdr(y, X, K),
+               fast_varbdr(y, X, K))
+
+
+theta1 = fast_varbdr(y, X, K)
+
+
 # save variational parameters
-# saveRDS(theta1_1, file = "dp_results/theta_indep_dp2_K2_N1000.RDS")
-saveRDS(theta1_2, file = "dp_results/theta_2.27_N_1e4_int.RDS")
+saveRDS(theta0, file = "dp_results/theta_N_500_K_2.RDS")
 
-
-# old1_1 = readRDS(file = "dp_results/theta_indep_dp2_K2_N1000.RDS")
-# old1_2 = readRDS(file = "dp_results/theta_dep_dp2_K2_N1000.RDS")
-
-plotELBO(theta1_2)
-
+theta_500_2 = readRDS(file = "dp_results/theta_N_500_K_2.RDS") # N = 1e3, K = 2
+theta_1e3_2 = readRDS(file = "dp_results/theta_N_1e3_K_2.RDS") # N = 1e3, K = 2
+theta_1e3_3 = readRDS(file = "dp_results/theta_N_1e3_K_3.RDS") # N = 1e3, K = 3
+theta_1e3_4 = readRDS(file = "dp_results/theta_N_1e3_K_4.RDS") # N = 1e3, K = 4
+theta_1e4_2 = readRDS(file = "dp_results/theta_N_1e4_K_2.RDS") # N = 1e4, K = 2
+theta_1e4_3 = readRDS(file = "dp_results/theta_N_1e4_K_3.RDS") # N = 1e4, K = 3
+theta_2e4_2 = readRDS(file = "dp_results/theta_N_2e4_K_2.RDS") # N = 2e4, K = 2
 
 
 # generate plots ---------------------------------------------------------------
 
+
+overlayPlots(theta_1e3_3, 3)
+overlayPlots(theta_1e4_3, 3)
+
+
+overlayPlots(theta_1e3_4, 4)
+
+overlayPlots(theta_500_2, 2)
+overlayPlots(theta_1e3_2, 2)
+overlayPlots(theta_1e4_2, 2)
+overlayPlots(theta_2e4_2, 2)
+
+overlayPlots(theta = list(theta_500_2, theta_1e3_2, theta_1e4_2, theta_2e4_2), 
+             den_labels = c("N = 500, K = 2", "N = 1e3, K = 2", 
+                            "N = 1e4, K = 2", "N = 2e4, K = 2"), K = 2)
+
+overlayPlots = function(theta, K, den_labels,
+                        x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)) {
+    
+    source(DENSITY)
+
+    n = length(theta)
+    approx_d  = rep(list(py_bouch), n)
+    # den_label = c("cov-dep-1", "cov-dep-2", "cov-dep-3", "cov-dep-4")
+    p_list2 = xQuantileDensity(x, params, d_dpmix2,
+                               approx_d, den_label, theta, K,
+                               y_grid)
+    
+    p = multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), 
+                  cols = 3)
+    return(p)
+}
+
+
+
 # theta1      = list(old1_2)      # list of var. params for each alg
-theta1      = list(theta1_2)
+theta1_list    = list(theta0)
 
 # generate plot overlays of the percentiles
 source(DENSITY)
 x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
-approx_d  = list(py_bouch)            # list of approx density functions
-den_label = c("cov-dep (b)")          # labels for each approx density
+approx_d  = list(py_bouch, py_bouch)    # list of approx density functions
+den_label = c("cov-dep")                # labels for each approx density
 p_list2 = xQuantileDensity(x, params, d_dpmix2,
-                           approx_d, den_label, theta1, K,
+                           approx_d, den_label, theta1_list, K,
                            y_grid)
 
 multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), cols = 3)
+
+# -----------------------------------------------------------------------------
+
+
+
+
+
+
+
 
 
 

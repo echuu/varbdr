@@ -35,6 +35,9 @@ initPriors = function(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
     prior$m_0      = m_0
     prior$Lambda_0 = Lambda_0
     
+    prior$Lambda0_m0    = Lambda_0 %*% m_0
+    prior$m0_Lambda0_m0 = c(quadMult(m_0,  Lambda_0))
+    
     # prior shape, rate for tau_1:K
     prior$a_0      = a_0
     prior$b_0      = b_0

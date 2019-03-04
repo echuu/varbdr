@@ -10,16 +10,21 @@ source(paste(COV_DEP, MISC_FUNCS, sep = '/'))
 #          theta : list of variational parameters with 
 #                  variational parameters updated
 
-mStep = function(theta, prior) {
+fast_mStep = function(theta, prior) {
     
     X = prior$X
     y = prior$y
     N = prior$N
     K = prior$K
     D = prior$D
-
+    
     I_D        = diag(1, D)                       # (D X D) : identity matrix
-    X_mu       = X %*% theta$mu_k                 # (N x K) : (N x D) * (D x K)
+    
+    #### RCPP USED HERE ----------------------------------------------------
+    # X_mu = X %*% theta$mu_k                 # (N x K) : (N x D) * (D x K)
+    X_mu = eigenMapMatMult(X, as.matrix(theta$mu_k))
+    #### RCPP USED HERE ----------------------------------------------------
+    
     
     ## update alpha, xi, lambda, phi -------------------------------------------
     #     (0.1) alpha                 # (N x 1)
@@ -65,7 +70,7 @@ mStep = function(theta, prior) {
         
         rl_nk_xx = matrix(0, D, D)               # used to calculate q(gamma)
         r_nk_xx = matrix(0, nrow = D, ncol = D)  # used to calculate q(beta|tau)
-
+        
         for (n in 1:N) {
             
             r_x = theta$r_nk[n,k] * crossprod(t(X[n,]))
@@ -80,19 +85,30 @@ mStep = function(theta, prior) {
         theta$Q_k[,,k] = I_D + 2 * rl_nk_xx
         theta$Q_k_inv[,,k] = solve(theta$Q_k[,,k])
         
-        theta$eta_k[,k] = t(X) %*% 
-            (theta$r_nk[,k] * (0.5 + 2 * theta$lambda[,k] * theta$alpha))
+        #### RCPP USED HERE ----------------------------------------------------
+        # theta$eta_k[,k] = t(X) %*% 
+        #     (theta$r_nk[,k] * (0.5 + 2 * theta$lambda[,k] * theta$alpha))
+        theta$eta_k[,k] = crossprod(X, 
+            (theta$r_nk[,k] * (0.5 + 2 * theta$lambda[,k] * theta$alpha)))
+        #### RCPP USED HERE ----------------------------------------------------
         
-        theta$mu_k[,k] =  theta$Q_k_inv[,,k] %*% theta$eta_k[,k]
-        
+        #### RCPP USED HERE ----------------------------------------------------
+        # theta$mu_k[,k] =  theta$Q_k_inv[,,k] %*% theta$eta_k[,k]
+        theta$mu_k[,k] =  eigenMapMatMult(theta$Q_k_inv[,,k], theta$eta_k[,k])
+        #### RCPP USED HERE ----------------------------------------------------
         
         # (1.2) update q(beta | tau) : V_k, V_k^{-1}, zeta_k, m_k --------------
         theta$V_k[,,k]     = as.matrix(prior$Lambda_0 + r_nk_xx)
         theta$V_k_inv[,,k] = solve(theta$V_k[,,k])
         theta$zeta_k[,k]   = prior$Lambda0_m0 + 
             crossprod(X, (theta$r_nk[,k] * y))
-        theta$m_k[,k]      = theta$V_k_inv[,,k] %*% theta$zeta_k[,k]
         
+        
+        #### RCPP USED HERE ----------------------------------------------------
+        # theta$m_k[,k] = theta$V_k_inv[,,k] %*% theta$zeta_k[,k]
+        theta$m_k[,k] = eigenMapMatMult(theta$V_k_inv[,,k], 
+                                        as.matrix(theta$zeta_k[,k]))
+        #### RCPP USED HERE ----------------------------------------------------
         
         # store mu_k, frob norm of Q_k for k-th cluster, for current iteration
         # theta$mu_k_hist[,,k][theta$curr] = theta$mu_k[,k]
@@ -107,7 +123,7 @@ mStep = function(theta, prior) {
         
     } # end of q(gamma), q(beta|tau) updates
     
-
+    
     # (1.3) update q(tau): a_k, b_k --------------------------------------------
     theta$a_k = prior$a_0 + 0.5 * theta$N_k
     for (k in 1:K) {

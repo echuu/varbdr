@@ -292,8 +292,14 @@ compareDensities = function(y_grid, x,
     approx_df_long = melt(approx_df, measure.vars = c(den_label, "true"))
     
     p = ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
-        geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() +
-        theme(legend.position = "none")
+        geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() + 
+        theme(legend.justification = c(1, 1.05), legend.position = c(1, 1)) +
+        theme(legend.title = element_blank())
+    
+    
+    
+    #+
+    #    theme(legend.position = "none")
     
     return(list(plot = p, approx_df = approx_df))
 } # end compareDensities() function

@@ -18,11 +18,16 @@ COV_DEP   = paste(HOME_DIR, "/cov_dep", sep = '')
 INIT_PRIORS      =  "initPriors.R"
 INIT_VAR_PARAMS  =  "initVarParams.R"
 VARBDR           =  "varbdr.R"
+FAST_VARBDR      =  "fast_varbdr.R"
 E_STEP           =  "eStep.R"
 M_STEP           =  "mStep.R"
+FAST_M_STEP      =  "fast_mStep.R"
 ELBO             =  "elbo.R"
 MISC_FUNCS       =  "misc.R"
 DENSITY          =  "density.R"
+
+# cpp code for faster matrix operations
+VB_CPP = "vb_calcs.cpp"
 
 
 # ID's for data generating schemes

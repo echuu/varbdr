@@ -100,7 +100,8 @@ vecToStr = function(x, K) {
 #         A  : (D x D) matrix
 # output: resulting product of x'Ax
 quadMult = function(x, A) {
-    return(t(x) %*% A %*% x)
+    return(t(x) %*% (A %*% x))
+    # return(tcrossprod(x, A %*% x))
 }
 
 
