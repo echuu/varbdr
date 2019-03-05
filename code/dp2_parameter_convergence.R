@@ -67,9 +67,9 @@ ggplot(mu_long, aes(x = iter, y = value, col = factor(cluster))) +
 
 
 
-param_plots = plotParams(theta, 2, 1)
+param_plots = plotParams(theta1_2, 2, 1)
 
-
+param_plots$m_k_plot
 
 
 

@@ -8,7 +8,7 @@ setwd(HOME_DIR)
 source(DP_BDR) 
 source(DENSITY)
 
-N = 500
+N = 5e4
 K = 2
 synth_data_1d = r_dpmix2(N)
 
@@ -73,28 +73,17 @@ theta_2e4_2 = readRDS(file = "dp_results/theta_N_2e4_K_2.RDS") # N = 2e4, K = 2
 # generate plots ---------------------------------------------------------------
 
 
-overlayPlots(theta_1e3_3, 3)
-overlayPlots(theta_1e4_3, 3)
-
-
 overlayPlots(theta_1e3_4, 4)
 
-overlayPlots(theta_500_2, 2)
-overlayPlots(theta_1e3_2, 2)
-overlayPlots(theta_1e4_2, 2)
-overlayPlots(theta_2e4_2, 2)
 
-overlayPlots(theta = list(theta_500_2, theta_1e3_2, theta_1e4_2, theta_2e4_2), 
-             den_labels = c("N = 500, K = 2", "N = 1e3, K = 2", 
-                            "N = 1e4, K = 2", "N = 2e4, K = 2"), K = 2)
-
-overlayPlots = function(theta, K, den_labels,
+overlayPlots = function(theta, K, den_label,
                         x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)) {
     
     source(DENSITY)
 
     n = length(theta)
     approx_d  = rep(list(py_bouch), n)
+    # approx_d = list(py_bouch, py_bouch, py_bouch, py_bouch)
     # den_label = c("cov-dep-1", "cov-dep-2", "cov-dep-3", "cov-dep-4")
     p_list2 = xQuantileDensity(x, params, d_dpmix2,
                                approx_d, den_label, theta, K,
@@ -105,6 +94,16 @@ overlayPlots = function(theta, K, den_labels,
     return(p)
 }
 
+
+overlayPlots(theta = list(theta_500_2, theta_1e3_2, theta_1e4_2, theta_2e4_2), 
+             K = 2, den_label = c("N=500", "N=1e3", 
+                                  "N=1e4", "N=2e4"))
+
+overlayPlots(list(theta_1e3_3, theta_1e4_3), K = 3,
+             den_label = c("N=1e3", "N=1e4"))
+
+overlayPlots(list(theta_1e3_4), K = 4, 
+             den_label = c("N=1e4"))
 
 
 # theta1      = list(old1_2)      # list of var. params for each alg
