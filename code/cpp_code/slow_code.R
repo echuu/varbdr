@@ -14,27 +14,29 @@ N = 100
 K = 3
 D = 2
 
+set.seed(1)
 X = matrix(rnorm(N * D), N, D)                   # (N x D)
 mu = matrix(rnorm(D * K), D, K)                  # (D x K)
 
 X_mu = X %*% mu                                  # (N x K)
 
-lambda = matrix(rnorm(N * K), N, K)              # (N x K)
+xi = matrix(1, N, K)                             # (N x K)
+lambda = lambda_xi(xi)                           # (N x K)
 
-Qk = diag(rnorm(D))                              # (D x D)
+Qk = diag(rbeta(D, 1, 1))                        # (D x D)
 
 alpha = numeric(N)                               # (N x 1)
 xQx = numeric(K)                                 # (K x 1)
 
-slow_func = function(lambda, X, X_mu, Qk) {
+
+slow_func = function(lambda, X, X_mu, Qk, xi) {
     
     N = nrow(lambda)
     K = ncol(lambda)
     
-    xi = matrix(0, N, K)
-    
     for (n in 1:N) {
-        alpha[n] = sum(lambda[n,]) * crossprod(X_mu[n,], lambda[n,])
+        alpha[n] = 1 / sum(lambda[n,]) * 
+            (0.5 * (0.5 * K - 1) + crossprod(X_mu[n,], lambda[n,]))
         
         for (k in 1:K) {
             xQx[k] = sum(lambda[,k]) * crossprod(X[n,], Qk %*% X[n,])
@@ -45,7 +47,9 @@ slow_func = function(lambda, X, X_mu, Qk) {
         
     }
     
-    return(list(alpha = alpha, xQx = xQx, xi = xi))
+    lambda = lambda_xi(xi)
+    
+    return(list(alpha = alpha, xQx = xQx, xi = xi, lambda = lambda))
 }
 
 
@@ -54,16 +58,17 @@ sourceCpp("fast_functions.cpp")
 tmp = testFuncs(X_mu, alpha, xQx) # used to test smaller functions
 
 
-res_fast = mainFunc(lambda, X, X_mu, Qk)   # build this to be the m-step
-res = slow_func(lambda, X, X_mu, Qk)       # slower version of the m-step
+res = slow_func(lambda, X, X_mu, Qk, xi)        # slower version of the m-step
+res_fast = mainFunc(lambda, X, X_mu, Qk, xi)    # build this to be the m-step
+
+head(res$lambda)
+head(res_fast$lambda)
 
 checkEqual(res, res_fast)
 
-microbenchmark(slow_func(lambda, X, X_mu, Qk), 
-               mainFunc(lambda, X, X_mu, Qk))
+microbenchmark(slow_func(lambda, X, X_mu, Qk, xi), 
+               mainFunc(lambda, X, X_mu, Qk, xi))
 
-
-head(lambda(X, 2))
 
 
 ## compare results to Rcpp -----------------------------------------------------

@@ -16,7 +16,7 @@ r_binorm = function(N, seed = 100) {
     
     x_vec = rnorm(N)  # 2nd column of X
     
-    X = cbind(1, matrix(x_vec, nrow = N))
+    X = matrix(x_vec, nrow = N)
     
     # mixture parameters
     mu_1    = X - 1.5
@@ -24,7 +24,8 @@ r_binorm = function(N, seed = 100) {
     sigma_1 = 0.5
     sigma_2 = 0.5
     
-    p = 0.5                    # probability that we draw from mixture 2
+    # p = exp(-0.5 * x_vec)      # probability that we draw from mixture 2
+    p = 0.5
     mix_indic = runif(N) >= p  # determine which density to draw from
     
     N_mix1 = sum(!mix_indic)   # number of draws from first mixture density

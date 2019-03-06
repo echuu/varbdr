@@ -156,9 +156,9 @@ d_dpmix2 = function(y_grid, x, sigsq_1 = 0.01, sigsq_2 = 0.04) {
 d_binorm = function(y_grid, x, sigma_1 = 0.5, sigma_2 = 0.5) {
     
     p = 0.5
-    
-    mu_1 = x[2] - 1.5
-    mu_2 = x[2] + 1.5
+    # p = exp(-0.5 * x)
+    mu_1 = x - 1.5
+    mu_2 = x + 1.5
     
     N_evals = length(y_grid)
     f_y = numeric(N_evals)
@@ -281,7 +281,12 @@ compareDensities = function(y_grid, x,
         approx_mat[, d_i] = den_list[[d_i]](theta_list[[d_i]], K, data_ygrid)
     }
     
-    approx_mat[, n_den + 1] = true_d(y_grid, x)  # density parameters should be
+    if (length(x) > 1) {
+        x0 = x[2:length(x)]
+    } else {
+        x0 = x
+    }
+    approx_mat[, n_den + 1] = true_d(y_grid, x0) # density parameters should be
                                                  # specified in each individual
                                                  # density function; may not be
                                                  # completely updated
@@ -289,17 +294,21 @@ compareDensities = function(y_grid, x,
     approx_df = data.frame(y_grid, approx_mat)
     names(approx_df) = c("y", den_label, "true")
     
+    
     approx_df_long = melt(approx_df, measure.vars = c(den_label, "true"))
+    #approx_df_long = melt(approx_df[,-ncol(approx_df)], 
+    #                      measure.vars = c(den_label))
+    
+    approx_df_long = approx_df_long %>% mutate(is_approx = 'true')
+    approx_df_long$is_approx[approx_df_long$variable != 'true'] = 'approx'
     
     p = ggplot(approx_df_long, aes(x = y, y = value, colour = variable)) + 
-        geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() + 
+        geom_line(size = 0.8, aes(linetype = factor(approx_df_long$is_approx))) + 
+        labs(x = "y", y = "p(y)") + theme_bw() + 
         theme(legend.justification = c(1, 1.05), legend.position = c(1, 1)) +
         theme(legend.title = element_blank())
     
     
-    
-    #+
-    #    theme(legend.position = "none")
     
     return(list(plot = p, approx_df = approx_df))
 } # end compareDensities() function
@@ -329,15 +338,16 @@ xQuantileDensity = function(x, params, true_d,
     plot_list = vector("list", num_plots)
     
     if (theta[[1]]$intercept) {    
-        x_mat = as.matrix(cbind(1, x))    
+        x_mat = as.matrix(cbind(1, x)) 
     } else {    
+        print("here")
         x_mat = as.matrix(x)              
     }
     
     for (i in 1:length(x)) {
-        
-        x_vec = x_mat[i,]
 
+        x_vec = x_mat[i,]
+        # print(x_vec)
         plot_list[[i]] = compareDensities(y_grid, x_vec, 
                                           true_d,
                                           approx_d, d_label, 

@@ -8,8 +8,8 @@ source(UNI_CDE)
 source(DENSITY)
 
 
-N = 500
-K = 3
+N = 1e4
+K = 2
 
 synth_data_bimodal = r_binorm(N)
 y      = synth_data_bimodal$y
@@ -21,8 +21,7 @@ x         = c(-0.6745, 0, 0.6745)
 f_yx      = matrix(0, nrow = length(y_grid), ncol = length(x))
 
 for(i in 1:length(x)) {
-    f_yx[,i] = d_binorm(y_grid = y_grid, x = c(1, x[i]), 
-                        params = c(x[i] - 1.5, x[i] + 1.5))
+    f_yx[,i] = d_binorm(y_grid = y_grid, x = x[i])
 }
 
 df_y      = data.frame(x = y_grid, f_yx)
@@ -36,35 +35,67 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
 # run cavi ---------------------------------------------------------------------
 
 # (1.1) covariate-INDEPENENT vb
-source(paste(COV_INDEP, VARBDR, sep = '/'))      # load cov-indep varbdr.R
-theta1_1 = varbdr(y = y, X = X, K = 3)               # store CAVI results
+# source(paste(COV_INDEP, VARBDR, sep = '/'))      # load cov-indep varbdr.R
+# theta1_1 = varbdr(y = y, X = X, K = 3)               # store CAVI results
 
 # (1.2) covariate-DEPENDENT vb
-source(paste(COV_DEP, VARBDR, sep = '/'))        # load cov-dep varbdr.R
-theta1_2 = varbdr(y = y, X = X, K = 3)               # store CAVI results
+source(paste(COV_DEP, VARBDR, sep = '/'))               # load cov-dep varbdr.R
+theta0 = varbdr(y = y, X = X, K, intercept = TRUE)    # store CAVI results
+
+saveRDS(theta0, file = "bimodal_results/theta_N_1e3_K_2.RDS")
 
 
-theta2      = list(theta1_2)      # list of var. params for each alg
-DATA_GEN_ID = BIMODAL1
+# read in variational objects for varying N ------------------------------------
+
+theta1_500_2 = readRDS(file = "bimodal_results/theta_N_500_K_2.RDS") 
+theta1_1e3_2 = readRDS(file = "bimodal_results/theta_N_1e3_K_2.RDS") 
+theta1_1e4_2 = readRDS(file = "bimodal_results/theta_N_1e4_K_2.RDS")
+
+
+
+# overlay approximations for varying values of N -------------------------------
+library(dplyr)
+overlayPlots = function(theta, K, den_label,
+                        x = c(-0.6745, 0, 0.6745)) {
+    
+    source(DENSITY)
+    
+    n = length(theta)
+    approx_d  = rep(list(py_bouch), n)
+    # approx_d = list(py_bouch, py_bouch, py_bouch, py_bouch)
+    # den_label = c("cov-dep-1", "cov-dep-2", "cov-dep-3", "cov-dep-4")
+    p_list2 = xQuantileDensity(x, params, d_binorm,
+                               approx_d, den_label, theta, K,
+                               y_grid)
+    
+    p = multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), 
+                  cols = 3)
+    return(p)
+}
+
+overlayPlots(theta = list(theta1_500_2, theta1_1e3_2), 
+             K = 2, den_label = c("N=500", "N=1e3"))
 
 
 # generate plots ---------------------------------------------------------------
 
-
-# generate plot overlays of the percentiles1
+# generate plot overlays of the percentiles
+theta2_list      = list(theta0)      # list of var. params for each alg
 source(DENSITY)
 approx_d  = list(py_bouch)            # list of approx density functions
-den_label = c("cov-dep (b)")   # labels for each approx density
+den_label = c("cov-dep")   # labels for each approx density
 # params argument isn't used, function will redefine what it needs
 # params as is corresponds to the parameters for the randomly generated x
 # here, we care about the parameters associated with the quantiles
 x         = c(-0.6745, 0, 0.6745)
 y_grid = seq(-5, 5, length.out = 1000)
 p_list3 = xQuantileDensity(x, params, d_binorm,
-                           approx_d, den_label, theta2, K,
-                           DATA_GEN_ID, y_grid)
+                           approx_d, den_label, theta2_list, K,
+                           y_grid)
 
 multiplot(plotlist = as.list(sapply(p_list3, function(x) x[1])), cols = 3)
+
+
 
 # compare with np results ------------------------------------------------------
 library("np")

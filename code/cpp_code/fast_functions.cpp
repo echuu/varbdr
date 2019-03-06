@@ -69,27 +69,30 @@ SEXP testFuncs(Eigen::Map<MatrixXd> X_mu,
 
 	return wrap(res_mat);
 
-} // end of schur() function
+} // end of testFuncs() function
 
 
 // [[Rcpp::export]]
-SEXP lambda_func(Eigen::Map<MatrixXd> A, int n) {
+MatrixXd lambda_xi(Eigen::Map<MatrixXd> A) {
 
-	VectorXd x(A.cols());      // K-dim vector
-	x.fill(0);
+	// note the return type is no longer SEXP since we aren't returning to R
+	// 1 / (4 * xi) * tanh(0.5 * xi)
+    MatrixXd res = (1 / (4 * A.array())).cwiseProduct((0.5 * A.array().tanh()));	
 
-	A.row(n) = x;
-
-	return wrap(A);
-}
-
+	return res;
+} // end lambda_xi() function
 
 
+
+/** Note: the input variables will be modified since they are 'Map' objects;
+  *       we are writing over the objects directly
+  */
 // [[Rcpp::export]]
 SEXP mainFunc(Eigen::Map<MatrixXd> lambda,       // (N x K)
 	          Eigen::Map<MatrixXd> X,            // (N x D)
 	          Eigen::Map<MatrixXd> X_mu,         // (N x K)
-		      Eigen::Map<MatrixXd> Qk) {         // (D x D)
+		      Eigen::Map<MatrixXd> Qk,           // (D x D)
+		      Eigen::Map<MatrixXd> xi) {         
 
 	int n, k;
 
@@ -98,7 +101,7 @@ SEXP mainFunc(Eigen::Map<MatrixXd> lambda,       // (N x K)
 
 	VectorXd alpha(N);
 	VectorXd xQx(K);
-	MatrixXd xi(N, K);
+	// Eigen::Map<MatrixXd> xi(N, K);
 
 
 	/** Quantities to update ---------------------------------------------------
@@ -114,7 +117,8 @@ SEXP mainFunc(Eigen::Map<MatrixXd> lambda,       // (N x K)
 		VectorXd lambda_n = lambda.row(n); 
 
 		// (0.1) update alpha
-		alpha(n) = lambda_n.sum() * (xmu_n.transpose() * lambda_n).value();
+		alpha(n) = 1 / lambda_n.sum() * 
+				 (0.5 * (0.5 * K - 1) + (xmu_n.transpose() * lambda_n).value());
 
 		for (k = 0; k < K; k++) {
 			xQx(k) = lambda.col(k).sum() * 
@@ -133,11 +137,18 @@ SEXP mainFunc(Eigen::Map<MatrixXd> lambda,       // (N x K)
 
 
 	// (0.3) update lambda (can be done for entire matrix)
+	// Eigen::Map<MatrixXd> xi_map = xi;
+	lambda = lambda_xi(xi);
 
+
+	// (0.4) update phi
+
+	
 	List ret;
-	ret["alpha"] = alpha;
-	ret["xQx"]   = xQx;
-	ret["xi"]    = xi;
+	ret["alpha"]  = alpha;
+	ret["xQx"]    = xQx;
+	ret["xi"]     = xi;
+	ret["lambda"] = lambda;
 
 	return wrap(ret);
 
