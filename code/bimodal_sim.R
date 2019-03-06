@@ -42,7 +42,7 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
 source(paste(COV_DEP, VARBDR, sep = '/'))               # load cov-dep varbdr.R
 theta0 = varbdr(y = y, X = X, K, intercept = TRUE)    # store CAVI results
 
-saveRDS(theta0, file = "bimodal_results/theta_N_1e3_K_2.RDS")
+saveRDS(theta0, file = "bimodal_results/theta_N_1e4_K_2.RDS")
 
 
 # read in variational objects for varying N ------------------------------------
