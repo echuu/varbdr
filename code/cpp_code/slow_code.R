@@ -10,65 +10,60 @@ library("RcppEigen")
 library("RcppArmadillo")
 library("RcppParallel")
 
-N = 10
+N = 100
 K = 3
 D = 2
 
-X = matrix(rnorm(N * D), N, D)
-lambda = matrix(rnorm(N * K), N, K)
+X = matrix(rnorm(N * D), N, D)                   # (N x D)
+mu = matrix(rnorm(D * K), D, K)                  # (D x K)
 
-Qk = diag(rnorm(D))
+X_mu = X %*% mu                                  # (N x K)
 
-alpha = numeric(N)
-xQx = numeric(K)
+lambda = matrix(rnorm(N * K), N, K)              # (N x K)
 
-for (n in 1:N) {
-    
-    alpha[n] = sum(lambda[n,]) * crossprod(X[n,])
-    
-    for (k in 1:K) {
-        # matrix product that involves alpha_n
-        xQx[k] = sum(lambda[,k]) * crossprod(X[n,], Qk %*% X[n,])
-    }
-    
-}
-   
-slow_func = function(lambda, X, Qk) {
+Qk = diag(rnorm(D))                              # (D x D)
+
+alpha = numeric(N)                               # (N x 1)
+xQx = numeric(K)                                 # (K x 1)
+
+slow_func = function(lambda, X, X_mu, Qk) {
     
     N = nrow(lambda)
     K = ncol(lambda)
     
+    xi = matrix(0, N, K)
+    
     for (n in 1:N) {
-        alpha[n] = sum(lambda[n,]) * crossprod(X[n,])
+        alpha[n] = sum(lambda[n,]) * crossprod(X_mu[n,], lambda[n,])
         
         for (k in 1:K) {
             xQx[k] = sum(lambda[,k]) * crossprod(X[n,], Qk %*% X[n,])
         }
         
+        
+        xi[n,] = sqrt((X_mu[n,] - alpha[n])^2 + xQx)
+        
     }
     
-    return(list(alpha = alpha, xQx = xQx))
+    return(list(alpha = alpha, xQx = xQx, xi = xi))
 }
-
-res = slow_func(lambda, X, Qk)
-
-res$alpha
-res$xQx
 
 
 sourceCpp("fast_functions.cpp")
 
-Qk[1,] %*% Qk %*% Qk[1,]
-multC(Qk)
-
-res_fast = mainFunc(lambda, X, Qk)
-res_fast$l_sum
-res_fast$xQx
-
-slow_func(lambda, X) == mainFunc(lambda, X, Qk)
+tmp = testFuncs(X_mu, alpha, xQx) # used to test smaller functions
 
 
-microbenchmark(slow_func(lambda, X, Qk), mainFunc(lambda, X, Qk))
+res_fast = mainFunc(lambda, X, X_mu, Qk)   # build this to be the m-step
+res = slow_func(lambda, X, X_mu, Qk)       # slower version of the m-step
+
+checkEqual(res, res_fast)
+
+microbenchmark(slow_func(lambda, X, X_mu, Qk), 
+               mainFunc(lambda, X, X_mu, Qk))
+
+
+head(lambda(X, 2))
 
 
 ## compare results to Rcpp -----------------------------------------------------
@@ -83,23 +78,6 @@ microbenchmark(slow_func(lambda, X, Qk), mainFunc(lambda, X, Qk))
 #           eventually will need list of matricies
 #           scalar * matrix operations are ABUNDANT in R code
 
-
-matmultC(t(X), X)
-
-set.seed(1)
-A = matrix(rnorm(10000), 100, 100)
-y = rnorm(100)
-
-t(y) %*% A %*% y
-
-crossprod(y, A %*% y)
-
-microbenchmark(t(y) %*% A %*% y, 
-               crossprod(y, A %*% y),
-               quadMult(A, y))
-
-
-microbenchmark(schur(y, y), y*y)
 
 
 # m-step code ------------------------------------------------------------------
