@@ -73,14 +73,14 @@ overlayPlots = function(theta, K, den_label,
     return(p)
 }
 
-overlayPlots(theta = list(theta1_500_2, theta1_1e3_2), 
-             K = 2, den_label = c("N=500", "N=1e3"))
+overlayPlots(theta = list(theta1_500_2, theta1_1e3_2, theta1_1e4_2), 
+             K = 2, den_label = c("N=500", "N=1e3", "N=1e4"))
 
 
 # generate plots ---------------------------------------------------------------
 
 # generate plot overlays of the percentiles
-theta2_list      = list(theta0)      # list of var. params for each alg
+theta2_list      = list(theta1_1e4_2)      # list of var. params for each alg
 source(DENSITY)
 approx_d  = list(py_bouch)            # list of approx density functions
 den_label = c("cov-dep")   # labels for each approx density

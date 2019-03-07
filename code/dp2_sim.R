@@ -107,7 +107,7 @@ overlayPlots(list(theta_1e3_4), K = 4,
 
 
 # generate plot overlays of the percentiles
-theta1_list    = list(theta0)
+theta1_list    = list(theta_2e4_2)
 source(DENSITY)
 x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
 approx_d  = list(py_bouch)              # list of approx density functions
