@@ -4,6 +4,9 @@
 
 setwd("C:/Users/chuu/varbdr/code/cpp_code")
 
+source("C:/Users/chuu/varbdr/code/cov_dep/misc.R")
+source("debug_funcs.R")
+
 library("Rcpp")
 library("microbenchmark")
 library("RcppEigen")
@@ -34,6 +37,8 @@ slow_func = function(lambda, X, X_mu, Qk, xi) {
     N = nrow(lambda)
     K = ncol(lambda)
     
+    phi = numeric(N)
+    
     for (n in 1:N) {
         alpha[n] = 1 / sum(lambda[n,]) * 
             (0.5 * (0.5 * K - 1) + crossprod(X_mu[n,], lambda[n,]))
@@ -49,7 +54,15 @@ slow_func = function(lambda, X, X_mu, Qk, xi) {
     
     lambda = lambda_xi(xi)
     
-    return(list(alpha = alpha, xQx = xQx, xi = xi, lambda = lambda))
+    
+    # (0.4) compute phi (function of alpha, xi) --------------------------------
+    for (n in 1:N) {
+        phi[n] = sum((X_mu[n,] - alpha[n] - xi[n,]) / 2 + 
+                               log(1 + exp(xi[n,])))
+    } # end for() update for phi
+    
+    
+    return(list(alpha = alpha, xQx = xQx, xi = xi, phi = phi, lambda = lambda))
 }
 
 
@@ -61,8 +74,8 @@ tmp = testFuncs(X_mu, alpha, xQx) # used to test smaller functions
 res = slow_func(lambda, X, X_mu, Qk, xi)        # slower version of the m-step
 res_fast = mainFunc(lambda, X, X_mu, Qk, xi)    # build this to be the m-step
 
-head(res$lambda)
-head(res_fast$lambda)
+head(res$phi)
+head(res_fast$phi)
 
 checkEqual(res, res_fast)
 
