@@ -6,13 +6,30 @@ library(ggplot2)
 library(reshape2)
 library(matrixcalc)
 
+# libraries needed to run the C++ code
+library("Rcpp")
+library("microbenchmark")
+library("RcppEigen")
+library("RcppArmadillo")
+library("RcppParallel")
+
+
 # home directory of all the code
 # HOME_DIR = "~/varbdr/code"                # linux
-HOME_DIR = "C:/Users/chuu/varbdr/code"  # windows
+HOME_DIR = "C:/Users/chuu/varbdr/code"      # windows
 
 # directories of each of the different algorithms
 COV_INDEP = paste(HOME_DIR, "/cov_indep", sep = '')
 COV_DEP   = paste(HOME_DIR, "/cov_dep", sep = '')
+
+
+# C++ code directories
+CPP_DIR   = paste(HOME_DIR, "cpp_code", sep = '')
+
+
+# cpp code for faster matrix operations
+VB_CPP = "vb_calcs.cpp"
+
 
 # file names (mostly common to all algorithms)
 INIT_PRIORS      =  "initPriors.R"
@@ -25,9 +42,6 @@ FAST_M_STEP      =  "fast_mStep.R"
 ELBO             =  "elbo.R"
 MISC_FUNCS       =  "misc.R"
 DENSITY          =  "density.R"
-
-# cpp code for faster matrix operations
-VB_CPP = "vb_calcs.cpp"
 
 
 # ID's for data generating schemes

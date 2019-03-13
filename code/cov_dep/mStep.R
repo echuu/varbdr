@@ -64,7 +64,7 @@ mStep = function(theta, prior) {
     for (k in 1:K) {
         
         rl_nk_xx = matrix(0, D, D)               # used to calculate q(gamma)
-        r_nk_xx = matrix(0, nrow = D, ncol = D)  # used to calculate q(beta|tau)
+        r_nk_xx =  matrix(0, D, D)               # used to calculate q(beta|tau)
 
         for (n in 1:N) {
             

@@ -15,6 +15,10 @@ using arma::vec;
 #define VEC_TYPE  VectorXd
 #define MAT_TYPE  MatrixXd
 
+#define Eigen::Map<Eigen::MatrixXd> MapMatd
+#define Eigen::Map<Eigen::VectorXd> MapVecd
+
+
 // [[Rcpp::export]]
 SEXP matmultC(const Eigen::Map<MAT_TYPE> A,
 			  const Eigen::Map<MAT_TYPE> B) {
@@ -118,7 +122,7 @@ SEXP mainFunc(Eigen::Map<MAT_TYPE> lambda,       // (N x K)
 	/** Quantities to update ---------------------------------------------------
 	  * (0.1) alpha     (N x 1) -- done
 	  * (0.2) xi        (N x K) -- done
-	  * (0.3) phi       (N x 1) -- TODO
+	  * (0.3) phi       (N x 1) -- done
 	  * (0.4) lambda    (N x K) -- done
 	  ---------------------------------------------------------------------- **/
 	for (n = 0; n < N; n++) {
@@ -133,6 +137,8 @@ SEXP mainFunc(Eigen::Map<MAT_TYPE> lambda,       // (N x K)
 				 (0.5 * (0.5 * K - 1) + (xmu_n.transpose() * lambda_n).value());
 
 		for (k = 0; k < K; k++) {
+			// final version of this function should have Qk changing with k
+			// in the innner for loop
 			xQx(k) = lambda.col(k).sum() * 
 								(x_n.transpose() * (Qk * x_n)).value();
 
