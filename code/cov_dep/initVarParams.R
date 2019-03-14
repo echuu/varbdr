@@ -92,6 +92,11 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter) {
         beta_mle  = solve(t(X_k) %*% X_k, t(X_k) %*% y_k)
         m_k[,k]   = beta_mle
         mu_k[,k]  = beta_mle
+        
+        # uncomment below for random initialization
+        # m_k[,k]   = rnorm(D)
+        # mu_k[,k]  = rnorm(D)
+        
     }
     
     # current iteration of CAVI

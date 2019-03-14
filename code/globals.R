@@ -5,6 +5,7 @@
 library(ggplot2)
 library(reshape2)
 library(matrixcalc)
+library(dplyr)
 
 # libraries needed to run the C++ code
 library("Rcpp")

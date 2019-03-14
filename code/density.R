@@ -340,7 +340,7 @@ xQuantileDensity = function(x, params, true_d,
     if (theta[[1]]$intercept) {    
         x_mat = as.matrix(cbind(1, x)) 
     } else {    
-        print("here")
+        # print("here")
         x_mat = as.matrix(x)              
     }
     

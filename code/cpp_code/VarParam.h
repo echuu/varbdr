@@ -54,7 +54,7 @@ using Eigen::VectorXd;
 class VarParam {
 
 	public:  // all things to be modified -> make public
-		VEC_TYPE        L; 
+		VEC_TYPE        L;
 		
 		MAT_TYPE        beta_k, gamma_k; 
 		VEC_TYPE        tau_k;
@@ -70,9 +70,31 @@ class VarParam {
 
 		VEC_TYPE        a_k, b_k;
 
+		// constructor for variational parameters
+		VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K, 
+			      bool intercept, int max_iter);
+
+
+		/* none of the VB routines should require any input since all 
+		   calculations use internal variables                        */
+
+		// e-step, m-step will *internally* modify variational parameters
+		void       eStep();
+		void       mStep();
+
+		// elbo will *internally* compute the variational lower bound
+		double     elbo();
+
+		// basic getters
+		int        getN();
+		int        getCovDim();
+		int        getClusters();
+		int        getMaxIter();
+		bool       getIntercept();
+
 	private: // include the priors here
-		int  N, D, K, max_iter;
-		bool intercept;
+		int        N, D, K, max_iter;
+		bool       intercept;
 		// other priors
 
 };

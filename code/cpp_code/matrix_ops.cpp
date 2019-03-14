@@ -26,6 +26,10 @@ SEXP mat_list_ops(int K, int D, VEC_TYPE x) {     		 // (1 x 1)
 	int k;
 	MAT_TYPE I_D = MAT_TYPE::Identity(D, D);
 
+	// MAT_TYPE I_D = MAT_TYPE::Zero(D, D);
+	// I_D.setZero(D, D);
+
+	
 	list<MAT_TYPE> Q_k;
 	list<MAT_TYPE> prod;
 
@@ -45,7 +49,8 @@ SEXP mat_list_ops(int K, int D, VEC_TYPE x) {     		 // (1 x 1)
 		advance(it, 1);
 	}
 
-	return wrap(prod);
 
+	return wrap(zero_vec);
+	
 } // end mat_list_ops() function
 

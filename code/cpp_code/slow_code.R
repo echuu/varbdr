@@ -165,8 +165,9 @@ slow_update = function(X, y, r_nk, N_k, lambda, alpha,
 
 sourceCpp("matrix_ops.cpp")
 
-mat_list = mat_list_ops(K, D, c(1, 1, 1))
 
+mat_list = mat_list_ops(K, 2, rep(1, 2))
+str(mat_list)
 
 # ------------------------------------------------------------------------------
 

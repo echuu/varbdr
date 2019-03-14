@@ -42,23 +42,23 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
 # run cavi ---------------------------------------------------------------------
 
 # (1.2) covariate-DEPENDENT vb
-source(paste(COV_DEP, VARBDR, sep = '/'))         # load cov-dep varbdr.R
-source(paste(COV_DEP, FAST_VARBDR, sep = '/'))    # load cov-dep fast varbdr.R
+# source(paste(COV_DEP, VARBDR, sep = '/'))         # load cov-dep varbdr.R
+# source(paste(COV_DEP, FAST_VARBDR, sep = '/'))    # load cov-dep fast varbdr.R
 
-start_time <- Sys.time()
-theta0 = varbdr(y, X, K)                   # store CAVI results
-end_time <- Sys.time()
-(diff_fix = end_time - start_time)
+# start_time <- Sys.time()
+# theta0 = varbdr(y, X, K)                   # store CAVI results
+# end_time <- Sys.time()
+# (diff_fix = end_time - start_time)
 
+# microbenchmark(varbdr(y, X, K),
+#               fast_varbdr(y, X, K))
 
-microbenchmark(varbdr(y, X, K),
-               fast_varbdr(y, X, K))
-
-
-theta1 = fast_varbdr(y, X, K)
-
+# theta1 = fast_varbdr(y, X, K)
 
 # save variational parameters
+source(paste(COV_DEP, VARBDR, sep = '/'))         # load cov-dep varbdr.R
+theta0 = varbdr(y, X, K)                          # store CAVI results
+
 saveRDS(theta0, file = "dp_results/theta_N_500_K_2.RDS")
 
 theta_500_2 = readRDS(file = "dp_results/theta_N_500_K_2.RDS") # N = 500, K = 2
@@ -72,7 +72,7 @@ theta_2e4_2 = readRDS(file = "dp_results/theta_N_2e4_K_2.RDS") # N = 2e4, K = 2
 
 # generate plots ---------------------------------------------------------------
 
-
+theta = list(theta0)
 overlayPlots = function(theta, K, den_label,
                         x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)) {
     
@@ -91,6 +91,9 @@ overlayPlots = function(theta, K, den_label,
     return(p)
 }
 
+
+overlayPlots(list(theta0), K = 2, 
+             den_label = c("N=500"))
 
 overlayPlots(theta = list(theta_500_2, theta_1e3_2, theta_1e4_2, theta_2e4_2), 
              K = 2, den_label = c("N=500", "N=1e3", 
