@@ -162,6 +162,14 @@ slow_update = function(X, y, r_nk, N_k, lambda, alpha,
 
 # ------------------------------------------------------------------------------
 
+
+sourceCpp("matrix_ops.cpp")
+
+mat_list = mat_list_ops(K, D, c(1, 1, 1))
+
+
+# ------------------------------------------------------------------------------
+
 sourceCpp("test_funcs.cpp")
 
 testUpdate = slow_update(X, y, r_nk, N_k, lambda, alpha, 
@@ -169,10 +177,6 @@ testUpdate = slow_update(X, y, r_nk, N_k, lambda, alpha,
                          a_0, b_0)
 
 testUpdate$b_k
-
-# testUpdate$r_x
-# testUpdate$rl_nk_xx
-# testUpdate$r_nk_xx
 testUpdate$a_k
 testUpdate$b_k
 testUpdate$V_k_inv
