@@ -166,12 +166,42 @@ slow_update = function(X, y, r_nk, N_k, lambda, alpha,
 # ------------------------------------------------------------------------------
 
 
-sourceCpp("matrix_ops.cpp")
+source("C:/Users/chuu/varbdr/code/globals.R")
+setwd(HOME_DIR)
+source(DP_BDR) 
+source(DENSITY)
+
+
+setwd("C:/Users/chuu/varbdr/code/cpp_code")
+
+source("C:/Users/chuu/varbdr/code/cov_dep/misc.R")
+source("debug_funcs.R")
+
+library("Rcpp")
+library("microbenchmark")
+library("RcppEigen")
+library("RcppArmadillo")
+library("RcppParallel")
+
+N = 100
+K = 3
+D = 1
+
+synth_data_1d = r_dpmix2(N)
+
+y      = synth_data_1d$y
+X      = synth_data_1d$X
+intercept = FALSE
+max_iter = 5000
 
 sourceCpp("getVarParams.cpp")
 theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
+
+theta_cpp$m0_Lambda0_m0
+
 head(theta_cpp$m_k)
 head(theta_cpp$mu_k)
+head(theta_cpp$lambda)
 
 mat_list = mat_list_ops(K, 2, rep(1, 2))
 str(mat_list)
@@ -221,15 +251,27 @@ microbenchmark(slow_update(X, y, r_nk, N_k, lambda, alpha,
 
 # ------------------------------------------------------------------------------
 
-sourceCpp("fast_functions.cpp")
+N = 100
+K = 3
+D = 1
 
-head(lambda_xi_cpp(xi))
+synth_data_1d = r_dpmix2(N)
+
+y      = synth_data_1d$y
+X      = synth_data_1d$X
+mu = matrix(rnorm(D * K), D, K)                  # (D x K)
+X_mu = X %*% mu                                  # (N x K)
+xi = matrix(1, N, K)                             # (N x K)
+lambda = lambda_xi(xi)                           # (N x K)
+Qk = rbeta(D, 1, 1)                              # (D x D)
+e
+sourceCpp("fast_functions.cpp")
 
 res = slow_func(lambda, X, X_mu, Qk, xi)        # slower version of the m-step
 res_fast = mainFunc(lambda, X, X_mu, Qk, xi)    # build this to be the m-step
 
 head(res$phi)
-head(res_fast$phi)
+head(res_fast$lambda)
 
 checkEqual(res, res_fast)
 

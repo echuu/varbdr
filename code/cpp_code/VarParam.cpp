@@ -77,6 +77,25 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	this->max_iter  = max_iter;
 	this->intercept = intercept;
 
+
+	// initialize the prior parameters ---------------------------------------
+	
+	this->m_0           = VEC_TYPE::Ones(D); // column means of X
+	this->Lambda_0      = I_D;
+	
+	
+	this->Lambda0_m0    = (this->Lambda_0) * (this->m_0);
+	
+	this->m0_Lambda0_m0 = ((this->m_0).transpose() * this->Lambda0_m0).value();
+	
+
+	this->a_0           = VEC_TYPE::Ones(K);
+	this->b_0           = VEC_TYPE::Ones(K);
+
+	this->g_0           = VEC_TYPE::Zero(D);
+	this->Sigma_0       = I_D;
+	
+
 } // end of VarParam constructor
 
 /* basic getters ---------------------------------------------------------- */
@@ -108,6 +127,8 @@ MAT_TYPE VarParam::lambda_xi (MAT_TYPE A) {
 
 	return res;
 } // end of lambda_xi() function
+
+
 
 
 // end of VarParam.cpp file

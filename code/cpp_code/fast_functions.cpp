@@ -112,12 +112,8 @@ SEXP mainFunc(Eigen::Map<MAT_TYPE> lambda,       // (N x K)
 	VEC_TYPE xQx(K);
 	VEC_TYPE phi(N);
 
+
 	VEC_TYPE ONES_K = VEC_TYPE::Ones(K); // K-dim vector of ones
-
-
-
-	// Eigen::Map<MAT_TYPE> xi(N, K);
-
 
 	/** Quantities to update ---------------------------------------------------
 	  * (0.1) alpha     (N x 1) -- done

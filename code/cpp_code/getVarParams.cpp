@@ -10,12 +10,31 @@ using namespace Rcpp;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+SEXP extractPriors(VarParam theta_cpp) {
 
-// [[Rcpp::export]]
-SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
-			         bool intercept, int max_iter) {
+	List prior;
 
-	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter);
+	prior["m_0"]            = theta_cpp.m_0;
+	prior["Lambda_0"]       = theta_cpp.Lambda_0;
+	prior["Lambda0_m0"]     = theta_cpp.Lambda0_m0;
+	prior["m0_Lambda0_m0"]  = theta_cpp.m0_Lambda0_m0;
+	
+
+	prior["a_0"]            = theta_cpp.a_0;
+	prior["b_0"]            = theta_cpp.b_0;
+
+	prior["g_0"]            = theta_cpp.g_0;
+	prior["Sigma_0"]        = theta_cpp.Sigma_0;
+
+
+	return wrap(prior);
+
+	// return 0;
+}
+
+
+
+SEXP extractVarParam(VarParam theta_cpp) {
 
 	List theta;
 
@@ -50,9 +69,21 @@ SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	theta["V_k_inv"]    = theta_cpp.V_k_inv;
 
 	return wrap(theta);
-	
-} // end mat_list_ops() function
 
+	// return 0;
+}
+
+// [[Rcpp::export]]
+SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
+			         bool intercept, int max_iter) {
+
+	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter);
+
+	
+	return extractPriors(theta_cpp);
+
+
+} // end mat_list_ops() function
 
 
 

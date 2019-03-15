@@ -77,11 +77,26 @@ class VarParam {
 
 		int             curr;
 
+       	/* make these private later */
+       	// priors are assumed to be same for k = 1,...,K
+		MAT_TYPE   m_0;           // (D x 1) prior mean for beta_k
+		MAT_TYPE   Lambda_0;      // (D x D) prior covariance for beta_k
+		MAT_TYPE   Lambda0_m0;    // (D x 1) Lambda_0 * m_0
+		int        m0_Lambda0_m0; // (1 x 1) m_0' * Lambda_0 * m_0
+
+		VEC_TYPE   a_0, b_0; // (K x 1) prior shape, rate params for tau_k
+		
+		MAT_TYPE   g_0;      // (D x 1) prior mean for gamma_k
+		MAT_TYPE   Sigma_0;  // (D x D) prior covariance for gamma_k
+
+		// ---------------------------------------------------------------------
+
 		// constructor for variational parameters
 		VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			      bool intercept, int max_iter);
 
 		static MAT_TYPE lambda_xi (MAT_TYPE A);
+		// SEXP   extractVarparams();
 
 		/* none of the VB routines should require any input since all 
 		   calculations use internal variables                        */
@@ -103,6 +118,7 @@ class VarParam {
 	private: // include the priors here
 		int        N, D, K, max_iter;
 		bool       intercept;
-		// other priors
+
+
 
 };
