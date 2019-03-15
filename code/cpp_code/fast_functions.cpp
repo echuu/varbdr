@@ -15,8 +15,8 @@ using arma::vec;
 #define VEC_TYPE  VectorXd
 #define MAT_TYPE  MatrixXd
 
-#define Eigen::Map<Eigen::MatrixXd> MapMatd
-#define Eigen::Map<Eigen::VectorXd> MapVecd
+// #define Eigen::Map<Eigen::MatrixXd> MapMatd
+// #define Eigen::Map<Eigen::VectorXd> MapVecd
 
 
 // [[Rcpp::export]]
@@ -79,13 +79,13 @@ SEXP testFuncs(Eigen::Map<MAT_TYPE> X_mu,
 
 } // end of testFuncs() function
 
-
+  
 // [[Rcpp::export]]
-MAT_TYPE lambda_xi(Eigen::Map<MAT_TYPE> A) {
+MAT_TYPE lambda_xi_cpp(Eigen::Map<MAT_TYPE> A) {
 
 	// note the return type is no longer SEXP since we aren't returning to R
 	// 1 / (4 * xi) * tanh(0.5 * xi)
-    MAT_TYPE res = (1 / (4 * A.array())).cwiseProduct((0.5 * A.array().tanh()));	
+    MAT_TYPE res = (1 / (4 * A.array())).cwiseProduct((0.5 * A.array()).tanh());	
 
 	return res;
 } // end lambda_xi() function
@@ -162,7 +162,7 @@ SEXP mainFunc(Eigen::Map<MAT_TYPE> lambda,       // (N x K)
 
 	/* (0.4) update lambda (can be done for entire matrix) -------------------*/
 	// Eigen::Map<MAT_TYPE> xi_map = xi;
-	lambda = lambda_xi(xi);
+	lambda = lambda_xi_cpp(xi);
 
 
 	

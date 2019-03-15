@@ -27,6 +27,9 @@ synth_data_1d = r_dpmix2(N)
 
 y      = synth_data_1d$y
 X      = synth_data_1d$X
+intercept = FALSE
+max_iter = 5000
+
 mu = matrix(rnorm(D * K), D, K)                  # (D x K)
 
 X_mu = X %*% mu                                  # (N x K)
@@ -165,6 +168,10 @@ slow_update = function(X, y, r_nk, N_k, lambda, alpha,
 
 sourceCpp("matrix_ops.cpp")
 
+sourceCpp("getVarParams.cpp")
+theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
+head(theta_cpp$m_k)
+head(theta_cpp$mu_k)
 
 mat_list = mat_list_ops(K, 2, rep(1, 2))
 str(mat_list)
@@ -172,6 +179,10 @@ str(mat_list)
 # ------------------------------------------------------------------------------
 
 sourceCpp("test_funcs.cpp")
+
+
+theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
+theta_cpp$L
 
 testUpdate = slow_update(X, y, r_nk, N_k, lambda, alpha, 
                          Lambda_0, Lambda0_m0, m0_Lambda0_m0, 
@@ -212,6 +223,7 @@ microbenchmark(slow_update(X, y, r_nk, N_k, lambda, alpha,
 
 sourceCpp("fast_functions.cpp")
 
+head(lambda_xi_cpp(xi))
 
 res = slow_func(lambda, X, X_mu, Qk, xi)        # slower version of the m-step
 res_fast = mainFunc(lambda, X, X_mu, Qk, xi)    # build this to be the m-step

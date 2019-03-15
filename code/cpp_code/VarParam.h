@@ -1,11 +1,13 @@
 
 // VarParam.h -- header file for variational parameter object
 
-#include <RcppEigen.h>
+// #include <RcppEigen.h>
 #include <numeric>
+#include <Eigen/Dense>
+#include <list>
 
 using namespace std;
-using namespace Rcpp;
+// using namespace Rcpp;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -63,6 +65,9 @@ class VarParam {
 		VEC_TYPE        N_k;
 
 		list<MAT_TYPE>  V_k, V_k_inv, Q_k, Q_k_inv;
+		
+		list<MAT_TYPE>::iterator Vk_it, Vk_inv_it, Qk_it, Qk_inv_it;
+
 		MAT_TYPE        zeta_k, m_k, eta_k, mu_k;
 
 		VEC_TYPE        alpha, phi;
@@ -70,10 +75,13 @@ class VarParam {
 
 		VEC_TYPE        a_k, b_k;
 
+		int             curr;
+
 		// constructor for variational parameters
 		VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			      bool intercept, int max_iter);
 
+		static MAT_TYPE lambda_xi (MAT_TYPE A);
 
 		/* none of the VB routines should require any input since all 
 		   calculations use internal variables                        */
