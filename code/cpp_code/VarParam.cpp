@@ -5,6 +5,8 @@
 
 #include "VarParam.h"
 #include <stdio.h>
+#include <stdlib.h>     /* srand, rand */
+
 
 // VarParam constructor -- see VarParam.h for variable descriptions
 VarParam::VarParam (MAP_MAT y, MAP_MAT X, int N, int D, int K, 
@@ -39,6 +41,7 @@ VarParam::VarParam (MAP_MAT y, MAP_MAT X, int N, int D, int K,
 	this->phi      = VEC_TYPE::Zero(N);          // (N x 1)
 
 
+	
 	/* random initialization for m_k, mu_k ------------------------------- */
 	// zeta_k, m_k for q(beta_k | tau_k)
 	this->zeta_k   = MAT_TYPE::Zero(D, K);       // (D x K)
@@ -166,30 +169,26 @@ void VarParam::mStep() {
 			/** final version of this function should have Qk changing with k
 			    in the innner for loop **/
 
+			xQx(k) = (x_n.transpose() * ((*this->Qk_inv_it) * x_n)).value();
 
-			// stopped here ------------------------------
-			// need to bring in iterator to access each Q_k
-			xQx(k) = this->lambda.col(k).sum() * 
-						(x_n.transpose() * ((*this->Qk_it) * x_n)).value();
-
-			advance(this->Qk_it, 1);
+			advance(this->Qk_inv_it, 1);
 
 		} // end of inner for (k)
 		
-		this->Qk_it = Q_k.begin(); // bring back to the front of the list
+		this->Qk_inv_it = Q_k_inv.begin(); // bring back to front of the list
 
 		/* (0.2) update xi ------------------------------------------------ */
 		VEC_TYPE alpha_n(K);                     // K-dim vector
 		alpha_n.fill(this->alpha(n));
 		VEC_TYPE xi_n = ((xmu_n - alpha_n).array().square() + 
 											xQx.array()).cwiseSqrt();
-		xi.row(n) = xi_n;
+		this->xi.row(n) = xi_n;
 
 		/* (0.3) update phi ----------------------------------------------- */
 		
 		VEC_TYPE log_term = (ONES_K.array() + xi_n.array().exp()).log();
 
-		phi(n) = ((xmu_n - alpha(n) * ONES_K - xi_n) / 2 + log_term).sum(); 
+		this->phi(n) = ((xmu_n - alpha(n) * ONES_K - xi_n) / 2 + log_term).sum(); 
 
 	} // end of outer for (n)
 

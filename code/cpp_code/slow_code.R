@@ -61,7 +61,9 @@ slow_func = function(lambda, X, X_mu, Qk, xi) {
     N = nrow(lambda)
     K = ncol(lambda)
     
+    alpha = numeric(N)
     phi = numeric(N)
+    xQx = numeric(K)
     
     for (n in 1:N) {
         alpha[n] = 1 / sum(lambda[n,]) * 
@@ -197,7 +199,6 @@ max_iter = 5000
 
 sourceCpp("getVarParams.cpp")
 theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
-
 str(theta_cpp)
 
 theta_cpp$m_0           # should match colMeans(X)
@@ -216,6 +217,8 @@ sourceCpp("test_funcs.cpp")
 
 
 theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
+str(theta_cpp)
+
 theta_cpp$L
 
 testUpdate = slow_update(X, y, r_nk, N_k, lambda, alpha, 
@@ -277,6 +280,16 @@ res_fast = mainFunc(lambda, X, X_mu, Qk, xi)    # build this to be the m-step
 
 
 # mainFunc() -> first half of the m-step: calculates alpha, xi, phi, lambda
+
+head(res$alpha)
+head(res$xi)
+head(res$phi)
+head(res$lambda)
+
+head(res_fast$alpha)
+head(res_fast$xi)
+head(res_fast$phi)
+head(res_fast$lambda)
 
 
 head(res$phi)
