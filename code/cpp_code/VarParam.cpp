@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 // VarParam constructor -- see VarParam.h for variable descriptions
-VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K, 
+VarParam::VarParam (MAP_MAT y, MAP_MAT X, int N, int D, int K, 
 			        bool intercept, int max_iter) {
 	
 
@@ -35,7 +35,7 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 
 	this->alpha    = VEC_TYPE::Ones(N);          // (N x 1)
 	this->xi       = MAT_TYPE::Ones(N, K);       // (N x K)
-	this->lambda   = lambda_xi(this->xi);        // (N x K) -- need to calculate
+	this->lambda   = lambda_xi(this->xi);        // (N x K)
 	this->phi      = VEC_TYPE::Zero(N);          // (N x 1)
 
 
@@ -80,7 +80,7 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 
 	// initialize the prior parameters ---------------------------------------
 	
-	this->m_0           = VEC_TYPE::Ones(D); // column means of X
+	this->m_0           = X.colwise().mean(); // column means of X
 	this->Lambda_0      = I_D;
 	
 	
@@ -94,7 +94,9 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 
 	this->g_0           = VEC_TYPE::Zero(D);
 	this->Sigma_0       = I_D;
-	
+
+	this->y             = y;
+	this->X             = X;
 
 } // end of VarParam constructor
 
@@ -123,16 +125,85 @@ bool VarParam::getIntercept() {
 
 MAT_TYPE VarParam::lambda_xi (MAT_TYPE A) {
 	// 1 / (4 * xi) * tanh(0.5 * xi)
-    MAT_TYPE res = (1 / (4 * A.array())).cwiseProduct((0.5 * A.array()).tanh());
+    MAT_TYPE l = (1 / (4 * A.array())).cwiseProduct((0.5 * A.array()).tanh());
 
-	return res;
+	return l;
 } // end of lambda_xi() function
 
 
 
+void VarParam::mStep() {
+
+	int n, k;
+
+	int N = getN(); 
+	int K = getClusters();
+
+	VEC_TYPE xQx(K);                             // qty computed per iter
+	VEC_TYPE ONES_K = VEC_TYPE::Ones(K);         // K-dim vector of ones
+
+	MAT_TYPE X_mu   = (this->X) * (this->mu_k);  // (N x K) 
+
+	/** Quantities to update ---------------------------------------------------
+	  * (0.1) alpha     (N x 1) -- TODO
+	  * (0.2) xi        (N x K) -- TODO
+	  * (0.3) phi       (N x 1) -- TODO
+	  * (0.4) lambda    (N x K) -- TODO
+	  -------------------------------------------------------------------- **/
+
+	for (n = 0; n < N; n++) {
+		
+		// row needs to first be stored as vec in order to do mat mults
+		VEC_TYPE x_n      = this->X.row(n);      // (D x 1) : n-th row of X
+		VEC_TYPE xmu_n    = X_mu.row(n);         // (K x 1) : n-th row of X_mu
+		VEC_TYPE lambda_n = this->lambda.row(n); // (K x 1)
+
+		/* (0.1) update alpha --------------------------------------------- */
+		this->alpha(n) = 1 / lambda_n.sum() * 
+			   (0.5 * (0.5 * K - 1) + (xmu_n.transpose() * lambda_n).value());
+
+		for (k = 0; k < K; k++) {
+			/** final version of this function should have Qk changing with k
+			    in the innner for loop **/
+
+
+			// stopped here ------------------------------
+			// need to bring in iterator to access each Q_k
+			xQx(k) = this->lambda.col(k).sum() * 
+						(x_n.transpose() * ((*this->Qk_it) * x_n)).value();
+
+			advance(this->Qk_it, 1);
+
+		} // end of inner for (k)
+		
+		this->Qk_it = Q_k.begin(); // bring back to the front of the list
+
+		/* (0.2) update xi ------------------------------------------------ */
+		VEC_TYPE alpha_n(K);                     // K-dim vector
+		alpha_n.fill(this->alpha(n));
+		VEC_TYPE xi_n = ((xmu_n - alpha_n).array().square() + 
+											xQx.array()).cwiseSqrt();
+		xi.row(n) = xi_n;
+
+		/* (0.3) update phi ----------------------------------------------- */
+		
+		VEC_TYPE log_term = (ONES_K.array() + xi_n.array().exp()).log();
+
+		phi(n) = ((xmu_n - alpha(n) * ONES_K - xi_n) / 2 + log_term).sum(); 
+
+	} // end of outer for (n)
+
+
+	/* (0.4) update lambda (can be done for entire matrix) -----------------*/
+	// Eigen::Map<MAT_TYPE> xi_map = xi;
+	this->lambda = lambda_xi(this->xi);
+
+
+} // end mStep() function
+
+
 
 // end of VarParam.cpp file
-
 
 int main(void) {
 	printf("inside variational parameter class file\n");

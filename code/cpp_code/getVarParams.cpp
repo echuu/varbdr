@@ -10,6 +10,9 @@ using namespace Rcpp;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+
+
+
 SEXP extractPriors(VarParam theta_cpp) {
 
 	List prior;
@@ -74,14 +77,14 @@ SEXP extractVarParam(VarParam theta_cpp) {
 }
 
 // [[Rcpp::export]]
-SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
+SEXP testConstructor(MAP_MAT y, MAP_MAT X, int N, int D, int K, 
 			         bool intercept, int max_iter) {
 
 	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter);
 
+	theta_cpp.mStep();
 	
-	return extractPriors(theta_cpp);
-
+	return extractVarParam(theta_cpp);
 
 } // end mat_list_ops() function
 

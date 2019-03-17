@@ -89,10 +89,16 @@ class VarParam {
 		MAT_TYPE   g_0;      // (D x 1) prior mean for gamma_k
 		MAT_TYPE   Sigma_0;  // (D x D) prior covariance for gamma_k
 
+
+		/* --- data --- */
+		MAT_TYPE    y;        // (N x 1) response
+		MAT_TYPE    X;        // (N x D) design matrix
+
+
 		// ---------------------------------------------------------------------
 
 		// constructor for variational parameters
-		VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K, 
+		VarParam (MAP_MAT y, MAP_MAT X, int N, int D, int K, 
 			      bool intercept, int max_iter);
 
 		static MAT_TYPE lambda_xi (MAT_TYPE A);

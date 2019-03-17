@@ -38,6 +38,7 @@ xi = matrix(1, N, K)                             # (N x K)
 lambda = lambda_xi(xi)                           # (N x K)
 
 Qk = diag(rbeta(D, 1, 1))                        # (D x D)
+Qk = rbeta(D, 1, 1)
 
 alpha = numeric(N)                               # (N x 1)
 xQx = numeric(K)                                 # (K x 1)
@@ -197,8 +198,11 @@ max_iter = 5000
 sourceCpp("getVarParams.cpp")
 theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
 
-theta_cpp$m0_Lambda0_m0
+str(theta_cpp)
 
+theta_cpp$m_0           # should match colMeans(X)
+
+colMeans(X)
 head(theta_cpp$m_k)
 head(theta_cpp$mu_k)
 head(theta_cpp$lambda)
@@ -264,11 +268,16 @@ X_mu = X %*% mu                                  # (N x K)
 xi = matrix(1, N, K)                             # (N x K)
 lambda = lambda_xi(xi)                           # (N x K)
 Qk = rbeta(D, 1, 1)                              # (D x D)
-e
+
 sourceCpp("fast_functions.cpp")
+
 
 res = slow_func(lambda, X, X_mu, Qk, xi)        # slower version of the m-step
 res_fast = mainFunc(lambda, X, X_mu, Qk, xi)    # build this to be the m-step
+
+
+# mainFunc() -> first half of the m-step: calculates alpha, xi, phi, lambda
+
 
 head(res$phi)
 head(res_fast$lambda)
