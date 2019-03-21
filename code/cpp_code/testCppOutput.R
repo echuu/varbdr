@@ -69,11 +69,27 @@ theta$xi
 theta$phi
 theta$lambda
 
+theta_cpp$Q_k
+theta$Q_k
+
 all.equal(theta_cpp$alpha, theta$alpha)
 all.equal(theta$xi, theta_cpp$xi)
 all.equal(theta$phi, theta_cpp$phi)
 all.equal(theta$lambda, theta_cpp$lambda)
 
+# 2nd half of m-step testing
+checkEqual(theta_cpp$Q_k_inv, theta$Q_k_inv)
+all.equal(theta_cpp$V_k_inv, theta$V_k_inv)
+
+all.equal(theta_cpp$m_k, theta$m_k)
+all.equal(theta_cpp$mu_k, theta$mu_k)
+
+
+# TODO: test these after incorporating the rest of the
+#       m-step code
+
+all.equal(theta_cpp$a_k, theta$a_k)
+all.equal(theta_cpp$b_k, theta$b_k)
 
 
 

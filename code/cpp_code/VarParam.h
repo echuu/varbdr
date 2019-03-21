@@ -91,14 +91,14 @@ class VarParam {
 
 
 		/* --- data --- */
-		MAT_TYPE    y;        // (N x 1) response
+		VEC_TYPE    y;        // (N x 1) response
 		MAT_TYPE    X;        // (N x D) design matrix
 
 
 		// ---------------------------------------------------------------------
 
 		// constructor for variational parameters
-		VarParam (MAP_MAT y, MAP_MAT X, int N, int D, int K, 
+		VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			      bool intercept, int max_iter);
 
 		static MAT_TYPE lambda_xi (MAT_TYPE A);

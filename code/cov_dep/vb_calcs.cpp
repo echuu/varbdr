@@ -22,9 +22,11 @@ SEXP eigenMatMult(Eigen::MatrixXd A, Eigen::MatrixXd B){
 }
 
 // [[Rcpp::export]]
-SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> B){
+SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, 
+					 Eigen::Map<Eigen::MatrixXd> B) {
+    
     Eigen::MatrixXd C = A * B;
-
+    
     return Rcpp::wrap(C);
 }
 

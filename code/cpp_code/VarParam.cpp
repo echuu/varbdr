@@ -9,7 +9,7 @@
 
 
 // VarParam constructor -- see VarParam.h for variable descriptions
-VarParam::VarParam (MAP_MAT y, MAP_MAT X, int N, int D, int K, 
+VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			        bool intercept, int max_iter) {
 	
 
@@ -140,12 +140,19 @@ void VarParam::mStep() {
 	int n, k;
 
 	int N = getN(); 
+	int D = getCovDim();
 	int K = getClusters();
 
-	VEC_TYPE xQx(K);                             // qty computed per iter
+	VEC_TYPE xQx(K);                             // K-dim vector used in xi
 	VEC_TYPE ONES_K = VEC_TYPE::Ones(K);         // K-dim vector of ones
+	VEC_TYPE ONES_N = VEC_TYPE::Ones(N);         // N-dim vector of ones
+	MAT_TYPE I_D   = MAT_TYPE::Identity(D, D);   // (D x D) identity matrix
+ 
+	MAT_TYPE X_mu   = (this->X) * (this->mu_k);  // (N x K) : X * mu_k
 
-	MAT_TYPE X_mu   = (this->X) * (this->mu_k);  // (N x K) 
+	MAT_TYPE rl_nk_xx;                           // used in q(gamma)
+	MAT_TYPE r_nk_xx; 							 // used in q(beta|tau)
+	MAT_TYPE r_x;                                // used in rl_nk_xx, r_nk_xx
 
 	/** Quantities to update ---------------------------------------------------
 	  * (0.1) alpha     (N x 1) -- TODO
@@ -193,9 +200,97 @@ void VarParam::mStep() {
 	} // end of outer for (n)
 
 
-	/* (0.4) update lambda (can be done for entire matrix) -----------------*/
+	/* (0.4) update lambda (can be done for entire matrix) ----------------- */
 	// Eigen::Map<MAT_TYPE> xi_map = xi;
 	this->lambda = lambda_xi(this->xi);
+
+
+	/** Quantities to update -------------------------------------------------
+	  * (1) update variational distributions/parameters
+	  *     (1.1) q(gamma)     DONE
+	  *     (1.2) q(beta|tau)  DONE
+	  *     (1.3) q(tau)       TODO
+	  * 
+	  * (2) update posterior means
+	  *     (2.1) beta_k       TODO
+	  *     (2.2) tau_k        TODO
+	  *     (2.3) gamma_k      TODO
+	  ----------------------------------------------------------------------  */
+
+	VEC_TYPE y2  = y.array().square(); // move this into constructor later since
+									   // y is fixed, save calculation
+
+	/* q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_k -------------------------------- */
+	for (k = 0; k < K; k++) {
+
+		rl_nk_xx = MAT_TYPE::Zero(D, D); // reset entries to 0 every iter
+		r_nk_xx  = MAT_TYPE::Zero(D, D); // reset entries to 0 every iter
+
+		// calculate intermediate quantities for q(gamma), q(beta|tau)
+		for (n = 0; n < N; n++) {
+			VEC_TYPE x_n = this->X.row(n);
+			// x_n * x_n' can be precomputed 
+			r_x      = this->r_nk(n,k) * (x_n * x_n.transpose()).array();
+			rl_nk_xx = rl_nk_xx.array() + this->lambda(n, k) * r_x.array(); 
+			r_nk_xx  = r_nk_xx + r_x;
+
+		} // end inner for
+
+		/* (1.1) q(gamma)    : Q_k, Q_k_inv, eta_k, mu_k -------------------- */
+		
+		VEC_TYPE rnk_k = this->r_nk.col(k);                        // (N x 1)
+		VEC_TYPE lam_k = this->lambda.col(k);                      // (N x 1)
+ 		VEC_TYPE alpha_lam_k = 0.5 * ONES_N + 2 * lam_k.cwiseProduct(this->alpha);  
+
+		*this->Qk_it      = I_D.array() + 2 * rl_nk_xx.array();
+		*this->Qk_inv_it  = (*this->Qk_it).inverse();
+		
+		this->eta_k.col(k) = this->X.transpose() * (rnk_k.cwiseProduct(alpha_lam_k)); // (D x 1)
+		this->mu_k.col(k)  = (*this->Qk_inv_it) * this->eta_k.col(k);
+
+		/* (1.2) q(beta|tau) : V_k, V_k_inv, zeta_k, m_k -------------------- */
+		VEC_TYPE rnk_y = rnk_k.cwiseProduct(this->y);
+
+		*this->Vk_it     = this->Lambda_0 + r_nk_xx;
+		*this->Vk_inv_it = (*this->Vk_it).inverse();
+		
+		this->zeta_k.col(k) = this->Lambda0_m0.array() + (this->X.transpose() * rnk_y).array();
+		this->m_k.col(k)    = (*this->Vk_inv_it) * this->zeta_k.col(k);
+
+		// advance precision matrix iterators
+		advance(this->Qk_it, 1);
+		advance(this->Qk_inv_it, 1);
+		advance(this->Vk_it, 1);
+		advance(this->Vk_inv_it, 1);
+
+	} // end of outer for -- finish q(gamma), q(beta|tau) updates
+
+
+	// reset iterators
+	this->Qk_it     = Q_k.begin(); 
+	this->Qk_inv_it = Q_k_inv.begin(); 
+	this->Vk_it     = V_k.begin(); 
+	this->Vk_inv_it = V_k_inv.begin(); 
+
+
+	/** IN PROGRESS -------------------------------------------------------- **/
+
+	/* (1.3) update q(tau)   : a_k, b_k ------------------------------------- */
+
+
+
+	/* (2.1) update beta_k  ------------------------------------------------- */
+
+
+	/* (2.2) update tau_k   ------------------------------------------------- */
+
+
+	/* (2.3) update gamma_k ------------------------------------------------- */
+
+
+	// update current iteration
+	this->curr++;
+
 
 
 } // end mStep() function

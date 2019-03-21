@@ -7,7 +7,7 @@
 #include <RcppEigen.h>
 #include <Rcpp.h>
 #include <numeric>
-#include "VarParam.h"
+// #include "VarParam.h"
 
 using namespace std;
 using namespace Rcpp;
@@ -21,6 +21,7 @@ using Eigen::VectorXd;
 #define MAP_VEC Eigen::Map<Eigen::VectorXd> 
 
 
+/*
 // [[Rcpp::export]]
 SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			         bool intercept, int max_iter) {
@@ -30,7 +31,7 @@ SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	return wrap(theta);
 	
 } // end mat_list_ops() function
-
+*/
 
 
 // [[Rcpp::export]]
@@ -39,10 +40,19 @@ SEXP mat_list_ops(int K, int D, VEC_TYPE x) {     		 // (1 x 1)
 	int k;
 	MAT_TYPE I_D = MAT_TYPE::Identity(D, D);
 
+
+	MAT_TYPE res = MAT_TYPE::Zero(D, D); // matrix to populate
+
+	for (int d = 0; d < D; d++) {
+
+		res.col(d) = I_D * x;
+
+	}
+
 	// MAT_TYPE I_D = MAT_TYPE::Zero(D, D);
 	// I_D.setZero(D, D);
 
-	
+	/*
 	list<MAT_TYPE> Q_k;
 	list<MAT_TYPE> prod;
 
@@ -63,6 +73,10 @@ SEXP mat_list_ops(int K, int D, VEC_TYPE x) {     		 // (1 x 1)
 	}
 
 	return wrap(prod);
-	
+	*/
+
+
+	return wrap(res);
+
 } // end mat_list_ops() function
 

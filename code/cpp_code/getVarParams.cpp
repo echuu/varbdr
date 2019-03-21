@@ -77,7 +77,7 @@ SEXP extractVarParam(VarParam theta_cpp) {
 }
 
 // [[Rcpp::export]]
-SEXP testConstructor(MAP_MAT y, MAP_MAT X, int N, int D, int K, 
+SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			         bool intercept, int max_iter) {
 
 	srand(1);

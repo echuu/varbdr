@@ -94,6 +94,7 @@ MAT_TYPE lambda_xi_cpp(Eigen::Map<MAT_TYPE> A) {
 
 /** Note: the input variables will be modified since they are 'Map' objects;
   *       we are writing over the objects directly
+  * Code below has first part of the m-step
   */
 // [[Rcpp::export]]
 SEXP mainFunc(Eigen::Map<MAT_TYPE> lambda,       // (N x K)
