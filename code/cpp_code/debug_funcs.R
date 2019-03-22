@@ -2,6 +2,21 @@
 # debug_funcs.R
 
 
+# checkCorrectness() : check equality (up to a certain tolerance) of 
+#                      variational parameters calculated by R/C++ 
+#                      implementation of e-step, m-step
+# input : 
+#        theta_R   : object w/ var. params calculated in R
+#        theta_cpp : object w/ var. params calculated in C++
+checkCorrectness = function(theta_R, theta_cpp) {
+    
+    
+    
+    
+}
+
+
+
 checkEqual = function(obj1, obj2) {
     VALID = TRUE
     

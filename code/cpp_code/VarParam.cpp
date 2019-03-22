@@ -280,8 +280,6 @@ void VarParam::mStep() {
 	this->Vk_inv_it = V_k_inv.begin(); 
 
 
-	/** IN PROGRESS -------------------------------------------------------- **/
-
 	/* (1.3) update q(tau)   : a_k, b_k ------------------------------------- */
 	
 	this->a_k = (this->a_0 * ONES_K).array() + (0.5 * this->N_k).array();
@@ -307,6 +305,7 @@ void VarParam::mStep() {
 				(0.5 * (this->b_k + this->m0_Lambda0_m0 * ONES_K)).array();
 
 	
+	/** IN PROGRESS -------------------------------------------------------- **/
 
 	/* (2.1) update beta_k  ------------------------------------------------- */
 
