@@ -1,13 +1,16 @@
 
 
-source("C:/Users/chuu/varbdr/code/globals.R")
+# source("C:/Users/chuu/varbdr/code/globals.R")
+source("~/varbdr/code/globals.R")
 setwd(HOME_DIR)
 source(DP_BDR) 
 source(DENSITY)
 
-setwd("C:/Users/chuu/varbdr/code/cpp_code")
+# setwd("C:/Users/chuu/varbdr/code/cpp_code")
+setwd("~/varbdr/code/cpp_code")
 
-source("C:/Users/chuu/varbdr/code/cov_dep/misc.R")
+# source("C:/Users/chuu/varbdr/code/cov_dep/misc.R")
+source("~/varbdr/code/cov_dep/misc.R")
 source("debug_funcs.R")
 
 
@@ -55,7 +58,8 @@ VERBOSE = FALSE
 prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
                    max_iter, tol, VERBOSE)
 
-theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
+# set back to initVarParams_0() later
+theta = initVarParams(y, X, N, D, K, intercept, max_iter)
 
 theta = mStep(theta, prior)
 

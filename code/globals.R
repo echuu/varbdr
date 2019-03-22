@@ -16,8 +16,8 @@ library("RcppParallel")
 
 
 # home directory of all the code
-# HOME_DIR = "~/varbdr/code"                # linux
-HOME_DIR = "C:/Users/chuu/varbdr/code"      # windows
+HOME_DIR = "~/varbdr/code"                # linux
+# HOME_DIR = "C:/Users/chuu/varbdr/code"      # windows
 
 # directories of each of the different algorithms
 COV_INDEP = paste(HOME_DIR, "/cov_indep", sep = '')
