@@ -82,7 +82,7 @@ class VarParam {
 		MAT_TYPE   m_0;           // (D x 1) prior mean for beta_k
 		MAT_TYPE   Lambda_0;      // (D x D) prior covariance for beta_k
 		MAT_TYPE   Lambda0_m0;    // (D x 1) Lambda_0 * m_0
-		int        m0_Lambda0_m0; // (1 x 1) m_0' * Lambda_0 * m_0
+		double     m0_Lambda0_m0; // (1 x 1) m_0' * Lambda_0 * m_0
 
 		VEC_TYPE   a_0, b_0; // (K x 1) prior shape, rate params for tau_k
 		

@@ -258,46 +258,13 @@ microbenchmark(slow_update(X, y, r_nk, N_k, lambda, alpha,
 
 # ------------------------------------------------------------------------------
 
-N = 100
-K = 3
-D = 1
 
-synth_data_1d = r_dpmix2(N)
-
-y      = synth_data_1d$y
-X      = synth_data_1d$X
-mu = matrix(rnorm(D * K), D, K)                  # (D x K)
-X_mu = X %*% mu                                  # (N x K)
-xi = matrix(1, N, K)                             # (N x K)
-lambda = lambda_xi(xi)                           # (N x K)
-Qk = rbeta(D, 1, 1)                              # (D x D)
-
-sourceCpp("fast_functions.cpp")
+sourceCpp("matrix_ops.cpp")
 
 
-res = slow_func(lambda, X, X_mu, Qk, xi)        # slower version of the m-step
-res_fast = mainFunc(lambda, X, X_mu, Qk, xi)    # build this to be the m-step
+mat_list_ops(1, 3, c(1, 2, 3))
 
 
-# mainFunc() -> first half of the m-step: calculates alpha, xi, phi, lambda
 
-head(res$alpha)
-head(res$xi)
-head(res$phi)
-head(res$lambda)
-
-head(res_fast$alpha)
-head(res_fast$xi)
-head(res_fast$phi)
-head(res_fast$lambda)
-
-
-head(res$phi)
-head(res_fast$lambda)
-
-checkEqual(res, res_fast)
-
-microbenchmark(slow_func(lambda, X, X_mu, Qk, xi), 
-               mainFunc(lambda, X, X_mu, Qk, xi))
 
 

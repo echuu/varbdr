@@ -26,6 +26,9 @@ sourceCpp("getVarParams.cpp")
 theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
 str(theta_cpp)
 
+mu_k = theta_cpp$mu_k
+m_k  = theta_cpp$m_k
+
 # model parameters to pass into R implementation of varbdr() -------------------
 # note: these are defined internally in C++ implementation
 
@@ -47,8 +50,7 @@ tol = 1e-3
 VERBOSE = FALSE
 
 # use c++ initializations for these variational parameters
-mu_k = theta_cpp$mu_k
-m_k  = theta_cpp$m_k
+
 
 prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
                    max_iter, tol, VERBOSE)
@@ -58,6 +60,10 @@ theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
 theta = mStep(theta, prior)
 
 # compare corresponding componentes in theta_cpp and theta
+
+sourceCpp("getVarParams.cpp")
+theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
+str(theta_cpp)
 
 theta_cpp$alpha
 theta_cpp$xi
@@ -90,6 +96,14 @@ all.equal(theta_cpp$mu_k, theta$mu_k)
 
 all.equal(theta_cpp$a_k, theta$a_k)
 all.equal(theta_cpp$b_k, theta$b_k)
+
+
+# one iteration of m-step performance
+microbenchmark(testConstructor(y, X, N, D, K, intercept, max_iter), 
+               mStep(theta, prior))
+
+
+
 
 
 

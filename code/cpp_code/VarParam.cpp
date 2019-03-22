@@ -6,12 +6,14 @@
 #include "VarParam.h"
 #include <stdio.h>
 #include <stdlib.h>     /* srand, rand */
+#include <iostream>
 
 
 // VarParam constructor -- see VarParam.h for variable descriptions
 VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			        bool intercept, int max_iter) {
 	
+
 
 	MAT_TYPE I_D   = MAT_TYPE::Identity(D, D);
 
@@ -137,6 +139,9 @@ MAT_TYPE VarParam::lambda_xi (MAT_TYPE A) {
 
 void VarParam::mStep() {
 
+	printf("running m-step.\n");
+
+
 	int n, k;
 
 	int N = getN(); 
@@ -217,7 +222,9 @@ void VarParam::mStep() {
 	  *     (2.3) gamma_k      TODO
 	  ----------------------------------------------------------------------  */
 
-	VEC_TYPE y2  = y.array().square(); // move this into constructor later since
+	
+
+	VEC_TYPE y2 = this->y.array().square(); // move this into constructor later since
 									   // y is fixed, save calculation
 
 	/* q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_k -------------------------------- */
@@ -276,8 +283,30 @@ void VarParam::mStep() {
 	/** IN PROGRESS -------------------------------------------------------- **/
 
 	/* (1.3) update q(tau)   : a_k, b_k ------------------------------------- */
+	
+	this->a_k = (this->a_0 * ONES_K).array() + (0.5 * this->N_k).array();
+
+	for (k = 0; k < K; k++) {
+		VEC_TYPE rnk_k = this->r_nk.col(k);                         // (N x 1)
+		this->b_k(k) = - ((this->zeta_k.col(k)).transpose() * 
+			((*this->Vk_inv_it) * (this->zeta_k.col(k)))).value() + 
+					(rnk_k.cwiseProduct(y2)).sum();
+		advance(this->Vk_inv_it, 1);
+	}
+
+	this->Vk_inv_it = V_k_inv.begin(); 
 
 
+	double  tmp = ((this->m_0).transpose() * this->Lambda0_m0).value();
+
+	// std::cout << "m_0 = " << m_0 << endl;
+	// std::cout << "m_0' * Lambda_0 * m_0 = " << tmp << endl;
+	std::cout << "m_0' * Lambda_0 * m_0 = " << this->m0_Lambda0_m0 << endl;
+
+	this->b_k = this->b_0.array() + 
+				(0.5 * (this->b_k + this->m0_Lambda0_m0 * ONES_K)).array();
+
+	
 
 	/* (2.1) update beta_k  ------------------------------------------------- */
 
