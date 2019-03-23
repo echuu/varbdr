@@ -92,8 +92,14 @@ class VarParam {
 
 		/* --- data --- */
 		VEC_TYPE    y;        // (N x 1) response
+		VEC_TYPE    y2;       // (N x 1) element-wise square of the response
 		MAT_TYPE    X;        // (N x D) design matrix
 
+
+		list<MAT_TYPE> xn_mat;   // N-dim list of (D x D) matricies 
+		                                     // made of X[n,] X[n,]'
+
+		list<MAT_TYPE>::iterator xn_mat_it;  // iterator for xn_mat
 
 		// ---------------------------------------------------------------------
 

@@ -28,9 +28,9 @@ checkCorrectness = function(theta_R, theta_cpp) {
     if (!isTRUE(all.equal(theta_R$r_nk, theta_cpp$r_nk))) {
         print("r_nk's not equal")
     }
-    if (!isTRUE(all.equal(theta_R$N_k, theta_cpp$N_k))) {
-        print("N_k's not equal")
-    }
+    # if (!isTRUE(all.equal(theta_R$N_k, theta_cpp$N_k))) {
+    #     print("N_k's not equal")
+    # }
     
     # m-step updates
     
@@ -81,25 +81,25 @@ checkCorrectness = function(theta_R, theta_cpp) {
         # matrix produced by C++ implementation 
         # (all.equal() requires type match)
         
-        V_k_mat     = matrix(theta_R$V_k[,,k], nrow = nrow(theta_cpp$V_k[[k]]),
-                                               ncol = ncol(theta_cpp$V_k[[k]]))
-        V_k_inv_mat = matrix(theta_R$V_k[,,k], nrow = nrow(theta_cpp$V_k[[k]]),
-                                               ncol = ncol(theta_cpp$V_k[[k]]))
-        Q_k_mat     = matrix(theta_R$V_k[,,k], nrow = nrow(theta_cpp$Q_k[[k]]),
-                                               ncol = ncol(theta_cpp$Q_k[[k]]))
-        Q_k_inv_mat = matrix(theta_R$V_k[,,k], nrow = nrow(theta_cpp$Q_k[[k]]),
-                                               ncol = ncol(theta_cpp$Q_k[[k]]))
+        Vk     = matrix(theta_R$V_k[,,k], nrow = nrow(theta_cpp$V_k[[k]]),
+                                          ncol = ncol(theta_cpp$V_k[[k]]))
+        Vk_inv = matrix(theta_R$V_k_inv[,,k], nrow = nrow(theta_cpp$V_k[[k]]),
+                                              ncol = ncol(theta_cpp$V_k[[k]]))
+        Qk     = matrix(theta_R$Q_k[,,k], nrow = nrow(theta_cpp$Q_k[[k]]),
+                                          ncol = ncol(theta_cpp$Q_k[[k]]))
+        Qk_inv = matrix(theta_R$Q_k_inv[,,k], nrow = nrow(theta_cpp$Q_k[[k]]),
+                                              ncol = ncol(theta_cpp$Q_k[[k]]))
         
-        if (!isTRUE(all.equal(V_k_mat, theta_cpp$V_k[[k]]))) {
+        if (!isTRUE(all.equal(Vk, theta_cpp$V_k[[k]]))) {
             print("V_k's not equal")
         }
-        if (!isTRUE(all.equal(V_k_inv_mat, theta_cpp$V_k_inv[[k]]))) {
+        if (!isTRUE(all.equal(Vk_inv, theta_cpp$V_k_inv[[k]]))) {
             print("V_k_inv's not equal")
         }
-        if (!isTRUE(all.equal(Q_k_mat, theta_cpp$Q_k_mat[[k]]))) {
+        if (!isTRUE(all.equal(Qk, theta_cpp$Q_k[[k]]))) {
             print("Q_k's not equal")
         }
-        if (!isTRUE(all.equal(Q_k_inv_mat, theta_cpp$Q_k_inv_mat[[k]]))) {
+        if (!isTRUE(all.equal(Qk_inv, theta_cpp$Q_k_inv[[k]]))) {
             print("Q_k_inv's not equal")
         }
     }

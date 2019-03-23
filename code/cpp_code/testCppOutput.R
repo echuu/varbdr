@@ -1,16 +1,16 @@
 
 
-# source("C:/Users/chuu/varbdr/code/globals.R")
-source("~/varbdr/code/globals.R")
+source("C:/Users/chuu/varbdr/code/globals.R")
+# source("~/varbdr/code/globals.R")
 setwd(HOME_DIR)
 source(DP_BDR) 
 source(DENSITY)
 
-# setwd("C:/Users/chuu/varbdr/code/cpp_code")
-setwd("~/varbdr/code/cpp_code")
+setwd("C:/Users/chuu/varbdr/code/cpp_code")
+# setwd("~/varbdr/code/cpp_code")
 
-# source("C:/Users/chuu/varbdr/code/cov_dep/misc.R")
-source("~/varbdr/code/cov_dep/misc.R")
+source("C:/Users/chuu/varbdr/code/cov_dep/misc.R")
+# source("~/varbdr/code/cov_dep/misc.R")
 source("debug_funcs.R")
 
 
@@ -59,9 +59,17 @@ prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
                    max_iter, tol, VERBOSE)
 
 # set back to initVarParams_0() later
-theta = initVarParams(y, X, N, D, K, intercept, max_iter)
+theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
+
+# check equality after initialization
+source("debug_funcs.R")
+checkCorrectness(theta, theta_cpp)
+
 
 theta = mStep(theta, prior)
+str(theta)
+checkCorrectness(theta, theta_cpp)
+
 
 # compare corresponding componentes in theta_cpp and theta
 
@@ -69,42 +77,10 @@ sourceCpp("getVarParams.cpp")
 theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
 str(theta_cpp)
 
-theta_cpp$alpha
-theta_cpp$xi
-theta_cpp$phi
-theta_cpp$lambda
-
-theta$alpha
-theta$xi
-theta$phi
-theta$lambda
-
-theta_cpp$Q_k
-theta$Q_k
-
-all.equal(theta_cpp$alpha, theta$alpha)
-all.equal(theta$xi, theta_cpp$xi)
-all.equal(theta$phi, theta_cpp$phi)
-all.equal(theta$lambda, theta_cpp$lambda)
-
-# 2nd half of m-step testing
-checkEqual(theta_cpp$Q_k_inv, theta$Q_k_inv)
-all.equal(theta_cpp$V_k_inv, theta$V_k_inv)
-
-all.equal(theta_cpp$m_k, theta$m_k)
-all.equal(theta_cpp$mu_k, theta$mu_k)
-
-
-# TODO: test these after incorporating the rest of the
-#       m-step code
-
-all.equal(theta_cpp$a_k, theta$a_k)
-all.equal(theta_cpp$b_k, theta$b_k)
-
 
 # one iteration of m-step performance
 microbenchmark(testConstructor(y, X, N, D, K, intercept, max_iter), 
-               mStep(theta, prior))
+               mStep(theta, prior)) # ~ m-step 15 times faster
 
 
 

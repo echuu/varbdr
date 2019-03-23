@@ -101,7 +101,17 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	this->Sigma_0       = I_D;
 
 	this->y             = y;
+	this->y2            = this->y.array().square();
 	this->X             = X;
+
+
+
+	// precompute each X[n,] X[n,]'
+	for (int n = 0; n < N; n++) {
+		VEC_TYPE x_n = this->X.row(n);
+		this->xn_mat.push_back(x_n * x_n.transpose());
+	}
+	this->xn_mat_it = xn_mat.begin();
 
 } // end of VarParam constructor
 
@@ -139,7 +149,7 @@ MAT_TYPE VarParam::lambda_xi (MAT_TYPE A) {
 
 void VarParam::mStep() {
 
-	printf("running m-step.\n");
+	// printf("running m-step.\n");
 
 
 	int n, k;
@@ -151,13 +161,13 @@ void VarParam::mStep() {
 	VEC_TYPE xQx(K);                             // K-dim vector used in xi
 	VEC_TYPE ONES_K = VEC_TYPE::Ones(K);         // K-dim vector of ones
 	VEC_TYPE ONES_N = VEC_TYPE::Ones(N);         // N-dim vector of ones
-	MAT_TYPE I_D   = MAT_TYPE::Identity(D, D);   // (D x D) identity matrix
+	MAT_TYPE I_D    = MAT_TYPE::Identity(D, D);  // (D x D) identity matrix
  
 	MAT_TYPE X_mu   = (this->X) * (this->mu_k);  // (N x K) : X * mu_k
 
-	MAT_TYPE rl_nk_xx;                           // used in q(gamma)
-	MAT_TYPE r_nk_xx; 							 // used in q(beta|tau)
-	MAT_TYPE r_x;                                // used in rl_nk_xx, r_nk_xx
+	MAT_TYPE rl_nk_xx = MAT_TYPE::Zero(D, D);    // used in q(gamma)
+	MAT_TYPE r_nk_xx  = MAT_TYPE::Zero(D, D); 	 // used in q(beta|tau)
+	MAT_TYPE r_x      = MAT_TYPE::Zero(D, D);    // used in rl_nk_xx, r_nk_xx
 
 	/** Quantities to update ---------------------------------------------------
 	  * (0.1) alpha     (N x 1) -- TODO
@@ -178,8 +188,6 @@ void VarParam::mStep() {
 			   (0.5 * (0.5 * K - 1) + (xmu_n.transpose() * lambda_n).value());
 
 		for (k = 0; k < K; k++) {
-			/** final version of this function should have Qk changing with k
-			    in the innner for loop **/
 
 			xQx(k) = (x_n.transpose() * ((*this->Qk_inv_it) * x_n)).value();
 
@@ -222,11 +230,6 @@ void VarParam::mStep() {
 	  *     (2.3) gamma_k      TODO
 	  ----------------------------------------------------------------------  */
 
-	
-
-	VEC_TYPE y2 = this->y.array().square(); // move this into constructor later since
-									   // y is fixed, save calculation
-
 	/* q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_k -------------------------------- */
 	for (k = 0; k < K; k++) {
 
@@ -235,24 +238,29 @@ void VarParam::mStep() {
 
 		// calculate intermediate quantities for q(gamma), q(beta|tau)
 		for (n = 0; n < N; n++) {
-			VEC_TYPE x_n = this->X.row(n);
+			// VEC_TYPE x_n = this->X.row(n);
 			// x_n * x_n' can be precomputed 
-			r_x      = this->r_nk(n,k) * (x_n * x_n.transpose()).array();
+			r_x      = this->r_nk(n,k) * ((*this->xn_mat_it)).array();
 			rl_nk_xx = rl_nk_xx.array() + this->lambda(n, k) * r_x.array(); 
 			r_nk_xx  = r_nk_xx + r_x;
 
+			advance(this->xn_mat_it, 1);
 		} // end inner for
+
+		this->xn_mat_it = this->xn_mat.begin(); 
 
 		/* (1.1) q(gamma)    : Q_k, Q_k_inv, eta_k, mu_k -------------------- */
 		
-		VEC_TYPE rnk_k = this->r_nk.col(k);                        // (N x 1)
-		VEC_TYPE lam_k = this->lambda.col(k);                      // (N x 1)
- 		VEC_TYPE alpha_lam_k = 0.5 * ONES_N + 2 * lam_k.cwiseProduct(this->alpha);  
+		VEC_TYPE rnk_k = this->r_nk.col(k);                         // (N x 1)
+		VEC_TYPE lam_k = this->lambda.col(k);                       // (N x 1)
+ 		VEC_TYPE alpha_lam_k = 0.5 * ONES_N + 
+ 								2 * lam_k.cwiseProduct(this->alpha);  
 
 		*this->Qk_it      = I_D.array() + 2 * rl_nk_xx.array();
 		*this->Qk_inv_it  = (*this->Qk_it).inverse();
 		
-		this->eta_k.col(k) = this->X.transpose() * (rnk_k.cwiseProduct(alpha_lam_k)); // (D x 1)
+		this->eta_k.col(k) = this->X.transpose() * 
+								(rnk_k.cwiseProduct(alpha_lam_k));   // (D x 1)
 		this->mu_k.col(k)  = (*this->Qk_inv_it) * this->eta_k.col(k);
 
 		/* (1.2) q(beta|tau) : V_k, V_k_inv, zeta_k, m_k -------------------- */
@@ -261,7 +269,8 @@ void VarParam::mStep() {
 		*this->Vk_it     = this->Lambda_0 + r_nk_xx;
 		*this->Vk_inv_it = (*this->Vk_it).inverse();
 		
-		this->zeta_k.col(k) = this->Lambda0_m0.array() + (this->X.transpose() * rnk_y).array();
+		this->zeta_k.col(k) = this->Lambda0_m0.array() + 
+									(this->X.transpose() * rnk_y).array();
 		this->m_k.col(k)    = (*this->Vk_inv_it) * this->zeta_k.col(k);
 
 		// advance precision matrix iterators
@@ -288,18 +297,18 @@ void VarParam::mStep() {
 		VEC_TYPE rnk_k = this->r_nk.col(k);                         // (N x 1)
 		this->b_k(k) = - ((this->zeta_k.col(k)).transpose() * 
 			((*this->Vk_inv_it) * (this->zeta_k.col(k)))).value() + 
-					(rnk_k.cwiseProduct(y2)).sum();
+					(rnk_k.cwiseProduct(this->y2)).sum();
 		advance(this->Vk_inv_it, 1);
 	}
 
 	this->Vk_inv_it = V_k_inv.begin(); 
 
 
-	double  tmp = ((this->m_0).transpose() * this->Lambda0_m0).value();
+	// double  tmp = ((this->m_0).transpose() * this->Lambda0_m0).value();
 
 	// std::cout << "m_0 = " << m_0 << endl;
 	// std::cout << "m_0' * Lambda_0 * m_0 = " << tmp << endl;
-	std::cout << "m_0' * Lambda_0 * m_0 = " << this->m0_Lambda0_m0 << endl;
+	// std::cout << "m_0' * Lambda_0 * m_0 = " << this->m0_Lambda0_m0 << endl;
 
 	this->b_k = this->b_0.array() + 
 				(0.5 * (this->b_k + this->m0_Lambda0_m0 * ONES_K)).array();
@@ -308,17 +317,16 @@ void VarParam::mStep() {
 	/** IN PROGRESS -------------------------------------------------------- **/
 
 	/* (2.1) update beta_k  ------------------------------------------------- */
-
+	this->beta_k = this->m_k;
 
 	/* (2.2) update tau_k   ------------------------------------------------- */
-
+	this->tau_k = (this->a_k).cwiseQuotient(this->b_k);
 
 	/* (2.3) update gamma_k ------------------------------------------------- */
-
+	this->gamma_k = this->mu_k;
 
 	// update current iteration
 	this->curr++;
-
 
 
 } // end mStep() function

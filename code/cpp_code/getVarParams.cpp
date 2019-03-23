@@ -90,7 +90,7 @@ SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	//     compare results with ONE iteration of the R mStep()
 	
 	// comment this for step (0), uncomment for step (1)
-	// theta_cpp.mStep();
+	theta_cpp.mStep();
 	
 	return extractVarParam(theta_cpp);
 
