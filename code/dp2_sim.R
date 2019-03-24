@@ -1,6 +1,6 @@
 
 
-setwd(getwd())
+setwd("C:/Users/chuu/varbdr/code")
 
 source("globals.R")
 

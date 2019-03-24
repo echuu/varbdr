@@ -5,6 +5,10 @@
 #include <numeric>
 #include <Eigen/Dense>
 #include <list>
+//#include <Rmath.h>
+#include <math.h>
+#include <unsupported/Eigen/SpecialFunctions> // digamma(), lgamma()
+
 
 using namespace std;
 // using namespace Rcpp;
@@ -108,6 +112,11 @@ class VarParam {
 			      bool intercept, int max_iter);
 
 		static MAT_TYPE lambda_xi (MAT_TYPE A);
+		static VEC_TYPE my_digamma(VEC_TYPE x);
+
+		static double   lse(VEC_TYPE vec, int dim);
+		static VEC_TYPE lse_rows(MAT_TYPE X, int N, int D);
+
 		// SEXP   extractVarparams();
 
 		/* none of the VB routines should require any input since all 

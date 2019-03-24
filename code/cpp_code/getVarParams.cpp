@@ -5,6 +5,9 @@
 #include <numeric>
 #include "VarParam.h"
 
+
+#include <unsupported/Eigen/SpecialFunctions>
+
 using namespace std;
 using namespace Rcpp;
 using Eigen::MatrixXd;
@@ -49,8 +52,10 @@ SEXP extractVarParam(VarParam theta_cpp) {
 
 	/* other variational parameters not needed to calculate approximate density,
 	   but we return a few extra for debugging purposes (add as needed) */
+	theta["log_r_nk"]   = theta_cpp.log_r_nk;
 	theta["r_nk"]       = theta_cpp.r_nk;
-	
+	theta["N_k"]        = theta_cpp.N_k;
+
 	theta["a_k"]        = theta_cpp.a_k;
 	theta["b_k"]        = theta_cpp.b_k;
 	
@@ -90,6 +95,8 @@ SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	//     compare results with ONE iteration of the R mStep()
 	
 	// comment this for step (0), uncomment for step (1)
+	
+	theta_cpp.eStep();
 	theta_cpp.mStep();
 	
 	return extractVarParam(theta_cpp);

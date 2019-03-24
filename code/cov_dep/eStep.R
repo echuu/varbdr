@@ -44,6 +44,9 @@ eStep = function(theta, prior) {
         log_rho_nk[n,] = X_mu[n,] - theta$alpha[n] - theta$phi[n] - 
             0.5 * (log(2 * pi) - psi_a + psi_b + x_Vinv_x + 
                  ak_bk * (y[n] - t(X[n,] %*% theta$m_k))^2)
+        #log_rho_nk[n,] = X_mu[n,] - theta$alpha[n] - theta$phi[n] - 
+        #    0.5 * (log(2 * pi) - psi_a + psi_b + x_Vinv_x)
+
         
     } # end of outer for()
     
@@ -55,6 +58,7 @@ eStep = function(theta, prior) {
     log_r_nk = log_rho_nk - logZ                  # log of r_nk
     r_nk     = apply(log_r_nk, 2, exp)            # exponentiate to recover r_nk
     
+    theta$log_rho_nk  = log_rho_nk
     theta$log_r_nk    = log_r_nk        # (N x K)
     theta$r_nk        = r_nk            # (N x K)
     theta$N_k         = colSums(r_nk)   # (K x 1)

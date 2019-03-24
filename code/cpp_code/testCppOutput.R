@@ -65,7 +65,7 @@ theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
 source("debug_funcs.R")
 checkCorrectness(theta, theta_cpp)
 
-
+theta = eStep(theta, prior)
 theta = mStep(theta, prior)
 str(theta)
 checkCorrectness(theta, theta_cpp)
@@ -78,12 +78,33 @@ theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
 str(theta_cpp)
 
 
+
+# one complete iteration of cavi: eStep(), mStep()
+
+source(paste(COV_DEP,  E_STEP,          sep = '/'))
+cavi_R = function() {
+    prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
+                       max_iter, tol, VERBOSE)
+    theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
+    
+    theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
+    theta = eStep(theta, prior)
+    theta = mStep(theta, prior)
+}
+
+sourceCpp("getVarParams.cpp")
+cavi_cpp = function() {
+    theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
+}
+
+
+checkCorrectness(theta, theta_cpp)
+
+#### end of one iteration of cavi
+
+
 # one iteration of m-step performance
-microbenchmark(testConstructor(y, X, N, D, K, intercept, max_iter), 
-               mStep(theta, prior)) # ~ m-step 15 times faster
-
-
-
+microbenchmark(cavi_R(), cavi_cpp())
 
 
 

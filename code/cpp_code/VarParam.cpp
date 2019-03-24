@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>     /* srand, rand */
 #include <iostream>
+#include <unsupported/Eigen/SpecialFunctions> // digamma(), lgamma()
 
 
 // VarParam constructor -- see VarParam.h for variable descriptions
@@ -147,10 +148,90 @@ MAT_TYPE VarParam::lambda_xi (MAT_TYPE A) {
 
 
 
+double VarParam::lse(VEC_TYPE vec, int dim) {
+	double maxVal = vec.maxCoeff(); 
+
+	VEC_TYPE x_shift = vec - maxVal * VEC_TYPE::Ones(dim);;
+
+	double lse_x = log(x_shift.array().exp().sum()) + maxVal;
+	
+	return lse_x;
+  } // end of lse() function
+
+
+VEC_TYPE VarParam::lse_rows(MAT_TYPE X, int N_rows, int D_cols) {
+
+	VEC_TYPE lse_vec = VEC_TYPE::Zero(N_rows);
+	for (int n = 0; n < N_rows; n++) {
+		lse_vec(n) = lse(X.row(n), D_cols);
+	}
+	return lse_vec;
+
+} // end of lse_rows() function
+
+void VarParam::eStep() {
+
+	int n, k;
+	int N = getN();
+	int K = getClusters();
+
+	VEC_TYPE xVx = VEC_TYPE::Zero(K);
+
+	VEC_TYPE psi_a = digamma(this->a_k.array());
+	VEC_TYPE psi_b = digamma(this->b_k.array());
+
+	VEC_TYPE ONES_K = VEC_TYPE::Ones(K);         // K-dim vector of ones
+	// VEC_TYPE ONES_N = VEC_TYPE::Ones(N);         // N-dim vector of ones
+
+
+	MAT_TYPE X_mu   = (this->X) * (this->mu_k);  // (N x K) : X * mu_k
+
+	for (n = 0; n < N; n++) {
+		
+		xVx.fill(0);
+		VEC_TYPE x_n   = this->X.row(n);
+		VEC_TYPE xmu_n = X_mu.row(n);
+
+		for (k = 0; k < K; k++) {
+
+			xVx(k) = (x_n.transpose() * (*this->Vk_inv_it) * x_n).value();
+
+			advance(this->Vk_inv_it, 1);
+
+		} // end inner for
+		this->Vk_inv_it = this->V_k_inv.begin(); // bring back to front of list
+
+		// compute n-th row of log_rho_nk (K x 1)
+		VEC_TYPE t1 = xmu_n - ((this->alpha(n) + this->phi(n)) * ONES_K); 
+		VEC_TYPE t2 = log(2 * M_PI) * ONES_K - psi_a + psi_b;
+		VEC_TYPE tau_prod = this->tau_k.array().cwiseProduct(((this->y(n) * 
+			ONES_K).array() - (x_n * this->m_k).transpose().array()).square());
+
+		this->log_r_nk.row(n) = t1 - 0.5 * (t2 + xVx + tau_prod);
+
+	} // end outer for
+
+	/*  compute r_nk = divide each element of rho_nk by the sum of the
+		corresponding row; each row consists of 'responsibilities'       */
+    
+	VEC_TYPE logZ  = lse_rows(this->log_r_nk, N, K);
+	this->log_r_nk = (this->log_r_nk).colwise() - logZ; // normalize log_r_nk
+
+	this->r_nk     = (this->log_r_nk).array().exp();    // exp() to recover r_nk
+	
+	this->N_k = this->r_nk.colwise().sum();
+
+
+
+} // end eStep() function
+
+
+
+
+
 void VarParam::mStep() {
 
 	// printf("running m-step.\n");
-
 
 	int n, k;
 
@@ -222,12 +303,12 @@ void VarParam::mStep() {
 	  * (1) update variational distributions/parameters
 	  *     (1.1) q(gamma)     DONE
 	  *     (1.2) q(beta|tau)  DONE
-	  *     (1.3) q(tau)       TODO
+	  *     (1.3) q(tau)       DONE
 	  * 
 	  * (2) update posterior means
-	  *     (2.1) beta_k       TODO
-	  *     (2.2) tau_k        TODO
-	  *     (2.3) gamma_k      TODO
+	  *     (2.1) beta_k       DONE
+	  *     (2.2) tau_k        DONE
+	  *     (2.3) gamma_k      DONE
 	  ----------------------------------------------------------------------  */
 
 	/* q(gamma) : Q_k, Q_k^{-1}, eta_k, mu_k -------------------------------- */
