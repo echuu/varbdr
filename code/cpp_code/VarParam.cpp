@@ -417,6 +417,22 @@ void VarParam::mStep() {
 
 void VarParam::elbo() {
 
+	/*  Calculate the 7 following expectations whose sum is the ELBO for the
+		the current iteration fo the CAVI algorithm
+
+	    (1) E [ ln p(y | X, beta, tau, Z) ] 
+	    (2) E [ ln p(Z | X, gamma) ] 
+	    (3) E [ ln p(gamma) ] 
+		(4) E [ ln p(beta, tau) ] 
+	    
+		(5) E [ ln q(Z) ]
+		(6) E [ ln q(beta, tau) ]
+		(7) E [ ln q(gamma) ]
+	
+	*/
+
+
+
 	int n, k;
 	int N = getN();
 	int D = getCovDim();
@@ -436,16 +452,7 @@ void VarParam::elbo() {
 	MAT_TYPE X_mu  = (this->X) * (this->mu_k);      // (N x K) : X * mu_k
 
 	MAT_TYPE diff  = (this->m_k).colwise() - this->m_0; // (N x K), for (4)
-	/*
-	    (1) E [ ln p(y | X, beta, tau, Z) ] 
-	    (2) E [ ln p(Z | X, gamma) ] 
-	    (3) E [ ln p(gamma) ] 
-
-	    (4) E [ ln p(beta, tau) ] 
-		(5) E [ ln q(Z) ]
-		(6) E [ ln q(beta, tau) ]
-		(7) E [ ln q(gamma) ]
-	*/
+	
 	
 	VEC_TYPE e1 = VEC_TYPE::Zero(N);
 	VEC_TYPE e2 = VEC_TYPE::Zero(K);
@@ -453,6 +460,12 @@ void VarParam::elbo() {
 	VEC_TYPE e4_diff  = VEC_TYPE(K); // (4) store quadratic term
 	VEC_TYPE e4_trace = VEC_TYPE(K); // (4) store trace term
 
+	VEC_TYPE e6 = VEC_TYPE(K); // (6) store log(det(V_k_inv)) terms
+
+	VEC_TYPE e7 = VEC_TYPE(K); // (7) store log(det(Q_k))
+
+
+	// calculate (1)
 	for (n = 0; n < N; n++) {
 
 		xVx.fill(0);
@@ -465,16 +478,6 @@ void VarParam::elbo() {
 			// calculation for (1) 
 			xVx(k) = (x_n.transpose() * (*this->Vk_inv_it) * x_n).value();
 			advance(this->Vk_inv_it, 1);
-
-			// calculation for (2)
-			VEC_TYPE rnk_k = this->r_nk.col(k);  // (N x 1)
-			VEC_TYPE xmu_k = X_mu.col(k);        // (N x 1)
-			e2(k) = (rnk_k.array().cwiseProduct((xmu_k - this->alpha - 
-													this->phi).array())).sum();
-
-
-			// calculation for (4) -- update e4_diff, e4_trace
-
 
 		} // end inner for (k)
 
@@ -489,6 +492,42 @@ void VarParam::elbo() {
 	} // end outer for (n)
 
 
+	// calculate (2), (4), (6), (7)
+	for (k = 0; k < K; k++) {
+
+		// calculation for (2)
+		VEC_TYPE rnk_k = this->r_nk.col(k);  // (N x 1)
+		VEC_TYPE xmu_k = X_mu.col(k);        // (N x 1)
+		e2(k) = (rnk_k.array().cwiseProduct((xmu_k - this->alpha - 
+												this->phi).array())).sum();
+
+
+		// calculation for (4) -- update e4_diff, e4_trace
+		VEC_TYPE diff_k = diff.col(k);
+		e4_diff(k)  = (diff_k.transpose() * 
+								(this->Lambda_0) * diff_k).value();
+		e4_trace(k) = (this->Lambda_0 * (*this->Vk_inv_it)).trace();
+
+		// calculation for (6) -- update e6
+		e6(k) = log((*this->Vk_it).determinant());
+
+
+		// calculation for (7) -- update e7
+		e7(k) = log((*this->Qk_it).determinant());
+
+		advance(this->Vk_inv_it, 1);
+		advance(this->Qk_it, 1);
+		advance(this->Vk_it, 1);
+		
+
+	} // end for (k)
+
+	this->Qk_it     = this->Q_k.begin();     // reset Q_k iterator
+	this->Vk_it     = this->V_k.begin();     // reset V_k iterator
+	this->Vk_inv_it = this->V_k_inv.begin(); // reset V_k_inv iterator
+
+
+
 	// calculation for (4)
 	double e3_1 = (this->a_0 + (0.5 * D - 1) * 
 					ONES_K).array().cwiseProduct((psi_a - psi_b).array()).sum();
@@ -496,19 +535,39 @@ void VarParam::elbo() {
 	double e3_2 = - K * (0.5 * D * log(2 * M_PI) - this->lgd_Lambda_0 - 
 				  		this->a_0(0) * this->log_b0(0) + this->lg_a0(0));
 
+	e4_diff = (this->tau_k).array().cwiseProduct((e4_diff + this->b_0).array());
 
-	e_ln_p_y     = -0.5 * e1.array().sum();
-	e_ln_p_z     = e2.array().sum();
-	e_ln_p_gamma = -0.5 * K * D * log(2 * M_PI) - 
-						0.5 * ((this->mu_k).array().square().sum());
+	VEC_TYPE e6_const = ((0.5 * D - 1) * ONES_K + 
+			this->a_k).array().cwiseProduct((psi_a - psi_b).array()).array() + 
+			(this->a_k).array().cwiseProduct(this->b_k.array().log()) - 
+			(this->a_k).array() - (this->a_k).array().lgamma();
+
+	e_ln_p_y        = -0.5 * e1.array().sum();
+	e_ln_p_z        = e2.array().sum();
+	e_ln_p_gamma    = -0.5 * K * D * log(2 * M_PI) - 
+						  0.5 * ((this->mu_k).array().square().sum());
+	e_ln_p_beta_tau = e3_1 + e3_2 - 0.5 * (e4_diff + e4_trace).array().sum();
+	e_ln_q_z  	    = (this->r_nk.array().cwiseProduct(
+										this->log_r_nk.array())).array().sum();
+	e_ln_q_beta_tau = (e6_const + e6).array().sum() - 
+						0.5 * K * D * (log(2 * M_PI) + 1);
+
+	e_ln_q_gamma    = -0.5 * K * D * (log(2 * M_PI) + 1) + e7.array().sum();					
+
 	
-	e_ln_p_beta_tau = e3_1 + e3_2;
-
 	std::cout.precision(8);
 	std::cout << "e_ln_p_y        = " << e_ln_p_y << endl;
 	std::cout << "e_ln_p_z        = " << e_ln_p_z << endl;
 	std::cout << "e_ln_p_gamma    = " << e_ln_p_gamma << endl;
 	std::cout << "e_ln_p_beta_tau = " << e_ln_p_beta_tau << endl;
+	std::cout << "e_ln_q_z        = " << e_ln_q_z << endl;
+	std::cout << "e_ln_q_beta_tau = " << e_ln_q_beta_tau << endl;
+	std::cout << "e_ln_q_gamma    = " << e_ln_q_gamma << endl;
+	
+
+	// update the ELBO
+	this->L(this->curr - 1) = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + 
+			e_ln_p_beta_tau - e_ln_q_z - e_ln_q_gamma - e_ln_q_beta_tau;
 
 } // end of elbo() function
 

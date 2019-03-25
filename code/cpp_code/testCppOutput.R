@@ -86,10 +86,14 @@ cavi_R = function() {
     prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
                        max_iter, tol, VERBOSE)
     theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
-    for (i in 1:10) {
-        theta = eStep(theta, prior)
-        theta = mStep(theta, prior)
-    }
+    #for (i in 1:10) {
+    #    theta = eStep(theta, prior)
+    #    theta = mStep(theta, prior)
+    #    theta = elbo(theta, prior)
+    #}
+    theta = eStep(theta, prior)
+    theta = mStep(theta, prior)
+    theta = elbo(theta, prior)    
 }
 
 sourceCpp("getVarParams.cpp")
@@ -108,20 +112,20 @@ theta = elbo(theta, prior)
 theta$e_ln_p_y           # --- match
 theta$e_ln_p_z           # --- match
 theta$e_ln_p_gamma       # --- match
+theta$e_ln_p_beta_tau    # --- match
+theta$e_ln_q_z           # --- match
+theta$e_ln_q_beta_tau    # --- match
+theta$e_ln_q_gamma       # --- match
 
-theta$e_ln_p_beta_tau    # --- TODO
 
-theta$e_ln_q_z           # --- TODO
-theta$e_ln_q_beta_tau    # --- TODO
-theta$e_ln_q_gamma       # --- TODO
+sourceCpp("getVarParams.cpp")
+theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
+theta_cpp$L[1]
 
 
 theta$L[1]
 
-sourceCpp("getVarParams.cpp")
-theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
-
-
+all.equal(theta$L[1], theta_cpp$L[1])
 
 # end test elbo ----------------------------------------------------------------
 

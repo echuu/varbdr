@@ -57,16 +57,13 @@ elbo = function(theta, prior) {
     # (3) E [ ln p(gamma) ] ----------------------------------------------------
     e_ln_p_gamma = - 0.5 * K * D * log(2 * pi) - 0.5 * sum(theta$mu_k^2)
     theta$e_ln_p_gamma = - 0.5 * K * D * log(2 * pi) - 0.5 * sum(theta$mu_k^2)
-    
-    
-    
-    
+
     # (4) E [ ln p(beta, tau) ] ------------------------------------------------
     e3 = sum((prior$a_0 + 0.5 * D - 1) * (psi_a - psi_b)) -
         K * (0.5 * D * log(2 * pi) - log(det(prior$Lambda_0)) - 
                  prior$a_0 * log(prior$b_0) + lgamma(prior$a_0))
     
-    print(paste("e3 constant =", e3))
+    # print(paste("e3 constant =", e3))
     
     # subtract each column of m_k by m_0 (centering each mean component)
     diff = sweep(theta$m_k, MARGIN = 1, STATS = prior$m_0, FUN = '-')  # (D x K)
@@ -81,12 +78,10 @@ elbo = function(theta, prior) {
     theta$e_ln_p_beta_tau = e3 - 0.5 * sum(e3_diff_k + e3_trace_k) # comment out later
     
     
-    
-    
-    
     # (5) E [ ln q(Z) ] -------------------------------------------------------- 
     e_ln_q_z = sum(theta$r_nk * theta$log_r_nk) # sum over (N x K) matrix
     theta$e_ln_q_z = sum(theta$r_nk * theta$log_r_nk) # comment out later
+    
     
     # (6) E [ ln q(beta, tau) ] ------------------------------------------------
     e6_k = (0.5 * D + theta$a_k - 1) * (psi_a - psi_b) + 
