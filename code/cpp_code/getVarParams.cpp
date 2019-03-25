@@ -99,6 +99,9 @@ SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	theta_cpp.eStep();
 	theta_cpp.mStep();
 	
+	theta_cpp.elbo();
+	
+	
 	return extractVarParam(theta_cpp);
 
 } // end mat_list_ops() function

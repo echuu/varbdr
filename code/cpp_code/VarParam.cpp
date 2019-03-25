@@ -94,9 +94,13 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	
 	this->m0_Lambda0_m0 = ((this->m_0).transpose() * this->Lambda0_m0).value();
 	
+	this->lgd_Lambda_0  = log(Lambda_0.determinant());
 
 	this->a_0           = VEC_TYPE::Ones(K);
 	this->b_0           = VEC_TYPE::Ones(K);
+
+	this->lg_a0         = (this->a_0).array().lgamma();
+	this->log_b0        = (this->b_0).array().log();
 
 	this->g_0           = VEC_TYPE::Zero(D);
 	this->Sigma_0       = I_D;
@@ -151,7 +155,7 @@ MAT_TYPE VarParam::lambda_xi (MAT_TYPE A) {
 double VarParam::lse(VEC_TYPE vec, int dim) {
 	double maxVal = vec.maxCoeff(); 
 
-	VEC_TYPE x_shift = vec - maxVal * VEC_TYPE::Ones(dim);;
+	VEC_TYPE x_shift = vec - maxVal * VEC_TYPE::Ones(dim);
 
 	double lse_x = log(x_shift.array().exp().sum()) + maxVal;
 	
@@ -224,8 +228,6 @@ void VarParam::eStep() {
 
 
 } // end eStep() function
-
-
 
 
 
@@ -411,6 +413,104 @@ void VarParam::mStep() {
 
 
 } // end mStep() function
+
+
+void VarParam::elbo() {
+
+	int n, k;
+	int N = getN();
+	int D = getCovDim();
+	int K = getClusters();
+
+	VEC_TYPE xVx    = VEC_TYPE::Zero(K);     // (K x 1)
+	VEC_TYPE ONES_K = VEC_TYPE::Ones(K);     // K-dim vector of ones
+
+	// initialize the 7 expectations that are computed in the ELBO
+	double e_ln_p_y = 0, e_ln_p_z = 0, e_ln_p_gamma = 0, e_ln_p_beta_tau = 0;
+	double e_ln_q_z = 0, e_ln_q_beta_tau = 0, e_ln_q_gamma = 0;
+
+	// commonly computed quantities
+	VEC_TYPE psi_a = digamma(this->a_k.array());    // (K x 1)
+	VEC_TYPE psi_b = digamma(this->b_k.array());    // (K x 1)
+	
+	MAT_TYPE X_mu  = (this->X) * (this->mu_k);      // (N x K) : X * mu_k
+
+	MAT_TYPE diff  = (this->m_k).colwise() - this->m_0; // (N x K), for (4)
+	/*
+	    (1) E [ ln p(y | X, beta, tau, Z) ] 
+	    (2) E [ ln p(Z | X, gamma) ] 
+	    (3) E [ ln p(gamma) ] 
+
+	    (4) E [ ln p(beta, tau) ] 
+		(5) E [ ln q(Z) ]
+		(6) E [ ln q(beta, tau) ]
+		(7) E [ ln q(gamma) ]
+	*/
+	
+	VEC_TYPE e1 = VEC_TYPE::Zero(N);
+	VEC_TYPE e2 = VEC_TYPE::Zero(K);
+	
+	VEC_TYPE e4_diff  = VEC_TYPE(K); // (4) store quadratic term
+	VEC_TYPE e4_trace = VEC_TYPE(K); // (4) store trace term
+
+	for (n = 0; n < N; n++) {
+
+		xVx.fill(0);
+		VEC_TYPE x_n   = this->X.row(n);
+		VEC_TYPE xmu_n = X_mu.row(n);
+		VEC_TYPE rnk_n = this->r_nk.row(n);
+
+		for (k = 0; k < K; k++) {
+			
+			// calculation for (1) 
+			xVx(k) = (x_n.transpose() * (*this->Vk_inv_it) * x_n).value();
+			advance(this->Vk_inv_it, 1);
+
+			// calculation for (2)
+			VEC_TYPE rnk_k = this->r_nk.col(k);  // (N x 1)
+			VEC_TYPE xmu_k = X_mu.col(k);        // (N x 1)
+			e2(k) = (rnk_k.array().cwiseProduct((xmu_k - this->alpha - 
+													this->phi).array())).sum();
+
+
+			// calculation for (4) -- update e4_diff, e4_trace
+
+
+		} // end inner for (k)
+
+		this->Vk_inv_it = this->V_k_inv.begin(); // reset V_k_inv iterator
+
+		VEC_TYPE t2 = log(2 * M_PI) * ONES_K - psi_a + psi_b + xVx;
+		VEC_TYPE tau_prod = this->tau_k.array().cwiseProduct(((this->y(n) * 
+			ONES_K).array() - (x_n * this->m_k).transpose().array()).square());
+
+		e1(n) = (rnk_n.array().cwiseProduct((t2 + tau_prod).array())).sum();
+
+	} // end outer for (n)
+
+
+	// calculation for (4)
+	double e3_1 = (this->a_0 + (0.5 * D - 1) * 
+					ONES_K).array().cwiseProduct((psi_a - psi_b).array()).sum();
+
+	double e3_2 = - K * (0.5 * D * log(2 * M_PI) - this->lgd_Lambda_0 - 
+				  		this->a_0(0) * this->log_b0(0) + this->lg_a0(0));
+
+
+	e_ln_p_y     = -0.5 * e1.array().sum();
+	e_ln_p_z     = e2.array().sum();
+	e_ln_p_gamma = -0.5 * K * D * log(2 * M_PI) - 
+						0.5 * ((this->mu_k).array().square().sum());
+	
+	e_ln_p_beta_tau = e3_1 + e3_2;
+
+	std::cout.precision(8);
+	std::cout << "e_ln_p_y        = " << e_ln_p_y << endl;
+	std::cout << "e_ln_p_z        = " << e_ln_p_z << endl;
+	std::cout << "e_ln_p_gamma    = " << e_ln_p_gamma << endl;
+	std::cout << "e_ln_p_beta_tau = " << e_ln_p_beta_tau << endl;
+
+} // end of elbo() function
 
 
 

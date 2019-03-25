@@ -23,11 +23,6 @@ elbo = function(theta, prior) {
     ak_bk = theta$a_k / theta$b_k # (K x 1) : a_k / b_k, elementwise division
     X_mu  = X %*% theta$mu_k      # (N x K) : [Xmu_1, Xmu_2, ... , Xmu_K]
     
-    # alpha, xi, phi, related quantities ---- calculations moved to mStep.R
-    # alpha = numeric(N)                   # (N x 1)
-    # xi    = matrix(0, N, K)              # (N x K)
-    # phi   = numeric(N)                   # (N x 1)
-    
     
     # compute 7 expectations ---------------------------------------------------
     
@@ -45,8 +40,10 @@ elbo = function(theta, prior) {
                              ak_bk * (y[n] - t(X[n,] %*% theta$m_k))^2))
         
     }
-    e_ln_p_y = -0.5 * sum(e1)
     
+    
+    e_ln_p_y = -0.5 * sum(e1)
+    theta$e_ln_p_y = -0.5 * sum(e1)  # comment out later
     
     # (2) E [ ln p(Z | X, gamma) ] ---------------------------------------------
     e2 = numeric(K)
@@ -55,10 +52,13 @@ elbo = function(theta, prior) {
         e2[k] = sum(theta$r_nk[,k] * (X_mu[,k] - theta$alpha - theta$phi))
     }
     e_ln_p_z = sum(e2) # outer k-summation
-
+    theta$e_ln_p_z = sum(e2) # comment out later
     
     # (3) E [ ln p(gamma) ] ----------------------------------------------------
     e_ln_p_gamma = - 0.5 * K * D * log(2 * pi) - 0.5 * sum(theta$mu_k^2)
+    theta$e_ln_p_gamma = - 0.5 * K * D * log(2 * pi) - 0.5 * sum(theta$mu_k^2)
+    
+    
     
     
     # (4) E [ ln p(beta, tau) ] ------------------------------------------------
@@ -66,6 +66,9 @@ elbo = function(theta, prior) {
         K * (0.5 * D * log(2 * pi) - log(det(prior$Lambda_0)) - 
                  prior$a_0 * log(prior$b_0) + lgamma(prior$a_0))
     
+    print(paste("e3 constant =", e3))
+    
+    # subtract each column of m_k by m_0 (centering each mean component)
     diff = sweep(theta$m_k, MARGIN = 1, STATS = prior$m_0, FUN = '-')  # (D x K)
     e3_diff_k  = numeric(K)  # store (m_k - m_0)' Lambda_0 (m_k - m_0)
     e3_trace_k = numeric(K)  # store trace(Lambda_0 V_K^{-1})
@@ -75,11 +78,15 @@ elbo = function(theta, prior) {
     }
     e3_diff_k = ak_bk * (e3_diff_k + prior$b_0) # element-wise multiplication
     e_ln_p_beta_tau = e3 - 0.5 * sum(e3_diff_k + e3_trace_k)
+    theta$e_ln_p_beta_tau = e3 - 0.5 * sum(e3_diff_k + e3_trace_k) # comment out later
+    
+    
+    
     
     
     # (5) E [ ln q(Z) ] -------------------------------------------------------- 
     e_ln_q_z = sum(theta$r_nk * theta$log_r_nk) # sum over (N x K) matrix
-    
+    theta$e_ln_q_z = sum(theta$r_nk * theta$log_r_nk) # comment out later
     
     # (6) E [ ln q(beta, tau) ] ------------------------------------------------
     e6_k = (0.5 * D + theta$a_k - 1) * (psi_a - psi_b) + 
@@ -89,7 +96,7 @@ elbo = function(theta, prior) {
         e6_k[k] = e6_k[k] + log(det(as.matrix(theta$V_k[,,k])))
     }
     e_ln_q_beta_tau = sum(e6_k) - 0.5 * K * D * (log(2 * pi) + 1)
-    
+    theta$e_ln_q_beta_tau = sum(e6_k) - 0.5 * K * D * (log(2 * pi) + 1) # comment out later
     
     # (7) E [ ln q(gamma) ] ----------------------------------------------------
     e7 = - 0.5 * K * D * (log(2 * pi) + 1)
@@ -97,12 +104,13 @@ elbo = function(theta, prior) {
         e7 = e7 + log(det(as.matrix(theta$Q_k[,,k])))
     }
     e_ln_q_gamma = e7
-    
+    theta$e_ln_q_gamma = e7 # comment out later
     # compute the elbo ---------------------------------------------------------
     vlb = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + e_ln_p_beta_tau -
         e_ln_q_z - e_ln_q_gamma - e_ln_q_beta_tau
     
+    theta$L = vlb
     
-    return(vlb)
+    return(theta)
     
 } # end vb_elbo() function

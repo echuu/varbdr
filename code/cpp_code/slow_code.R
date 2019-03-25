@@ -230,6 +230,7 @@ testUpdate$a_k
 testUpdate$b_k
 testUpdate$V_k_inv
 testUpdate$tau_k
+
 testUpdate$zeta_k
 
 fastUpdate = updateVariational(X, y, r_nk, N_k, lambda, alpha, 

@@ -83,13 +83,16 @@ class VarParam {
 
        	/* make these private later */
        	// priors are assumed to be same for k = 1,...,K
-		MAT_TYPE   m_0;           // (D x 1) prior mean for beta_k
+		VEC_TYPE   m_0;           // (D x 1) prior mean for beta_k
 		MAT_TYPE   Lambda_0;      // (D x D) prior covariance for beta_k
 		MAT_TYPE   Lambda0_m0;    // (D x 1) Lambda_0 * m_0
 		double     m0_Lambda0_m0; // (1 x 1) m_0' * Lambda_0 * m_0
+		double     lgd_Lambda_0;  // (1 x 1) log(det(Lambda_0))
 
-		VEC_TYPE   a_0, b_0; // (K x 1) prior shape, rate params for tau_k
-		
+		VEC_TYPE   a_0, b_0;      // (K x 1) prior shape, rate params for tau_k
+		VEC_TYPE   lg_a0, log_b0; // (K x 1) lgamma(a_0), log(b_0)
+
+
 		MAT_TYPE   g_0;      // (D x 1) prior mean for gamma_k
 		MAT_TYPE   Sigma_0;  // (D x D) prior covariance for gamma_k
 
@@ -127,7 +130,7 @@ class VarParam {
 		void       mStep();
 
 		// elbo will *internally* compute the variational lower bound
-		double     elbo();
+		void     elbo();
 
 		// basic getters
 		int        getN();
