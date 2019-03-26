@@ -104,7 +104,7 @@ elbo = function(theta, prior) {
     vlb = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + e_ln_p_beta_tau -
         e_ln_q_z - e_ln_q_gamma - e_ln_q_beta_tau
     
-    theta$L = vlb
+    theta$L[theta$curr] = vlb
     
     return(theta)
     

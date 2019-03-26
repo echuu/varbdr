@@ -81,12 +81,25 @@ SEXP extractVarParam(VarParam theta_cpp) {
 	// return 0;
 }
 
+
 // [[Rcpp::export]]
-SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
-			         bool intercept, int max_iter) {
+SEXP generateParams(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
+			        bool intercept, int max_iter) {
 
 	srand(1);
+	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter);
+	
+	return extractVarParam(theta_cpp);
 
+} // end mat_list_ops() function
+
+
+
+// [[Rcpp::export]]
+SEXP varbdr_cpp(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
+			    bool intercept, int max_iter) {
+
+	srand(1);
 	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter);
 
 	// (0) run this first by commenting the mStep() call so that the
@@ -96,10 +109,24 @@ SEXP testConstructor(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	
 	// comment this for step (0), uncomment for step (1)
 	
+	/*
 	theta_cpp.eStep();
 	theta_cpp.mStep();
-	
 	theta_cpp.elbo();
+	*/
+
+	
+	bool cavi_converge = false;
+	while (!cavi_converge && theta_cpp.curr < max_iter) {
+		theta_cpp.eStep();
+		theta_cpp.mStep();
+		theta_cpp.elbo();
+		cavi_converge = theta_cpp.elboConverge();
+		if (cavi_converge) {
+			break;
+		}
+		theta_cpp.nextIter();
+	}
 	
 	
 	return extractVarParam(theta_cpp);

@@ -62,7 +62,6 @@ prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
 theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
 
 # check equality after initialization
-source("debug_funcs.R")
 checkCorrectness(theta, theta_cpp)
 
 theta = eStep(theta, prior)
@@ -86,14 +85,11 @@ cavi_R = function() {
     prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
                        max_iter, tol, VERBOSE)
     theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
-    #for (i in 1:10) {
-    #    theta = eStep(theta, prior)
-    #    theta = mStep(theta, prior)
-    #    theta = elbo(theta, prior)
-    #}
-    theta = eStep(theta, prior)
-    theta = mStep(theta, prior)
-    theta = elbo(theta, prior)    
+    for (i in 1:20) {
+        theta = eStep(theta, prior)
+        theta = mStep(theta, prior)
+        theta = elbo(theta, prior)
+    }
 }
 
 sourceCpp("getVarParams.cpp")
@@ -120,22 +116,6 @@ theta$e_ln_q_gamma       # --- match
 
 sourceCpp("getVarParams.cpp")
 theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
-theta_cpp$L[1]
-
-
-theta$L[1]
-
-all.equal(theta$L[1], theta_cpp$L[1])
-
-# end test elbo ----------------------------------------------------------------
-
-checkCorrectness(theta, theta_cpp)
-
-#### end of one iteration of cavi
-
-
-# one iteration of m-step performance
-microbenchmark(cavi_R(), cavi_cpp())
 
 
 

@@ -7,6 +7,8 @@
 #include <RcppEigen.h>
 #include <Rcpp.h>
 #include <numeric>
+#include "ParallelOps.h"
+
 //#include <Rmath.h>
 
 #include <unsupported/Eigen/SpecialFunctions>
@@ -30,21 +32,53 @@ using Eigen::VectorXd;
 
 
 
+/// Basically replacing:
+// [[Rcpp::export]]
+void sequential_for (MAT_TYPE X) {
+
+	MAT_TYPE I_D = MAT_TYPE::Identity(X.rows(), X.rows());
+
+    for (int i = 0; i < 10; ++i)
+        MAT_TYPE X_inv = X.llt().solve(I_D);
+}
+
+/// By:
+// [[Rcpp::export]]
+void threaded_for (MAT_TYPE X) {
+
+	//int start = 0;
+	//int end = 10;
+	MAT_TYPE I_D = MAT_TYPE::Identity(X.rows(), X.rows());
+
+    parallel_for(10, [&](int start, int end){ 
+        for(int i = start; i < end; ++i)
+            MAT_TYPE X_inv = X.llt().solve(I_D);
+    } );
+}
+
+
+
 
 // [[Rcpp::export]]
-double lse(VEC_TYPE vec, int dim) {
+SEXP fastInverse(MAT_TYPE X) {
 
-	
+	MAT_TYPE I_D = MAT_TYPE::Identity(X.rows(), X.rows());
 
+	MAT_TYPE X_inv = X.llt().solve(I_D);
+
+	return wrap(X_inv);
+
+}
 
 // [[Rcpp::export]]
-SEXP lse_rows(MAT_TYPE X, int N, int D) { 		 // (1 x 1)
- 
- 	VEC_TYPE lse_vec = VEC_TYPE::Zero(N);
-	for (int n = 0; n < N; n++) {
-		lse_vec(n) = lse(X.row(n), D);
-	}
-	
-	return(wrap(lse_vec));
-} // end mat_list_ops() function
+SEXP slowInverse(MAT_TYPE X) {
+
+	// MAT_TYPE I_D = MAT_TYPE::Identity(X.rows(), X.rows());
+
+	MAT_TYPE X_inv = X.inverse();
+
+	return wrap(X_inv);
+
+}
+
 

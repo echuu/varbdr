@@ -108,6 +108,10 @@ class VarParam {
 
 		list<MAT_TYPE>::iterator xn_mat_it;  // iterator for xn_mat
 
+
+		double tol; // tolerance for evaluating convergence of elbo
+
+
 		// ---------------------------------------------------------------------
 
 		// constructor for variational parameters
@@ -131,6 +135,9 @@ class VarParam {
 
 		// elbo will *internally* compute the variational lower bound
 		void     elbo();
+		bool     elboConverge();
+
+		void     nextIter();
 
 		// basic getters
 		int        getN();

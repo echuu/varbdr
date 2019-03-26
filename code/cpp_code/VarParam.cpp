@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>     /* srand, rand */
 #include <iostream>
+#include <iomanip>
 #include <unsupported/Eigen/SpecialFunctions> // digamma(), lgamma()
 
 
@@ -73,7 +74,7 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	this->Vk_inv_it = V_k_inv.begin();
 
 
-	this->curr      = 0; // current iteration of cavi
+	this->curr      = 1; // current iteration of cavi
 
 	// private data types ----------------------------------------------------
 
@@ -117,6 +118,8 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 		this->xn_mat.push_back(x_n * x_n.transpose());
 	}
 	this->xn_mat_it = xn_mat.begin();
+
+	this->tol = std::pow(10, -3);
 
 } // end of VarParam constructor
 
@@ -172,6 +175,33 @@ VEC_TYPE VarParam::lse_rows(MAT_TYPE X, int N_rows, int D_cols) {
 	return lse_vec;
 
 } // end of lse_rows() function
+
+
+
+void VarParam::nextIter() {
+	this->curr++;
+} // end of nextIter() function
+
+
+bool VarParam::elboConverge() {
+
+	int i = this->curr;
+
+	double diff = this->L(i) - this->L(i - 1);
+
+	if (i % 250 == 0) {
+		cout << "It:\t" << i;
+		std::cout << std::setprecision(4) << std::fixed;
+		cout << "\tLB:\t" << this->L(i) << "\tdelta:\t" << diff << endl;
+	}
+	
+	bool converge = abs(diff) < this->tol;
+
+	return converge;
+
+} // end elboConverge() function
+
+
 
 void VarParam::eStep() {
 
@@ -340,7 +370,7 @@ void VarParam::mStep() {
  								2 * lam_k.cwiseProduct(this->alpha);  
 
 		*this->Qk_it      = I_D.array() + 2 * rl_nk_xx.array();
-		*this->Qk_inv_it  = (*this->Qk_it).inverse();
+		*this->Qk_inv_it  = (*this->Qk_it).llt().solve(I_D);
 		
 		this->eta_k.col(k) = this->X.transpose() * 
 								(rnk_k.cwiseProduct(alpha_lam_k));   // (D x 1)
@@ -350,11 +380,18 @@ void VarParam::mStep() {
 		VEC_TYPE rnk_y = rnk_k.cwiseProduct(this->y);
 
 		*this->Vk_it     = this->Lambda_0 + r_nk_xx;
-		*this->Vk_inv_it = (*this->Vk_it).inverse();
+		*this->Vk_inv_it = (*this->Vk_it).llt().solve(I_D);
 		
 		this->zeta_k.col(k) = this->Lambda0_m0.array() + 
 									(this->X.transpose() * rnk_y).array();
 		this->m_k.col(k)    = (*this->Vk_inv_it) * this->zeta_k.col(k);
+
+
+		// update b_k
+		this->b_k(k) = - ((this->zeta_k.col(k)).transpose() * 
+			((*this->Vk_inv_it) * (this->zeta_k.col(k)))).value() + 
+					(rnk_k.cwiseProduct(this->y2)).sum();
+
 
 		// advance precision matrix iterators
 		advance(this->Qk_it, 1);
@@ -375,7 +412,7 @@ void VarParam::mStep() {
 	/* (1.3) update q(tau)   : a_k, b_k ------------------------------------- */
 	
 	this->a_k = (this->a_0 * ONES_K).array() + (0.5 * this->N_k).array();
-
+	/*
 	for (k = 0; k < K; k++) {
 		VEC_TYPE rnk_k = this->r_nk.col(k);                         // (N x 1)
 		this->b_k(k) = - ((this->zeta_k.col(k)).transpose() * 
@@ -383,15 +420,9 @@ void VarParam::mStep() {
 					(rnk_k.cwiseProduct(this->y2)).sum();
 		advance(this->Vk_inv_it, 1);
 	}
+	*/
 
-	this->Vk_inv_it = V_k_inv.begin(); 
-
-
-	// double  tmp = ((this->m_0).transpose() * this->Lambda0_m0).value();
-
-	// std::cout << "m_0 = " << m_0 << endl;
-	// std::cout << "m_0' * Lambda_0 * m_0 = " << tmp << endl;
-	// std::cout << "m_0' * Lambda_0 * m_0 = " << this->m0_Lambda0_m0 << endl;
+	// this->Vk_inv_it = V_k_inv.begin(); 
 
 	this->b_k = this->b_0.array() + 
 				(0.5 * (this->b_k + this->m0_Lambda0_m0 * ONES_K)).array();
@@ -409,7 +440,7 @@ void VarParam::mStep() {
 	this->gamma_k = this->mu_k;
 
 	// update current iteration
-	this->curr++;
+	//this->curr++;
 
 
 } // end mStep() function
@@ -554,7 +585,7 @@ void VarParam::elbo() {
 
 	e_ln_q_gamma    = -0.5 * K * D * (log(2 * M_PI) + 1) + e7.array().sum();					
 
-	
+	/*
 	std::cout.precision(8);
 	std::cout << "e_ln_p_y        = " << e_ln_p_y << endl;
 	std::cout << "e_ln_p_z        = " << e_ln_p_z << endl;
@@ -563,11 +594,11 @@ void VarParam::elbo() {
 	std::cout << "e_ln_q_z        = " << e_ln_q_z << endl;
 	std::cout << "e_ln_q_beta_tau = " << e_ln_q_beta_tau << endl;
 	std::cout << "e_ln_q_gamma    = " << e_ln_q_gamma << endl;
-	
+	*/
 
 	// update the ELBO
-	this->L(this->curr - 1) = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + 
-			e_ln_p_beta_tau - e_ln_q_z - e_ln_q_gamma - e_ln_q_beta_tau;
+	this->L(this->curr) = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + e_ln_p_beta_tau - 
+									e_ln_q_z - e_ln_q_gamma - e_ln_q_beta_tau;
 
 } // end of elbo() function
 

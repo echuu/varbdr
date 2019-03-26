@@ -28,7 +28,8 @@ varbdr = function(y, X, K = 4, intercept = FALSE,
                   Lambda_0 = diag(rep(1, ncol(X))), 
                   a_0 = 1, b_0 = 1,                             # gamma params
                   g_0 = 0, Sigma_0 = diag(rep(1, ncol(X))),     # normal params
-                  max_iter = 50000, tol = 1e-3, VERBOSE = TRUE) {
+                  max_iter = 50000, tol = 1e-3, VERBOSE = TRUE,
+                  m_k = NULL, mu_k = NULL) {
     
     
     if (intercept) {
@@ -53,7 +54,7 @@ varbdr = function(y, X, K = 4, intercept = FALSE,
         # N = number of observations
         # D = dimension of covariaftes
         # K = number of clusters
-    theta = initVarParams(y, X, N, D, K, intercept, max_iter)
+    theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
     
     # begin CAVI ---------------------------------------------------------------
     
@@ -67,7 +68,7 @@ varbdr = function(y, X, K = 4, intercept = FALSE,
         theta = mStep(theta, prior)
         
         # compute ELBO
-        theta$L[i] = elbo(theta, prior)
+        theta = elbo(theta, prior)
         
         # obtain current density curves using each of the covariates -> N curves
         #     note: dc[[iter]] --> (N x length of grid) dataframe
