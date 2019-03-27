@@ -55,7 +55,7 @@ varbdr = function(y, X, K = 4, intercept = FALSE,
         # D = dimension of covariaftes
         # K = number of clusters
     theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
-    
+    # theta = initVarParams(y, X, N, D, K, intercept, max_iter)
     # begin CAVI ---------------------------------------------------------------
     
     # perform coordinate ascent on variational parameters until EITHER:
@@ -81,6 +81,9 @@ varbdr = function(y, X, K = 4, intercept = FALSE,
         if (checkELBO(theta, prior)) {
             break
         }
+        
+        # update the current iteration
+        theta$curr = theta$curr + 1
         
     } # end of CAVI loop
     

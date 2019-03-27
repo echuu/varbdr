@@ -1,5 +1,5 @@
 
-setwd(getwd())
+setwd("C:/Users/chuu/varbdr/code")
 
 source("globals.R")
 
@@ -8,7 +8,7 @@ source(UNI_CDE)
 source(DENSITY)
 
 
-N = 1e4
+N = 1000
 K = 2
 
 synth_data_bimodal = r_binorm(N)
@@ -33,14 +33,13 @@ ggplot(df_y_long, aes(x, y = value)) + geom_point(size = 0.9) +
 
 
 # run cavi ---------------------------------------------------------------------
-
 # (1.1) covariate-INDEPENENT vb
 # source(paste(COV_INDEP, VARBDR, sep = '/'))      # load cov-indep varbdr.R
 # theta1_1 = varbdr(y = y, X = X, K = 3)               # store CAVI results
 
 # (1.2) covariate-DEPENDENT vb
-source(paste(COV_DEP, VARBDR, sep = '/'))               # load cov-dep varbdr.R
-theta0 = varbdr(y = y, X = X, K, intercept = TRUE)    # store CAVI results
+source(paste(COV_DEP, VARBDR, sep = '/'))              # load cov-dep varbdr.R
+theta0 = varbdr(y = y, X = X, K, intercept = FALSE)    # store CAVI results
 
 saveRDS(theta0, file = "bimodal_results/theta_N_1e4_K_2.RDS")
 
@@ -73,8 +72,8 @@ overlayPlots = function(theta, K, den_label,
     return(p)
 }
 
-overlayPlots(theta = list(theta1_500_2, theta1_1e3_2, theta1_1e4_2), 
-             K = 2, den_label = c("N=500", "N=1e3", "N=1e4"))
+overlayPlots(theta = list(theta0), 
+             K = 2, den_label = c("N=500"))
 
 
 # generate plots ---------------------------------------------------------------

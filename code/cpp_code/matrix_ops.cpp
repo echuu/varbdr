@@ -57,7 +57,16 @@ void threaded_for (MAT_TYPE X) {
 }
 
 
+// [[Rcpp::export]]
+MAT_TYPE test (MAT_TYPE X, MAT_TYPE mu_k) {
 
+		VEC_TYPE x_n = X.row(0);
+
+		MAT_TYPE M = (x_n.transpose() * mu_k).transpose();
+
+		return M;
+
+}
 
 // [[Rcpp::export]]
 SEXP fastInverse(MAT_TYPE X) {

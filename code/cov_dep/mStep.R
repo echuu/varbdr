@@ -134,9 +134,6 @@ mStep = function(theta, prior) {
     # the density after CAVI has converged. If we compute here, then that's
     # wasted computation
     
-    # update the current iteration
-    theta$curr = theta$curr + 1
-    
     
     return(theta)
     

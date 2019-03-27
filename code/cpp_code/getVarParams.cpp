@@ -99,7 +99,12 @@ SEXP varbdr_cpp(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 			    bool intercept, int max_iter) {
 
 	srand(1);
-	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter);
+	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter); // checked!
+	/*
+	theta_cpp.eStep(); // correct
+	theta_cpp.mStep(); // correct
+	theta_cpp.elbo();  // correct
+	*/
 	
 	bool cavi_converge = false;
 	while (!cavi_converge && theta_cpp.curr < max_iter) {

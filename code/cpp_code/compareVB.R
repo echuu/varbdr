@@ -41,7 +41,6 @@ microbenchmark(varbdr(y, X, K, m_k = m_k, mu_k = mu_k),
 
 
 
-
 ## check plots -- need to re-edit the functions to take C++ return
 
 theta = list(theta0_R)

@@ -26,11 +26,11 @@ intercept = FALSE
 max_iter = 5000
 
 sourceCpp("getVarParams.cpp")
-theta_cpp = testConstructor(y, X, N, D, K, intercept, max_iter)
+theta_cpp = generateParams(y, X, N, D, K, intercept, max_iter)
 str(theta_cpp)
 
-mu_k = theta_cpp$mu_k
-m_k  = theta_cpp$m_k
+(mu_k = theta_cpp$mu_k)
+(m_k  = theta_cpp$m_k)
 
 # model parameters to pass into R implementation of varbdr() -------------------
 # note: these are defined internally in C++ implementation
@@ -60,11 +60,16 @@ prior = initPriors(y, X, K, m_0, Lambda_0, a_0, b_0, g_0, Sigma_0,
 
 # set back to initVarParams_0() later
 theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
+theta = eStep(theta, prior)
+theta = mStep(theta, prior)
+theta = elbo(theta, prior)
+
+theta_cpp = varbdr_cpp(y, X, N, D, K, intercept, max_iter)
 
 # check equality after initialization
 checkCorrectness(theta, theta_cpp)
 
-theta = eStep(theta, prior)
+
 theta = mStep(theta, prior)
 str(theta)
 checkCorrectness(theta, theta_cpp)

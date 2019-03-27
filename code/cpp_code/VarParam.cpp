@@ -239,7 +239,7 @@ void VarParam::eStep() {
 		VEC_TYPE t1 = xmu_n - ((this->alpha(n) + this->phi(n)) * ONES_K); 
 		VEC_TYPE t2 = log(2 * M_PI) * ONES_K - psi_a + psi_b;
 		VEC_TYPE tau_prod = this->tau_k.array().cwiseProduct(((this->y(n) * 
-			ONES_K).array() - (x_n * this->m_k).transpose().array()).square());
+			ONES_K).array() - (x_n.transpose() * this->m_k).transpose().array()).square());
 
 		this->log_r_nk.row(n) = t1 - 0.5 * (t2 + xVx + tau_prod);
 
@@ -370,7 +370,7 @@ void VarParam::mStep() {
  								2 * lam_k.cwiseProduct(this->alpha);  
 
 		*this->Qk_it      = I_D.array() + 2 * rl_nk_xx.array();
-		*this->Qk_inv_it  = (*this->Qk_it).llt().solve(I_D);
+		*this->Qk_inv_it  = (*this->Qk_it).ldlt().solve(I_D);
 		
 		this->eta_k.col(k) = this->X.transpose() * 
 								(rnk_k.cwiseProduct(alpha_lam_k));   // (D x 1)
@@ -380,7 +380,7 @@ void VarParam::mStep() {
 		VEC_TYPE rnk_y = rnk_k.cwiseProduct(this->y);
 
 		*this->Vk_it     = this->Lambda_0 + r_nk_xx;
-		*this->Vk_inv_it = (*this->Vk_it).llt().solve(I_D);
+		*this->Vk_inv_it = (*this->Vk_it).ldlt().solve(I_D);
 		
 		this->zeta_k.col(k) = this->Lambda0_m0.array() + 
 									(this->X.transpose() * rnk_y).array();
@@ -516,7 +516,7 @@ void VarParam::elbo() {
 
 		VEC_TYPE t2 = log(2 * M_PI) * ONES_K - psi_a + psi_b + xVx;
 		VEC_TYPE tau_prod = this->tau_k.array().cwiseProduct(((this->y(n) * 
-			ONES_K).array() - (x_n * this->m_k).transpose().array()).square());
+			ONES_K).array() - (x_n.transpose() * this->m_k).transpose().array()).square());
 
 		e1(n) = (rnk_n.array().cwiseProduct((t2 + tau_prod).array())).sum();
 

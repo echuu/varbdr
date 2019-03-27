@@ -26,8 +26,8 @@ checkELBO = function(theta, prior) {
     i = theta$curr
     
     # display iteration, ELBO, change in ELBO
-    if ((prior$VERBOSE) && (i %% 250 == 0)) {
-        cat("It:\t",        i,
+    if ((prior$VERBOSE) && ((i - 1) %% 20 == 0)) {
+        cat("It:\t",        i - 1,
             "\tLB:\t",      theta$L[i], 
             "\tLB_diff:\t", theta$L[i] - theta$L[i - 1],
             "\n")
