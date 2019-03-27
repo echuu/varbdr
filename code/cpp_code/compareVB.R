@@ -1,4 +1,5 @@
 
+# make sure to use the correct constructor for initiVarParams()
 source("C:/Users/chuu/varbdr/code/globals.R")
 
 setwd(HOME_DIR)
@@ -10,11 +11,14 @@ setwd("C:/Users/chuu/varbdr/code/cpp_code")
 source("debug_funcs.R")
 
 N = 500
+D = 1
 K = 2
 synth_data_1d = r_dpmix2(N)
 y = synth_data_1d$y
 X = synth_data_1d$X
 y_grid = seq(-3, 1.5, length.out = 1000)
+intercept = FALSE
+max_iter = 1e5
 
 sourceCpp("getVarParams.cpp")
 meanParams = generateParams(y, X, N, D, K, intercept, max_iter)

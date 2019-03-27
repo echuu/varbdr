@@ -39,7 +39,6 @@ SEXP extractPriors(VarParam theta_cpp) {
 }
 
 
-
 SEXP extractVarParam(VarParam theta_cpp) {
 
 	List theta;
@@ -101,20 +100,6 @@ SEXP varbdr_cpp(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 
 	srand(1);
 	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter);
-
-	// (0) run this first by commenting the mStep() call so that the
-	//     R environment has access to the initializations made here
-	// (1) uncomment the mStep() call and run ONE iteration and 
-	//     compare results with ONE iteration of the R mStep()
-	
-	// comment this for step (0), uncomment for step (1)
-	
-	/*
-	theta_cpp.eStep();
-	theta_cpp.mStep();
-	theta_cpp.elbo();
-	*/
-
 	
 	bool cavi_converge = false;
 	while (!cavi_converge && theta_cpp.curr < max_iter) {
