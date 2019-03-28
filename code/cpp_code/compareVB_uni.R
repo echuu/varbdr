@@ -10,10 +10,10 @@ source(DENSITY)
 
 # initialize parameters needed for varbdr_cpp()
 intercept = TRUE
-max_iter  = 5e3
+max_iter  = 1e5
 
-N = 500  # number of observations
-K = 3    # number of clusters
+N = 1e4  # number of observations
+K = 2    # number of clusters
 D = 2    # dimension of covaraites
 
 synth_data_bimodal = r_binorm(N)                     # generate data
@@ -62,7 +62,7 @@ overlayPlots = function(theta, K, den_label,
 # intercept now only plays role in new input for plotting
 # if intercept is fitted, first column of X should be vector of 1's 
 # before passing into varbdr() and varbdr_cpp()
-overlayPlots(theta = list(theta_cpp), K, den_label = c("N=500"))
+overlayPlots(theta = list(theta_cpp), K, den_label = c("N=1e4"))
 
 
 

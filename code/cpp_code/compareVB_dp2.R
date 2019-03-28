@@ -18,7 +18,7 @@ y = synth_data_1d$y
 X = synth_data_1d$X
 y_grid = seq(-3, 1.5, length.out = 1000)
 intercept = FALSE
-max_iter = 1e5
+max_iter = 5e6
 
 sourceCpp("getVarParams.cpp")
 meanParams = generateParams(y, X, N, D, K, intercept, max_iter)
@@ -30,6 +30,11 @@ mu_k = meanParams$mu_k
 theta0_R = varbdr(y, X, K, m_k = m_k, mu_k = mu_k)   # store CAVI results
 
 theta0_cpp = varbdr_cpp(y, X, N, D, K, intercept, max_iter)
+
+saveRDS(theta0_cpp, file = "dp_results/theta_N_1e5_K_2.RDS")
+
+
+
 
 # check equality after convergence
 checkCorrectness(theta0_R, theta0_cpp)
@@ -43,7 +48,7 @@ microbenchmark(varbdr(y, X, K, m_k = m_k, mu_k = mu_k),
 
 ## check plots -- need to re-edit the functions to take C++ return
 
-theta = list(theta0_cpp)
+theta = list(theta0_R)
 overlayPlots = function(theta, K, den_label,
                         x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)) {
     

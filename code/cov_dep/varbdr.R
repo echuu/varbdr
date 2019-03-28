@@ -31,16 +31,26 @@ varbdr = function(y, X, K = 4, intercept = FALSE,
                   max_iter = 50000, tol = 1e-3, VERBOSE = TRUE,
                   m_k = NULL, mu_k = NULL) {
     
-    
-    if (intercept) {
-        X = as.matrix(cbind(1, X))  # (N X (D + 1)) design matrix of covariates
-    } else {
-        X = as.matrix(X)            # (N X D) design matrix of covariates
-    }
-    
     D = NCOL(X)                 # Number of features
     N = NROW(X)                 # Number of observations
     
+
+    # 3/27 update: 'intercept' no longer used to decide whether or not to 
+    # left-append to the design matrix. If intercept is to be fitted, then X
+    # must be passed in with the column of 1's as the first column -- we check
+    # that here:
+
+    if (intercept) { # verify 1st column is (N x 1) vector of 1's
+        if (!isTRUE(all.equal(X[,1], rep(1, N)))) {
+            print("if intercept == TRUE, X[,1] should be column of 1's!")
+            return(NULL)
+        } 
+        print("Fitting an intercept term.")
+    }
+
+
+
+
     # prior specification: 
         # mu_k | tau_k ~ N  (m0, (tau_k * Lambda0)^{-1})
         #        tau_k ~ Ga (a0, b0)
@@ -54,7 +64,8 @@ varbdr = function(y, X, K = 4, intercept = FALSE,
         # N = number of observations
         # D = dimension of covariaftes
         # K = number of clusters
-    theta = initVarParams_0(y, X, N, D, K, intercept, max_iter, m_k, mu_k)
+    theta = initVarParams(y, X, N, D, K, intercept, max_iter, m_k, mu_k) # TODO: TEST THIS
+
     # theta = initVarParams(y, X, N, D, K, intercept, max_iter)
     # begin CAVI ---------------------------------------------------------------
     

@@ -1,4 +1,30 @@
 
+// getVarParams.cpp
+
+
+
+/* main file that is sourced in R. This contains the outer
+   layer of variational algorithm (makes calls to initialize VarParam object, 
+   runs eStep, mStep, computes elbo)
+
+	functions included:
+	    (1) extractPriors()    :  returns some of prior parameters (add more if
+	                              necessary, mainly used for debugging)
+
+		(2) extractVarParam()  :  extract variational parameters that are used
+		                          after convergence (plot approx densities)
+
+		(3) generateParams()   :  returns the variational parameters after 
+		                          (random) initialization (used so that the R
+		                          implementation can use the same initial values
+		                          for m_k, mu_k)
+
+		(4) varbdr_cpp()       :  vb algorithm for density regression. After
+	 							  convergence, varbdr_cpp() returns a
+		                          VarParam object containing all variables
+		                          needed to compute approximate densities
+*/
+
 // [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
 #include <RcppEigen.h>
 #include <Rcpp.h>
@@ -15,7 +41,13 @@ using Eigen::VectorXd;
 
 
 
+/* extractVarParam():
+   input:    
+             theta_cpp   :  VarParam object
+   output:   
+   	         list object with prior parameters that can be accessed in R
 
+*/
 SEXP extractPriors(VarParam theta_cpp) {
 
 	List prior;
@@ -35,10 +67,16 @@ SEXP extractPriors(VarParam theta_cpp) {
 
 	return wrap(prior);
 
-	// return 0;
-}
+} // end extractPriors() function
 
 
+/* extractVarParam():
+   input:    
+             theta_cpp   :  VarParam object
+   output:   
+   	         VarParam object whose variables/parameters can be accessed in R
+
+*/
 SEXP extractVarParam(VarParam theta_cpp) {
 
 	List theta;
@@ -78,10 +116,24 @@ SEXP extractVarParam(VarParam theta_cpp) {
 
 	return wrap(theta);
 
-	// return 0;
-}
+} // end extractVarParam() function
 
 
+
+/* generateParams():
+   input:    
+             y           :  (N x 1) vector of responses
+             X           :  (N x D) -- covariates stored row-wise
+             N           :  number of observations
+             D           :  dimension of covariates
+             K           :  number of (gaussian) clusters/components
+             intercept   :  boolean value used to indicate if fitting intercept
+             max_iter    :  max number of iters to run cavi before terminating
+    output:  
+             VarParam object with variational parameters after calling 
+             initializing with user-input parameters
+
+*/
 // [[Rcpp::export]]
 SEXP generateParams(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			        bool intercept, int max_iter) {
@@ -91,21 +143,31 @@ SEXP generateParams(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	
 	return extractVarParam(theta_cpp);
 
-} // end mat_list_ops() function
+} // end generateParams() function
 
 
 
+
+/* varbdr():
+   input:    
+             y           :  (N x 1) vector of responses
+             X           :  (N x D) -- covariates stored row-wise
+             N           :  number of observations
+             D           :  dimension of covariates
+             K           :  number of (gaussian) clusters/components
+             intercept   :  boolean value used to indicate if fitting intercept
+             max_iter    :  max number of iters to run cavi before terminating
+    output:  
+            VarParam object (after convergence) whose variables/parameters 
+            can be accessed in R
+
+*/
 // [[Rcpp::export]]
 SEXP varbdr_cpp(MAP_VEC y, MAP_MAT X, int N, int D, int K, 
 			    bool intercept, int max_iter) {
 
 	srand(1);
 	VarParam theta_cpp(y, X, N, D, K, intercept, max_iter); // checked!
-	/*
-	theta_cpp.eStep(); // correct
-	theta_cpp.mStep(); // correct
-	theta_cpp.elbo();  // correct
-	*/
 	
 	bool cavi_converge = false;
 	while (!cavi_converge && theta_cpp.curr < max_iter) {
@@ -122,7 +184,7 @@ SEXP varbdr_cpp(MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	
 	return extractVarParam(theta_cpp);
 
-} // end mat_list_ops() function
+} // end varbdr_cpp() function
 
 
 
