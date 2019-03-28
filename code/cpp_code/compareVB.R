@@ -43,7 +43,7 @@ microbenchmark(varbdr(y, X, K, m_k = m_k, mu_k = mu_k),
 
 ## check plots -- need to re-edit the functions to take C++ return
 
-theta = list(theta0_R)
+theta = list(theta0_cpp)
 overlayPlots = function(theta, K, den_label,
                         x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)) {
     
@@ -61,6 +61,5 @@ overlayPlots = function(theta, K, den_label,
 }
 
 
-overlayPlots(theta, K = 2, 
-             den_label = c("N=500"))
+overlayPlots(theta, K = 2, den_label = c("N=500"))
 

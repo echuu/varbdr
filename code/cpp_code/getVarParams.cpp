@@ -48,6 +48,7 @@ SEXP extractVarParam(VarParam theta_cpp) {
 	theta["tau_k"]      = theta_cpp.tau_k;
 	theta["gamma_k"]    = theta_cpp.gamma_k;
 	theta["curr"]       = theta_cpp.curr;
+	theta["intercept"]  = theta_cpp.getIntercept();
 
 	/* other variational parameters not needed to calculate approximate density,
 	   but we return a few extra for debugging purposes (add as needed) */
