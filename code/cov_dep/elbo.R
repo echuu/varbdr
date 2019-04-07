@@ -55,12 +55,17 @@ elbo = function(theta, prior) {
     theta$e_ln_p_z = sum(e2) # comment out later
     
     # (3) E [ ln p(gamma) ] ----------------------------------------------------
-    e_ln_p_gamma = - 0.5 * K * D * log(2 * pi) - 0.5 * sum(theta$mu_k^2)
+    trace_qk = 0
+    for (k in 1:K) {
+        trace_qk = trace_qk + matrix.trace(as.matrix(theta$Q_k_inv[,,k]))
+    }
+    e_ln_p_gamma = - 0.5 * K * D * log(2 * pi) - 0.5 * sum(theta$mu_k^2) - 
+        0.5 * trace_qk
     theta$e_ln_p_gamma = - 0.5 * K * D * log(2 * pi) - 0.5 * sum(theta$mu_k^2)
 
     # (4) E [ ln p(beta, tau) ] ------------------------------------------------
     e3 = sum((prior$a_0 + 0.5 * D - 1) * (psi_a - psi_b)) -
-        K * (0.5 * D * log(2 * pi) - log(det(prior$Lambda_0)) - 
+        K * (0.5 * D * log(2 * pi) - 0.5 * log(det(prior$Lambda_0)) - 
                  prior$a_0 * log(prior$b_0) + lgamma(prior$a_0))
     
     # print(paste("e3 constant =", e3))
@@ -98,7 +103,7 @@ elbo = function(theta, prior) {
     for (k in 1:K) {
         e7 = e7 + log(det(as.matrix(theta$Q_k[,,k])))
     }
-    e_ln_q_gamma = e7
+    e_ln_q_gamma = 0.5 * e7
     theta$e_ln_q_gamma = e7 # comment out later
     # compute the elbo ---------------------------------------------------------
     vlb = e_ln_p_y + e_ln_p_z + e_ln_p_gamma + e_ln_p_beta_tau -

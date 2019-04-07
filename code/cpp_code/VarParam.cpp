@@ -189,7 +189,7 @@ bool VarParam::elboConverge() {
 
 	double diff = this->L(i) - this->L(i - 1);
 
-	if (i % 500 == 0) {
+	if (i % 20 == 0) {
 		cout << "It:\t" << i;
 		std::cout << std::setprecision(4) << std::fixed;
 		cout << "\tLB:\t" << this->L(i) << "\tdelta:\t" << diff << endl;
@@ -523,6 +523,8 @@ void VarParam::elbo() {
 	} // end outer for (n)
 
 
+
+	double trace_qk = 0;
 	// calculate (2), (4), (6), (7)
 	for (k = 0; k < K; k++) {
 
@@ -532,6 +534,8 @@ void VarParam::elbo() {
 		e2(k) = (rnk_k.array().cwiseProduct((xmu_k - this->alpha - 
 												this->phi).array())).sum();
 
+
+		trace_qk += (*this->Qk_inv_it).trace(); 
 
 		// calculation for (4) -- update e4_diff, e4_trace
 		VEC_TYPE diff_k = diff.col(k);
@@ -546,6 +550,7 @@ void VarParam::elbo() {
 		// calculation for (7) -- update e7
 		e7(k) = log((*this->Qk_it).determinant());
 
+		advance(this->Qk_inv_it, 1);
 		advance(this->Vk_inv_it, 1);
 		advance(this->Qk_it, 1);
 		advance(this->Vk_it, 1);
@@ -556,6 +561,7 @@ void VarParam::elbo() {
 	this->Qk_it     = this->Q_k.begin();     // reset Q_k iterator
 	this->Vk_it     = this->V_k.begin();     // reset V_k iterator
 	this->Vk_inv_it = this->V_k_inv.begin(); // reset V_k_inv iterator
+	this->Qk_inv_it = this->Q_k_inv.begin(); // reset Q_k_inv iterator
 
 
 
@@ -563,7 +569,7 @@ void VarParam::elbo() {
 	double e3_1 = (this->a_0 + (0.5 * D - 1) * 
 					ONES_K).array().cwiseProduct((psi_a - psi_b).array()).sum();
 
-	double e3_2 = - K * (0.5 * D * log(2 * M_PI) - this->lgd_Lambda_0 - 
+	double e3_2 = - K * (0.5 * D * log(2 * M_PI) - 0.5 * this->lgd_Lambda_0 - 
 				  		this->a_0(0) * this->log_b0(0) + this->lg_a0(0));
 
 	e4_diff = (this->tau_k).array().cwiseProduct((e4_diff + this->b_0).array());
@@ -576,14 +582,15 @@ void VarParam::elbo() {
 	e_ln_p_y        = -0.5 * e1.array().sum();
 	e_ln_p_z        = e2.array().sum();
 	e_ln_p_gamma    = -0.5 * K * D * log(2 * M_PI) - 
-						  0.5 * ((this->mu_k).array().square().sum());
+						  0.5 * ((this->mu_k).array().square().sum()) -
+						  0.5 * trace_qk;
 	e_ln_p_beta_tau = e3_1 + e3_2 - 0.5 * (e4_diff + e4_trace).array().sum();
 	e_ln_q_z  	    = (this->r_nk.array().cwiseProduct(
 										this->log_r_nk.array())).array().sum();
 	e_ln_q_beta_tau = (e6_const + e6).array().sum() - 
 						0.5 * K * D * (log(2 * M_PI) + 1);
 
-	e_ln_q_gamma    = -0.5 * K * D * (log(2 * M_PI) + 1) + e7.array().sum();					
+	e_ln_q_gamma    = -0.5 * K * D * (log(2 * M_PI) + 1) + 0.5 * e7.array().sum();					
 
 	/*
 	std::cout.precision(8);
