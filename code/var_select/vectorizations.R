@@ -30,14 +30,14 @@ for (d in 1:D) {
                 }
                 
                 sum_res = sum_res + r_nk[n,k] * tau_k[k] * X[n,d] * X[n,j] * 
-                    beta[k,d] * beta[k,j]
+                    beta[d,k] * beta[j,k]
                 
             }
         }
     }
 }
 
-sum_res # 7.195374
+sum_res # -2.56325
 
 
 sum_res = 0
@@ -67,7 +67,7 @@ for (d in 1:D) {
     }
 }
 
-sum_res # 7.195374
+sum_res # -2.56325
 
 
 
@@ -113,7 +113,7 @@ for (d in 1:D) {
 vec_res
 
 
-
+vec_res = 0
 for (d in 1:D) {
     
     j_sum = 0
