@@ -1,5 +1,4 @@
 # don't track content with .tex extensions
-*.tex
 *.aux
 *.bcf
 *.log
