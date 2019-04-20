@@ -252,7 +252,8 @@ Details for each of the expectations can be found in Appendix \ref{app:elbo}.
 
 \section{Algorithm} \label{alg1}
 
-Using the updates discussed in the previous section, we can formalize the variational algorithm below. Note that in the update of the $r_{nk}$'s, we use the approximation given in (\ref{eq:bouchard_approx}) to compute the update in closed form. 
+Using the updates discussed in the previous section, we can formalize the variational algorithm below. 
+% Note that in the update of the $r_{nk}$'s, we use the approximation given in (\ref{eq:bouchard_approx}) to compute the update in closed form. 
 \begin{algorithm}[H]
 \SetAlgoLined
 \KwResult{An approximating distribution to the true posterior of \boldsymbol\theta}
@@ -671,7 +672,33 @@ In order to find closed form updates for the coorindate ascent algorithm, we fir
 
 Proceeding in standard fashion by taking the expectation with respect to the variational distribution, we can derive the functional form for each of the approximating distributions and their corresponding coordinate ascent updates. \\
 
-For $q\left(\betad \given \omega_d = 1 \right)$, it is helpful to rewrite to first term in the log joint likelihood (mixsture density) in terms of $\betad$. Then, we have the following variational distribution with equality written up to constants
+
+\textbf{Update $q \left( \mathbf{Z} \right)$}. As shown in the previous case, we know the optimal distribution for $\mathbf{Z}$ is of the form
+$$q^{*}(\mathbf{Z}) = \prod_{n} \prod_{k} r_{nk}^{z_{nk}}, \quad r_{nk} = \frac{\rho_{nk}}{\sum_{j} \rho_{nj}}$$ 
+Note that $\rho_{nk}$ involves evaluating a number of expectations taken with respect to various variational distribution, each of which is updated during sequentially during each iteration of the coordinate ascent algorithm. In particular, 
+
+\begin{equation} \label{eq:ln_rho_vs}
+\begin{split}
+ \ln \rho_{nk} = &-\frac{1}{2}\ln(2\pi) + \frac{1}{2} \E_{q(\boldsymbol\tau)}[ \ln \tau_k ] - \frac{1}{2} \E_{q(\boldsymbol\tau)}[\tau_k] \cdot \E_{q(\boldbeta, \boldsymbol\omega))}[(y_n - x_n^{\tr}\beta_k)^2] \\ 
+	& + x_n^{\tr}\E_{q(\boldsymbol\gamma)}[\gamma_k] - \E_{q(\boldsymbol\gamma)}\Bigg[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\Bigg]
+\end{split}
+\end{equation}
+
+so that $\E[z_{nk}] = r_{nk}$. Explicit expressions for each of the expectations, which can either be computed in closed form or approximated, can be found in the supplemental section. \\
+
+
+\textbf{Update $q \left(  \boldtau \right)$}. Choosing a gamma prior admits the following induced factorizations and provides a straightforward update for shape and rate parameters:
+\begin{align}
+	q^{\star} \left( \boldtau \right) & = \prod_{k} q \left( \tau_k \right) = \prod_{k} \mathrm{Ga} \left( \tau_k \given a_k, b_k \right) \label{eq:q_gamma_vs} \\
+	a_k &= a_0 + \frac{N_k}{2} - 1 \label{eq:ak_vs} \\
+	b_k &= b_0 + \frac{1}{2} \nsum (y_n -\transpose{x_n} \tilde{m}_k)^2 + \transpose{x_n}\var{\beta_k} x_n \label{eq:bk_vs}
+\end{align}
+where $\tilde{m}_k = $ and $\var{\beta_k} = $. \\
+
+\textbf{Update $q \left(  \boldgamma \right)$}. \\
+
+
+\textbf{Update $q \left( \betad, \omega_d \right)$}. We do this sequentially by first deriving the update for $q\left(\betad \given \omega_d = 1 \right)$ and then for $q\left( \omega_d \right)$. It is helpful to rewrite the first term in the log joint likelihood (mixture density) in terms of $\betad$. Conditioning on $\omega_d = 1$, we have the variational distribution with equality written up to constants (in $\betad)$, 
 \begin{align}
 	 \ln q^{\star} \left(\betad \given \omega_d = 1 \right) &= - \frac{1}{2} \transpose{\betad} \umat_d \betad + \transpose{\betad} \eta_d - \frac{\xi_0}{2} \transpose{\betad} \betad \\
 	 &= - \frac{1}{2} \transpose{\betad} \big[ \umat_d +  \xi_0 \mathrm{I}_K\big] \betad + \transpose{\betad} \eta_d \label{eq:ln_q_beta_vs}
@@ -681,31 +708,42 @@ Note that we have used the following result (equality written up to constants in
 	 E_{-q(\boldbeta)} \Bigg[ \frac{1}{2} \nsum \ksum -z_{nk} \tau_k \left( y_n - \transpose{x_n} \beta_k \right)^2 \Bigg] = - \frac{1}{2} \sum_d \transpose{\betad} \umat_d \betad + \sum_{d} \transpose{\betad} \eta_d
 \end{equation}
 
+From (\ref{eq:ln_q_beta_vs}), we see that
+\begin{align*}
+	q^{\star}\left(\betad\right) = \mathcal{N} \left( \betad \given m_d, \qmat_d^{-1} \right)
+\end{align*}
+
+where $m_d = \qmat_d^{-1} \eta_d, \qmat_d = \umat_d + \xi_0 \mathrm{I}_K$, and $\eta_d = \zeta_d - \frac{1}{2} \sum\limits_{j \neq d} \mathrm{R}_{dj} \omega_j m_j$. We have made use of the following matrices
+\begin{align*}
+\mathrm{R}_{dj} & = \begin{bmatrix} 
+\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}           &          &          \\ 
+\vertdots   &  \ddots    & \vertdots \\
+            &          & \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj}        \\
+\end{bmatrix} \quad \quad \quad \quad
+\zeta_d =  \begin{bmatrix} 
+\frac{a_1}{b_1} \nsum r_{n1} x_{nd}y_{n} \\ 
+\vdots   \\
+\frac{a_K}{b_K} \nsum r_{nK} x_{nd}y_{n} \\
+\end{bmatrix} \\
+\umat_d & = \begin{bmatrix} 
+\frac{a_1}{b_1} \nsum r_{n1} x_{nd}^2            &               &  \\ 
+            &  \ddots       &  \\
+            &               & \frac{a_K}{b_K} \nsum r_{nK} x_{nd}^2 \\
+\end{bmatrix}
+\end{align*}
+
+
 From (\ref{eq:ln_q_beta_vs}), we have
 \begin{align*}
 	q^{\star}(\betad) = \mathcal{N} \left( \betad \given m_d, \qmat_d^{-1} \right)
 \end{align*}
 
 where $m_d = \qmat_d^{-1} \eta_d, \qmat_d = \umat_d + \xi_0 \mathrm{I}_K$, and $\eta_d = \zeta_d - \frac{1}{2} \sum\limits_{j \neq d} \mathrm{R}_{dj} \omega_j m_j$. We have made use of the following matrices
-\[
-\umat_d = \begin{bmatrix} 
-\frac{a_1}{b_1} \nsum r_{n1} x_{nd}^2            &               &  \\ 
-            &  \ddots       &  \\
-            &               & \frac{a_K}{b_K} \nsum r_{nK} x_{nd}^2 \\
-\end{bmatrix} \quad
-\mathrm{R}_{dj} = \begin{bmatrix} 
-\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}           &          &          \\ 
-\vertdots   &  \ddots    & \vertdots \\
-            &          & \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj}        \\
-\end{bmatrix} \quad
-\]
-\[
-\zeta_d = \begin{bmatrix} 
-\frac{a_1}{b_1} \nsum r_{n1} x_{nd}y_{n} \\ 
-\vdots   \\
-\frac{a_K}{b_K} \nsum r_{nK} x_{nd}y_{n} \\
-\end{bmatrix}
-\]
+\begin{alignat}{2}
+	\umat_d &= \mathrm{diag} &&\left(\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj} \right) \\
+	\mathrm{R}_{dj} &= \mathrm{diag} &&\left(\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj} \right) \\
+	\zeta_d &= &&\transpose{\left( \frac{a_1}{b_1} \nsum r_{n1} x_{nd}y_{n}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}y_{n} \right)}
+\end{alignat}
 
 
 
@@ -722,10 +760,10 @@ q \left( \betad, \omega_d \right) =
 \right. \]
 The variational parameters $(m_d, \qmat_d, \lambda_d)$ can be updated using the following by differentiating the variational lower bound with respect to each of the parameters, setting the resulting partial derivatives to zero and solving for each parameter. Doing so yields following:
 \setlength{\jot}{10pt}
-\begin{alignat}{2}
-  \mathrm{Cov}(\betad \given \omega_d = 1) &\approx \qmat_d^{-1} & &=  \left(\umat_d + \xi_0 \mathrm{I}_K\right)^{-1} \label{eq:var_betad}\\
-  \E [ \betad \given \omega_d = 1]  &\approx m_d & &=  \qmat_d^{-1} \eta_d  \label{eq:e_betad}\\
-  \frac{\pr{\omega_d = 1\given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}}{\pr{\omega_d = 0 \given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}}  &\approx \frac{\lambda_d}{1-\lambda_d} & &=  \frac{\pi}{1-\pi} \cdot \log \xi_0^{\frac{K}{2}} \cdot \exp\Big\{\frac{1}{2}\transpose{m_d}\eta_d\Big\} \label{eq:logodds_lambda}
+\begin{alignat}{4}
+  \mathrm{Cov}(\betad \given \omega_d = 1) \textrm{ } &\approx \textrm{ }&& \qmat_d^{-1} &&\textrm{ } & &= \textrm{ } \left(\umat_d + \xi_0 \mathrm{I}_K\right)^{-1} \label{eq:var_betad}\\
+  \E [ \betad \given \omega_d = 1]  \textrm{ }&\approx \textrm{ } && m_d &&\textrm{ }& &= \textrm{ } \qmat_d^{-1} \eta_d  \label{eq:e_betad}\\
+  \frac{\pr{\omega_d = 1\given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}}{\pr{\omega_d = 0 \given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}} \textrm{ } &\approx \textrm{ } && \frac{\lambda_d}{1-\lambda_d}&& \textrm{ }& &= \textrm{ } \frac{\pi}{1-\pi} \cdot \log \xi_0^{\frac{K}{2}} \cdot \exp\Big\{\frac{1}{2}\transpose{m_d}\eta_d\Big\} \label{eq:logodds_lambda}
 \end{alignat}
 
 

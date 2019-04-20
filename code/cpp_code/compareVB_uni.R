@@ -10,9 +10,9 @@ source(DENSITY)
 
 # initialize parameters needed for varbdr_cpp()
 intercept = TRUE
-max_iter  = 1e5
+max_iter  = 1e4
 
-N = 1e4  # number of observations
+N = 1e3  # number of observations
 K = 2    # number of clusters
 D = 2    # dimension of covaraites
 

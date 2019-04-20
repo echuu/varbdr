@@ -189,7 +189,7 @@ bool VarParam::elboConverge() {
 
 	double diff = this->L(i) - this->L(i - 1);
 
-	if (i % 20 == 0) {
+	if (i % 100 == 0) {
 		cout << "It:\t" << i;
 		std::cout << std::setprecision(4) << std::fixed;
 		cout << "\tLB:\t" << this->L(i) << "\tdelta:\t" << diff << endl;
