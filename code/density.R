@@ -281,8 +281,8 @@ compareDensities = function(y_grid, x,
         approx_mat[, d_i] = den_list[[d_i]](theta_list[[d_i]], K, data_ygrid)
     }
     
-    if (length(x) > 1) {
-        x0 = x[2:length(x)]
+    if (length(x) > 1) {     # omit the intercept term when evaluating TRUE
+        x0 = x[2:length(x)]  # density bc true density only requires covariate
     } else {
         x0 = x
     }

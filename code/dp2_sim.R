@@ -110,7 +110,7 @@ overlayPlots(list(theta_1e3_4), K = 4,
 
 
 # generate plot overlays of the percentiles
-theta1_list    = list(theta_2e4_2)
+theta1_list    = list(theta_1e4_2)
 source(DENSITY)
 x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
 approx_d  = list(py_bouch)              # list of approx density functions
@@ -124,25 +124,59 @@ multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), cols = 3)
 # -----------------------------------------------------------------------------
 
 
+df_res = plotCD(theta_1e4_2, K, x, y_grid, d_dpmix2, fy.x)
 
 
+df_res$cd_plots[[6]]
 
+head(df_res[[1]]) # y, vb_d, true_d, kern_d
+
+df_1_long = melt(df_res[[1]], measure.vars = c("vb_d", "true_d", "kern_d"))
+
+
+ggplot(df_1_long, aes(x = y, y = value, col = variable)) + geom_line() + 
+    geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() +
+    theme(legend.position = "none")
 
 
 
 
 
 # compare with np results ------------------------------------------------------
+setwd("C:/Users/chuu/varbdr/code")
+
+source("globals.R")
+
+setwd(HOME_DIR)
+source(DP_BDR) 
+source(DENSITY)
+
+N = 500
+K = 2
+synth_data_1d = r_dpmix2(N)
+
+y      = synth_data_1d$y
+X      = synth_data_1d$X
+params = synth_data_1d$param_mat
+y_grid = seq(-3, 1.5, length.out = 1000)
+
+x = c(0.15)
+
 library("np")
-X = data.frame(X[,2])
+X = data.frame(X[,1])
 y = data.frame(y)
 xy_df = data.frame(y = y, x = X)
-names(xy_df) = c("x", "y")
+names(xy_df) = c("y", "x")
 
 fy.x = npcdens(y ~ x, xy_df)
 
 overlays = vector("list", length(x))
 y_grid = seq(-0.5, 1.5, length.out = 1000)
+
+y_eval = data.frame(y = y_grid, x = x[1])
+fy_eval = predict(fy.x, newdata = y_eval)
+
+
 
 for (i in 1:length(x)) {
     y_eval = data.frame(y = y_grid, x = x[i])

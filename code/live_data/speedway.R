@@ -36,9 +36,9 @@ X = cbind(1, X)
 y = lane2$speed
 N = nrow(X)
 D = ncol(X)
-K = 2
+K = 4
 intercept = TRUE
-max_iter  = 5e4
+max_iter  = 2e3
 
 y_grid = seq(min(y), max(y), length.out = 2000)
 x_in = c(1400)
@@ -61,7 +61,17 @@ ggplot(approx_df, aes(x = y, y = p_y)) +
     geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() 
 
 
+y_grid = seq(20, 50, length.out = 2000)
+x_in = c(1400)
+N_evals    = length(y_grid)                          # number of evaluations
+data_ygrid = list(y = y_grid, x = c(1, x_in / 100))  # fixed for all evaluations
 
+approx_density = py_bouch(theta_sf, K, data_ygrid) 
+
+approx_df = data.frame(y = y_grid, p_y = approx_density)
+
+ggplot(approx_df, aes(x = y, y = p_y)) + 
+    geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() 
 
 
 
