@@ -13,6 +13,9 @@
 \usepackage{bm}
 \usepackage{hyperref}
 
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+
 \usepackage{algorithm}
 \usepackage[options ]{algorithm2e}
 \usepackage[noend]{algpseudocode}
@@ -695,7 +698,7 @@ so that $\E[z_{nk}] = r_{nk}$. Explicit expressions for each of the expectations
 \end{align}
 where $\tilde{m}_k = $ and $\var{\beta_k} = $. \\
 
-\textbf{Update $q \left(  \boldgamma \right)$}. \\
+\textbf{Update $q \left(  \boldgamma \right)$}. The update for $\boldgamma$ remains the same as before. \\
 
 
 \textbf{Update $q \left( \betad, \omega_d \right)$}. We do this sequentially by first deriving the update for $q\left(\betad \given \omega_d = 1 \right)$ and then for $q\left( \omega_d \right)$. It is helpful to rewrite the first term in the log joint likelihood (mixture density) in terms of $\betad$. Conditioning on $\omega_d = 1$, we have the variational distribution with equality written up to constants (in $\betad)$, 
@@ -766,6 +769,25 @@ The variational parameters $(m_d, \qmat_d, \lambda_d)$ can be updated using the 
   \frac{\pr{\omega_d = 1\given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}}{\pr{\omega_d = 0 \given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}} \textrm{ } &\approx \textrm{ } && \frac{\lambda_d}{1-\lambda_d}&& \textrm{ }& &= \textrm{ } \frac{\pi}{1-\pi} \cdot \log \xi_0^{\frac{K}{2}} \cdot \exp\Big\{\frac{1}{2}\transpose{m_d}\eta_d\Big\} \label{eq:logodds_lambda}
 \end{alignat}
 
+
+\begin{figure}
+  \centering
+  \tikz{ %
+    \node[latent] (gamma) {$\gamma$} ; %
+    \node[latent, right=of gamma] (z) {$z_n$} ; %
+    \node[latent, above=of z] (tau) {$\tau$} ; %
+    \node[obs, right=of z] (yn) {$y_n$} ; %
+    \node[det, below =of yn] (xn) {$x_n$};
+    \node[latent, above=of yn] (beta) {$\beta$} ; %
+    \plate[inner sep=0.25cm, xshift=-0.12cm, yshift=0.12cm] {plate1} {(z) (yn) (xn)} {N}; %
+    \edge {gamma} {z} ; %
+    \edge {z,tau,beta} {yn} ; %
+    \edge {beta} {yn} ; %
+    \edge {tau} {beta} ; %
+    \edge {xn} {yn}
+    \edge {xn} {z}
+  }
+\end{figure}
 
 
 
