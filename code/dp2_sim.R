@@ -124,10 +124,9 @@ multiplot(plotlist = as.list(sapply(p_list2, function(x) x[1])), cols = 3)
 # -----------------------------------------------------------------------------
 
 
-df_res = plotCD(theta_1e4_2, K, x, y_grid, d_dpmix2, fy.x)
+df_res = plotCD(theta_1e4_2, K, x, y_grid, NULL, fy.x)
 
-
-df_res$cd_plots[[6]]
+df_res$cd_plots[[2]]
 
 head(df_res[[1]]) # y, vb_d, true_d, kern_d
 

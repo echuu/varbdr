@@ -72,3 +72,27 @@ microbenchmark(varbdr_cpp(y, X, N, D, K, intercept, max_iter),
                varbdr(y = y, X = X, K, intercept, m_k = m_k, mu_k = mu_k),
                times = 20)
 
+
+
+
+library("np")
+X_np = data.frame(X[,2])
+y_np = data.frame(y)
+xy_df = data.frame(y = y_np, x = X_np)
+names(xy_df) = c("y", "x")
+
+fy.x = npcdens(y ~ x, xy_df)
+
+x = c(-0.6745, 0, 0.6745)
+uni_res = plotCD(theta_cpp, K, x, y_grid, d_binorm, k_den = fy.x)
+uni_res$cd_plots
+
+
+
+
+
+
+
+
+
+

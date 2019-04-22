@@ -30,18 +30,21 @@ plot(lane2) # plot of traffic speed vs. traffic flow
 
 lane2_sub = lane2 %>% filter(flow >= 1000, flow <= 1620)
 
-X = cbind(as.matrix(lane2$flow))
+plot(lane2_sub)
+
+
+X = cbind(as.matrix(lane2_sub$flow))
 X = X / 100
 X = cbind(1, X)
-y = lane2$speed
+y = lane2_sub$speed
 N = nrow(X)
 D = ncol(X)
-K = 4
+K = 3
 intercept = TRUE
-max_iter  = 2e3
+max_iter  = 1e5
 
 y_grid = seq(min(y), max(y), length.out = 2000)
-x_in = c(1400)
+x_in = c(1400/100)
 
 meanParams = generateParams(y, X, N, D, K, intercept = FALSE, max_iter)
 (m_k  = meanParams$m_k)
@@ -61,6 +64,11 @@ ggplot(approx_df, aes(x = y, y = p_y)) +
     geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() 
 
 
+
+sf_res = plotCD(theta_sf, K, x_in/100, y_grid, true_den = NULL, k_den = fy.x)
+sf_res$cd_plots
+
+
 y_grid = seq(20, 50, length.out = 2000)
 x_in = c(1400)
 N_evals    = length(y_grid)                          # number of evaluations
@@ -72,6 +80,41 @@ approx_df = data.frame(y = y_grid, p_y = approx_density)
 
 ggplot(approx_df, aes(x = y, y = p_y)) + 
     geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() 
+
+
+sf_res = plotCD(theta_sf, K, x_in/100, y_grid, true_den = NULL, k_den = fy.x)
+sf_res$cd_plots
+
+
+
+
+
+library("np")
+X_np = data.frame(X[,2])
+y_np = data.frame(y)
+xy_df = data.frame(y = y_np, x = X_np)
+names(xy_df) = c("y", "x")
+
+fy.x = npcdens(y ~ x, xy_df)
+
+overlays = vector("list", length(x))
+y_grid = seq(-0.5, 1.5, length.out = 1000)
+
+y_eval = data.frame(y = y_grid, x = x[1])
+fy_eval = predict(fy.x, newdata = y_eval)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -119,6 +162,13 @@ theta$e_ln_p_beta_tau
 theta$e_ln_q_z
 theta$e_ln_q_beta_tau
 theta$e_ln_q_gamma
+
+
+
+
+
+
+
 
 
 

@@ -21,10 +21,17 @@ generatePlots = function(py_df, true_den, k_den) {
                          measure.vars = py_names)
         
         
+        if (!is.null(true_den)) {
+            df_i_long = df_i_long %>% mutate(is_approx = 'true')
+            df_i_long$is_approx[df_i_long$variable != 'true_d'] = 'approx'
+        }
+        
+        
         plot_list[[i]] = ggplot(df_i_long, 
                                 aes(x = y, y = value, col = variable)) + 
-            geom_line() + 
-            geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() +
+            geom_line(size = 0.8, 
+                      aes(linetype = factor(df_i_long$is_approx))) +
+            labs(x = "y", y = "p(y)") + theme_bw() +
             theme(legend.position = "none")
         
     }
@@ -42,21 +49,21 @@ plotCD = function(theta, K, x_in, y_grid, true_den = NULL, k_den = NULL) {
     # if intercept is fitted, then need to include a 1 before each of the 
     # input x values
     if (theta$intercept) {    
-        x_mat = as.matrix(cbind(1, x)) 
+        x_mat = as.matrix(cbind(1, x_in)) 
     } else {    
-        x_mat = as.matrix(x)              
+        x_mat = as.matrix(x_in)              
     } 
     
     N_evals    = length(y_grid)             # number of function evals for f(y)
     
-    num_plots = length(x)
+    num_plots = length(x_in)
     py_df     = vector("list", num_plots)   # store each of the dataframes
     plots_py  = vector("list", num_plots)   # store each of the resulting plots
     
     # generate density plots for each x input : for each x, we compute the
     # density y along y_grid; this gives us f(y | x)
     
-    for (i in 1:length(x)) {
+    for (i in 1:length(x_in)) {
         
         py_vb   = NULL
         py_true = NULL
