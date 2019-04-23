@@ -130,10 +130,10 @@ ericchuu@tamu.edu}\\
 
 
 \headerbox{1. Introduction}{name=introduction,column=0,row=0, span=3}{
-In the Bayesian density regression problem, we observe data $\left(y_n, x_n \right), n=1, \ldots, N$, and the goal is the estimate the conditional density of $y \given x$. We model the density using a mixture of Gaussians for which covariates enter the weights through a logit link function.
-\begin{equation*}
-	 f(y \given x) = \sum_{k}^{K} \pi_k(x) \cdot \mathcal{N} \left( y \given \mu_k(x), \tau_k^{-1} \right) 
-\end{equation*} 
+In the Bayesian density regression problem, we observe data $\left(y_n, x_n \right), n=1, \ldots, N$, and the goal is the estimate the conditional density of $y \given x$. We model the density using a mixture of Gaussians for which covariates enter the weights through a logit link function. \vspace{-3mm}
+$$
+	 f(y \given x) = \sum_{k}^{K} \pi_k(x) \cdot \mathcal{N} \left( y \given \mu_k(x), \tau_k^{-1} \right) \vspace{-3mm}
+$$
 where $\mu_k(x) = \transpose{x} \beta_k$ and $\pi_{k}(x) \propto \exp(\transpose{x} \gamma_k)$. While this increases the flexibility of the model, it also increases the computational complexity. In order to perform scalable inference on the model parameters, we propose a variational approach that uses a tangential approximation of the softmax function to achieve fast, closed form updates for the coordinate ascent algorithm. 
 }
 
@@ -183,8 +183,8 @@ We use conjugate priors to ease computation.
 \headerbox{4. Variational Approximation}{name=variational,column=2,below=introduction,span=1}{
 
 % \textbf{Full joint distribution:} $\pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}$
-We approximate the posterior distribution with: \vspace{-3mm}
-$$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma) \vspace{-1mm}$$
+We approximate the posterior distribution with: \vspace{-2mm}
+$$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma) $$
 Then the distribution for each of the variational parameters can be found by taking the expectation of the joint likelihood with respect the \textit{other} variational parameters. 
 \vspace{-2mm}
 \setlength{\belowdisplayskip}{5pt}%
@@ -194,14 +194,12 @@ Then the distribution for each of the variational parameters can be found by tak
  	q^{\star}(\beta_k \given \tau_k) &= \mathcal{N}\left(\beta_k \given m_k, (\tau_k \mathrm{V}_k)^{-1} \right) \\
  	q^{\star}(\tau_k) &=  \mathrm{Ga}\left( \tau_k \given a_k, b_k \right)
 \end{align*} 
-An issue arises in calculating $q(z_{nk})$ because it requires computing: \vspace{-3mm}
+An issue arises in calculating $q(z_{nk})$ because it requires computing: \vspace{-2mm}
 $$\varepsilon_n = \mathbb{E}_{q(\boldsymbol\gamma)}\Bigg[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\Bigg]$$
 which is not available in closed form. We resort to the following bound (Bouchard, 2007)  \vspace{-2mm}
 \setlength{\belowdisplayskip}{8pt}%
 \begin{align*}
-	& \varepsilon_n  \leq  \alpha_n + 0.5\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) \\[0.05ex] 
-	& + \sum_{j}  \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_n)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_j^{-1} x_n \right) \\[0.05ex] 
-	& + \log( 1 + e^{\xi_{nj}}) 
+	& \varepsilon_n  \leq  \alpha_n + \sum_{j}^K \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n - \xi_{nj}\right) \\ & \qquad \qquad \qquad + \log( 1 + e^{\xi_{nj}})
 \end{align*}
 Two additional variational parameters: \vspace{-1mm}
 \setlength{\belowdisplayskip}{3pt}%
