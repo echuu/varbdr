@@ -1,6 +1,4 @@
 
-
-
 setwd("C:/Users/chuu/varbdr/code")
 
 source("globals.R")
@@ -17,7 +15,6 @@ sourceCpp("getVarParams.cpp")                        # load C++ implementation
 source(paste(COV_DEP, VARBDR, sep = '/'))            # load R implementation
 
 
-
 library(hdrcde)
 library(np)
 
@@ -26,70 +23,35 @@ library(np)
 # flow  : traffic flow in vehicles per lane per hour
 # speed : speed in miles per hour
 
-plot(lane2) # plot of traffic speed vs. traffic flow
-
+# plot of traffic speed vs. traffic flow
+plot(lane2) 
 lane2_sub = lane2 %>% filter(flow >= 1000, flow <= 1620)
+plot(lane2_sub, main = "1000 < flow < 1620")
+abline(v = 1400, col = 'red')
 
-plot(lane2_sub)
-
-
+# format data
 X = cbind(as.matrix(lane2_sub$flow))
 X = X / 100
-X = cbind(1, X)
+X = cbind(1, X)      # fit intercept
 y = lane2_sub$speed
 N = nrow(X)
 D = ncol(X)
-K = 3
+K = 2                # bimodal by observation
 intercept = TRUE
 max_iter  = 1e5
 
-y_grid = seq(min(y), max(y), length.out = 2000)
-x_in = c(1400/100)
+x_in = c(1400 / 100)
 
-meanParams = generateParams(y, X, N, D, K, intercept = FALSE, max_iter)
-(m_k  = meanParams$m_k)
-(mu_k = meanParams$mu_k)
-theta_R  = varbdr(y = y, X = X, K, intercept = FALSE, m_k = m_k, mu_k = mu_k)    
+theta_sf = varbdr_cpp(y, X, N, D, K, intercept, max_iter) # converge in 4809
 
-theta_sf = varbdr_cpp(y, X, N, D, K, intercept, max_iter)
+# meanParams = generateParams(y, X, N, D, K, intercept = FALSE, max_iter)
+# (m_k  = meanParams$m_k)
+# (mu_k = meanParams$mu_k)
+# theta_R  = varbdr(y = y, X = X, K, intercept = FALSE, m_k = m_k, mu_k = mu_k)    
+# N_evals    = length(y_grid)
+# data_ygrid = list(y = y_grid, x = c(1, x_in / 100))
 
-N_evals    = length(y_grid)                          # number of evaluations
-data_ygrid = list(y = y_grid, x = c(1, x_in / 100))  # fixed for all evaluations
-
-approx_density = py_bouch(theta_sf, K, data_ygrid) 
-
-approx_df = data.frame(y = y_grid, p_y = approx_density)
-
-ggplot(approx_df, aes(x = y, y = p_y)) + 
-    geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() 
-
-
-
-sf_res = plotCD(theta_sf, K, x_in/100, y_grid, true_den = NULL, k_den = fy.x)
-sf_res$cd_plots
-
-
-y_grid = seq(20, 50, length.out = 2000)
-x_in = c(1400)
-N_evals    = length(y_grid)                          # number of evaluations
-data_ygrid = list(y = y_grid, x = c(1, x_in / 100))  # fixed for all evaluations
-
-approx_density = py_bouch(theta_sf, K, data_ygrid) 
-
-approx_df = data.frame(y = y_grid, p_y = approx_density)
-
-ggplot(approx_df, aes(x = y, y = p_y)) + 
-    geom_line(size = 0.8) + labs(x = "y", y = "p(y)") + theme_bw() 
-
-
-sf_res = plotCD(theta_sf, K, x_in/100, y_grid, true_den = NULL, k_den = fy.x)
-sf_res$cd_plots
-
-
-
-
-
-library("np")
+# obtain kernel-based estimate
 X_np = data.frame(X[,2])
 y_np = data.frame(y)
 xy_df = data.frame(y = y_np, x = X_np)
@@ -97,16 +59,73 @@ names(xy_df) = c("y", "x")
 
 fy.x = npcdens(y ~ x, xy_df)
 
-overlays = vector("list", length(x))
-y_grid = seq(-0.5, 1.5, length.out = 1000)
+# plot entire density
+y_grid = seq(min(y), max(y) + 20, length.out = 2000)
+sf_res = plotCD(theta_sf, K, x_in, y_grid, true_den = NULL, k_den = fy.x)
+sf_res$cd_plots[[1]] + ggtitle("vb (red), kernel (blue)")
 
-y_eval = data.frame(y = y_grid, x = x[1])
-fy_eval = predict(fy.x, newdata = y_eval)
+# examine the location of where the 2nd mode should be
+y_grid = seq(20, 50, length.out = 2000)
+sf_res = plotCD(theta_sf, K, x_in/100, y_grid, true_den = NULL, k_den = fy.x)
+sf_res$cd_plots[[1]] + ggtitle("vb (red), kernel (blue)")
 
 
+# ------------------------------------------------------------------------------
+
+#### ISLR data
+
+library(ISLR)
+
+table(Wage$year) # 2003-2009
+table(Wage$age)
 
 
+plot(Wage$age,Wage$logwage)
 
+plot(density(Wage$logwage[Wage$age == 34]))
+plot(density(Wage$logwage[Wage$age == 42]))
+plot(density(Wage$logwage[Wage$age == 51]))
+
+h <- hist(Wage$logwage[Wage$age == 34], breaks = 9, plot=FALSE)
+h$counts=h$counts/sum(h$counts)
+plot(h)
+
+par(mfrow = c(1,3))
+hist(Wage$logwage[Wage$age == 34], main = "age = 34")
+hist(Wage$logwage[Wage$age == 42], main = "age = 42")
+hist(Wage$logwage[Wage$age == 51], main = "age = 51")
+par(mfrow = c(1, 1))
+
+x_in = c(34, 42, 51) / 10
+
+# X = as.matrix(as.double(Wage$age[(Wage$age >= 32) & (Wage$age <= 58)])) / 10
+# y = Wage$logwage[(Wage$age >= 32) & (Wage$age <= 58)]
+
+X = as.matrix(as.double(Wage$age)) / 10
+y = Wage$logwage
+
+
+N = nrow(X)
+D = ncol(X)
+K = 2
+intercept = FALSE
+max_iter  = 7e3
+
+y_grid = seq(min(y) - 2.5, max(y) + 3, length.out = 2000)
+
+theta_wage = varbdr_cpp(y, X, N, D, K, intercept, max_iter) # 1160
+
+# compute density estimate
+X_np = data.frame(X[,1])
+y_np = data.frame(y)
+xy_df = data.frame(y = y_np, x = X_np)
+names(xy_df) = c("y", "x")
+
+fyx_wage = npcdens(y ~ x, xy_df)
+
+wage_cd = plotCD(theta_wage, K, x_in, y_grid, true_den = NULL, k_den = NULL)
+
+multiplot(plotlist = wage_cd$cd_plots, cols = 3)
 
 
 

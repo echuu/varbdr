@@ -187,26 +187,26 @@ We approximate the posterior distribution with: \vspace{-3mm}
 $$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma) \vspace{-1mm}$$
 Then the distribution for each of the variational parameters can be found by taking the expectation of the joint likelihood with respect the \textit{other} variational parameters. 
 \vspace{-2mm}
-\setlength{\belowdisplayskip}{1.3pt}%
+\setlength{\belowdisplayskip}{5pt}%
 \begin{align*}
-	q^{\star}(\mathbf{Z}) &= \prod_{n} \prod_{k} r_{nk}^{z_{nk}}, \quad r_{nk} = \frac{\rho_{nk}}{\sum_{j} \rho_{nj}} \\
+	q^{\star}(z_{nk}) &= r_{nk}^{z_{nk}} \\
  	q^{\star}(\gamma_k) &= \mathcal{N} \left(\gamma_k \given \mu_k, \mathrm{Q}_k^{-1} \right) \\
  	q^{\star}(\beta_k \given \tau_k) &= \mathcal{N}\left(\beta_k \given m_k, (\tau_k \mathrm{V}_k)^{-1} \right) \\
  	q^{\star}(\tau_k) &=  \mathrm{Ga}\left( \tau_k \given a_k, b_k \right)
 \end{align*} 
-An issue arises in the calculating $q(z_{nk})$ because it requires computing: \vspace{-3mm}
+An issue arises in calculating $q(z_{nk})$ because it requires computing: \vspace{-3mm}
 $$\varepsilon_n = \mathbb{E}_{q(\boldsymbol\gamma)}\Bigg[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\Bigg]$$
 which is not available in closed form. We resort to the following bound (Bouchard, 2007)  \vspace{-2mm}
 \setlength{\belowdisplayskip}{8pt}%
 \begin{align*}
-	& \varepsilon_n  \leq  \alpha_n + \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) \\[0.05ex] 
-	& + \sum_{j}^K  \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_k)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) \\[0.05ex] 
+	& \varepsilon_n  \leq  \alpha_n + 0.5\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right) \\[0.05ex] 
+	& + \sum_{j}  \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_n)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_j^{-1} x_n \right) \\[0.05ex] 
 	& + \log( 1 + e^{\xi_{nj}}) 
 \end{align*}
 Two additional variational parameters: \vspace{-1mm}
 \setlength{\belowdisplayskip}{3pt}%
 \begin{align*}
-    \xi_{nk} & = \sqrt{\left(\mu_k^{\intercal}x_n - \alpha_n \right)^2 + x_n^{\intercal} \mathrm{Q}_k^{-1} x_n} \\[0.9ex]
+    \xi_{nj} & = \sqrt{\left(\mu_j^{\intercal}x_n - \alpha_n \right)^2 + x_n^{\intercal} \mathrm{Q}_j^{-1} x_n} \\[0.9ex]
     \alpha_n & = \frac{\frac{1}{2}\left( \frac{K}{2} - 1\right) + \sum_{j = 1}^K \lambda \left( \xi_{nj} \right)\mu_j^{\intercal} x_n}{\sum_{j=1}^{K} \lambda \left( \xi_{nj}\right)} 
 \end{align*}
 $\vspace{-2mm} \lambda(\xi) = \frac{1}{4\xi} \tanh \left( \frac{\xi}{2} \right)$ \\
@@ -215,7 +215,7 @@ $\vspace{-2mm} \lambda(\xi) = \frac{1}{4\xi} \tanh \left( \frac{\xi}{2} \right)$
 
 \headerbox{5. Application to Bimodal Conditional Densities}{name=bimodal,span=2,column=0,below=model}{ % To reduce this block to 1 column width, remove 'span=2'
 
-For the conditional density, $X \sim \mathcal{N}(0,1), Y \given X \sim 0.5 \mathcal{N}\left( X - 1.5, 0.5^2) + 0.5 \mathcal{N} \left( X + 1.5, 0.5^2 \right)$, we examine samples of size 1000 and look at the conditional density at the three quartiles of the predictor support: $x = -0.6745$ (left), $x = 0$ (center), $x = 0.6475$ (right). For a sample size of 1000, we plot the approximations below. The true density is a dashed green line, the variational approximation is in red, and the kernel density estimate is in blue. 
+For the conditional density, $X \sim \mathcal{N}(0,1), Y \given X \sim 0.5 \mathcal{N}\left( X - 1.5, 0.5^2) + 0.5 \mathcal{N} \left( X + 1.5, 1^2 \right)$, we examine samples of size 1000 and look at the conditional density at the three quartiles of the predictor support: $x = -0.6745$ (left), $x = 0$ (center), $x = 0.6475$ (right). For a sample size of 1000, we plot the approximations below. The true density is a dashed green line, the variational approximation is in red, and the kernel density estimate is in blue. 
 %For each quartile, the variational algorithm does very well in finding the both modes, while the kernel density estimate is not as smooth and is more biased. Another advantage of the variational algorithm is the computational speed, which converges in seconds, while the kernel-based estimate takes more than 10 times as long.
 \begin{center}
 \hspace{0pt}\includegraphics[width=0.95\linewidth]{unimodal_N1000}

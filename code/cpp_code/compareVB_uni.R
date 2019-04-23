@@ -83,12 +83,18 @@ names(xy_df) = c("y", "x")
 
 fy.x = npcdens(y ~ x, xy_df)
 
+
 x = c(-0.6745, 0, 0.6745)
 uni_res = plotCD(theta_cpp, K, x, y_grid, d_binorm, k_den = fy.x)
 uni_res$cd_plots
 
+multiplot(plotlist = uni_res$cd_plots, cols = 3)
 
 
+
+microbenchmark(varbdr_cpp(y, X, N, D, K, intercept, max_iter),
+               npcdens(y ~ x, xy_df),
+               times = 2)
 
 
 

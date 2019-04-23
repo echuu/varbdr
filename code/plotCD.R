@@ -20,16 +20,17 @@ generatePlots = function(py_df, true_den, k_den) {
         df_i_long = melt(py_df[[i]], 
                          measure.vars = py_names)
         
-        
+        # indicate whether the row corresponds to true density or approximation
+        df_i_long = df_i_long %>% mutate(is_approx = 'false')
         if (!is.null(true_den)) {
-            df_i_long = df_i_long %>% mutate(is_approx = 'true')
-            df_i_long$is_approx[df_i_long$variable != 'true_d'] = 'approx'
+            # df_i_long = df_i_long %>% mutate(is_approx = 'true')
+            df_i_long$is_approx[df_i_long$variable == 'true_d'] = 'true'
         }
         
         
         plot_list[[i]] = ggplot(df_i_long, 
                                 aes(x = y, y = value, col = variable)) + 
-            geom_line(size = 0.8, 
+            geom_line(size = 1.2, 
                       aes(linetype = factor(df_i_long$is_approx))) +
             labs(x = "y", y = "p(y)") + theme_bw() +
             theme(legend.position = "none")

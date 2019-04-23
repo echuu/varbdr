@@ -153,7 +153,7 @@ d_dpmix2 = function(y_grid, x, sigsq_1 = 0.01, sigsq_2 = 0.04) {
 #          sigma_2  : (1 x 1) sd of 2nd mixture component
 # output: 
 #          f_y      : f(y) for each grid point y
-d_binorm = function(y_grid, x, sigma_1 = 0.5, sigma_2 = 0.5) {
+d_binorm = function(y_grid, x, sigma_1 = 0.5, sigma_2 = 1) {
     
     p = 0.5
     # p = exp(-0.5 * x)

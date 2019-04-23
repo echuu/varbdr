@@ -22,7 +22,7 @@ r_binorm = function(N, seed = 100) {
     mu_1    = X - 1.5
     mu_2    = X + 1.5
     sigma_1 = 0.5
-    sigma_2 = 0.5
+    sigma_2 = 1
     
     # p = exp(-0.5 * x_vec)      # probability that we draw from mixture 2
     p = 0.5
