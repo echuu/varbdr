@@ -96,12 +96,17 @@ hist(Wage$logwage[Wage$age == 42], main = "age = 42")
 hist(Wage$logwage[Wage$age == 51], main = "age = 51")
 par(mfrow = c(1, 1))
 
-x_in = c(34, 42, 51) / 10
+
 
 # X = as.matrix(as.double(Wage$age[(Wage$age >= 32) & (Wage$age <= 58)])) / 10
 # y = Wage$logwage[(Wage$age >= 32) & (Wage$age <= 58)]
 
-X = as.matrix(as.double(Wage$age)) / 10
+X = as.matrix(as.double(Wage$age))
+X0 = X / 10
+# store mean, sd of covariates to scale input x 
+shift = attr(X0, 'scaled:center')  # mean of covariates
+scale = attr(X0, 'scaled:scale')   # sd of covariates
+
 y = Wage$logwage
 
 
@@ -109,12 +114,12 @@ N = nrow(X)
 D = ncol(X)
 K = 2
 intercept = FALSE
-max_iter  = 7e3
+max_iter  = 2e3
 
 y_grid = seq(min(y) - 2.5, max(y) + 3, length.out = 2000)
 
-theta_wage = varbdr_cpp(y, X, N, D, K, intercept, max_iter) # 1160
-
+theta_wage = varbdr_cpp(y, X0, N, D, K, intercept, max_iter) # 1160
+theta_wage$curr
 # compute density estimate
 X_np = data.frame(X[,1])
 y_np = data.frame(y)
@@ -123,8 +128,8 @@ names(xy_df) = c("y", "x")
 
 fyx_wage = npcdens(y ~ x, xy_df)
 
+x_in = (c(34, 42, 51) / sd(X)) 
 wage_cd = plotCD(theta_wage, K, x_in, y_grid, true_den = NULL, k_den = NULL)
-
 multiplot(plotlist = wage_cd$cd_plots, cols = 3)
 
 

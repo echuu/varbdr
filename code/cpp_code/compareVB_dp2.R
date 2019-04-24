@@ -65,6 +65,16 @@ overlayPlots = function(theta, K, den_label,
     return(p)
 }
 
+overlayPlots(list(theta0_cpp), K = 2, den_label = c("N=500"))
 
-overlayPlots(theta, K = 2, den_label = c("N=500"))
+
+## using updated plotting function
+x = c(0.15, 0.25, 0.49, 0.75, 0.88, 0.95)
+y_grid = seq(-3, 1.5, length.out = 1000)
+dp2_cd = plotCD(theta0_cpp, K, x, y_grid, true_den = d_dpmix2, k_den = NULL)
+multiplot(plotlist = dp2_cd$cd_plots, cols = 3)
+
+
+
+
 

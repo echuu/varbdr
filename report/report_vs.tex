@@ -23,6 +23,8 @@
 \setlength{\parindent}{0pt}
 
 
+
+
 % Definitions of handy macros can go here
 
 %\usepackage[style=authoryear]{biblatex}
@@ -52,6 +54,7 @@
 \newcommand{\sumexp}{\sum_{j=1}^{K} \exp \{ \transpose{x_n} \gamma_j \}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\diagdots}{_{^{\big\cdot}\cdot _{\big\cdot}}}
+\newcommand{\iid}{\overset{i.i.d}{\sim}}
 % \newcommand{\var}{\mathrm{Var}}
 
 \newcommand{\betad}{\tilde{\beta}_d}
@@ -330,6 +333,209 @@ While we only considered two candidate approximations in this project, there are
 
 \newpage
 
+\section{Variable Selection for Gaussian Component} \label{vs}  %% variable selection
+
+
+\subsection{Notation and Prior Specification}
+Recall the previous setup, where we denote $\mathbf{y} = \{y_1, \ldots, y_N \}, \mathbf{X} = \{ x_1, \ldots, x_N \}$, where each $x_n \in \R^{D}$. Let $\boldbeta = \{ \beta_1, \ldots, \beta_K\}$ and $\boldgamma = \{ \gamma_1, \ldots, \gamma_k\}$ denote the $D$-dimensional coefficient vectors  in the mixture weights and in gaussian mixture components, respectively. Finally, let $\boldtau = \{ \tau_1, \ldots, \tau_k \}$ denote the precision parameters for each of the gaussian components in the mixture density. The mixture density can then be written explicitly as
+
+\begin{equation} 
+	 \pr{y_n \given x_n, \boldbeta, \boldtau} = \ksum \pi_k(x_n) \mathcal{N} \left( y_n \given \transpose{x_n}\beta_k, \tau_k^{-1} \right), \quad \pi_k(x_n) = \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sum\limits_{j=1}^{K} \exp\{ \transpose{x_n} \gamma_j\}}
+\end{equation}
+
+% include picture of graphical model
+
+Conditioning on the same set of latent variables, $\mathbf{Z} = \{ z_1, \ldots, z_N \}$, used indicate the membership for each of the response variables, we obtain the mixture density in product form. 
+
+\begin{equation} 
+	p \left( \mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z} \right) = 
+	\prod_{n} \prod_{k} \mathcal{N} \left( y_n \given \transpose{x_n} \beta_k, \tau_{k}^{-1} \right)^{z_{nk}}
+\end{equation}
+\begin{equation} 
+	p \left( \mathbf{Z} \given \mathbf{X}, \boldsymbol\gamma \right) = \nprod \kprod \pi_{k} (x_n)^{z_{nk}} = 
+	\nprod \kprod \left( \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sumexp}\right)^{z_{nk}}
+\end{equation}
+
+For $\boldgamma$, we consider an independent standard normal prior on the $\gamma_k$'s, given by
+\begin{equation}
+\begin{split}
+	 p(\boldgamma) = \kprod p(\gamma_k) = \kprod \mathcal{N} \left( \gamma_k \given 0, \eye_D \right)
+\end{split}
+\end{equation}
+
+Instead of the normal-gamma prior that we used in the standard setup, we place a gamma prior on $\tau_k$'s: 
+\begin{equation}
+	p(\boldtau) = \kprod p(\tau_k) = \kprod \mathrm{Ga} \left( \tau_k \given a_0, b_0 \right)
+\end{equation}
+
+
+
+Finally, to incorporate variable selection we consider the \textit{rows} of $\boldbeta$, as follows:
+
+\[
+\boldbeta = 
+\begin{bmatrix}
+    \vert &    \vert   &   &\vert\\
+    \beta_1  & \beta_2 &   \ldots & \beta_K\\
+    \vert &     \vert  &    &\vert
+\end{bmatrix}
+= 
+\begin{bmatrix}
+    \text{---} \hspace{-0.2cm} & \tilde{\beta}_1 & \hspace{-0.2cm} \text{---} \\
+    \text{   } \hspace{-0.2cm} & \vdots          & \hspace{-0.2cm} \text{   } \\
+    \text{---} \hspace{-0.2cm} & \tilde{\beta}_D & \hspace{-0.2cm} \text{---}
+\end{bmatrix}
+\]
+
+Using the above formulation, $\betad = \transpose{\left( \beta_{1d}, \beta_{2d}, \ldots, \beta_{Kd}\right)} \in \R^K$ represents the $d$-th row of the coefficient matrix. In other words, $\betad$ represents the coefficient vector for the $d$-th predictor across all $K$ clusters. We place independent spike and slab priors on each \textit{row} vectors of $\boldbeta$, 
+
+\begin{equation} 
+	\betad \sim \pi \priorbeta + (1 - \pi) \delta_0 (\betad)
+\end{equation}
+
+for $\betad$ for $d = 1, \ldots, D$. \\
+
+Denote $\boldsymbol \omega = \{ \omega_1, \ldots, \omega_D\}$, where $\omega_d \iid \mathrm{Ber}(\omega_d \given \pi)$, we have the following reparametrization of the spike and slab prior on $\boldbeta$:
+\begin{equation} \label{eq:beta_joint_prior_vs}
+	\pr{\boldbeta, \boldsymbol\omega} = \prod_{d} \pr{\betad, \omega_d} = \prod_{d} \priorbeta^{\omega_d} \pi^{\omega_d} (1-\pi)^{1 - \omega_d}
+\end{equation}
+
+\subsection{Joint Likelihood}
+Using the priors outlined in the previous section, we have the following expression for the joint likelihood. 
+\begin{equation} \label{eq:joint_vs}
+\begin{split}
+	\ln  \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} &= 
+	\ln \bigg\{\pr{\mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z}, \boldsymbol\gamma}\pr{\mathbf{Z}\given \mathbf{X}, \boldgamma}\pr{\boldgamma}\pr{\betad, \omega_d}\pr{\tau} \bigg\}\\
+	&= \nsum \ksum z_{nk}\bigg\{ -\frac{1}{2}\ln(2\pi) + \frac{1}{2} \ln \tau_k - \frac{\tau_k}{2} \left( y_n - \transpose{x_n}\beta_k\right)^2 \bigg\} \\
+	& + \nsum \ksum z_{nk} \bigg\{ \transpose{x_n} \gamma_k - \ln \sumexp  \bigg\} + \ksum \bigg\{ -\frac{D}{2} \ln (2\pi) - \frac{1}{2} \transpose{\gamma_k}\gamma_k \bigg\} \\
+	& + \sum_{d} \omega_d \bigg\{ -\frac{K}{2} \ln(2\pi) + \frac{K}{2} \ln \xi_0 - \frac{\xi_0}{2} \transpose{\betad} \betad\bigg\} + \omega_d \ln \pi + ( 1- \omega_d) \ln(1 - \pi) \\
+	& + \ksum \bigg\{ (a_0 - 1) \ln \tau_k - b_0 \tau_k \bigg\}
+\end{split}
+\end{equation}
+
+
+\subsection{Approximating Distribution}
+
+%% both huang and CS have a blurb about q being the minimizer of the KL divergence
+%% include something of a similar flavor here
+
+The variational parameters of interest are $\boldsymbol \theta = \left(\mathbf{Z}, \boldtau, \boldbeta, \boldgamma, \boldsymbol \omega \right)$. We consider an approximating distribution of the following form
+\begin{equation} \label{q_vs}
+	q(\boldsymbol \theta) = q \left(\mathbf{Z}, \boldtau, \boldbeta, \boldgamma, \boldsymbol \omega \right) = q(\mathbf{Z}) \cdot q(\boldtau, \boldgamma) \cdot \prod_{d} q(\betad, \omega_d)
+\end{equation}
+In fact, it follows easily (without assuming anything about the functional forms) that the right hand side of  (\ref{q_vs}) has the following induced factorization, 
+\begin{equation} \label{q_vs_fact}
+	q \left(\mathbf{Z}, \boldtau, \boldbeta, \boldgamma, \boldsymbol \omega \right) =  \prod_{n} \prod_{k} q(z_{nk}) \cdot \prod_{k} q(\tau_k) \cdot \prod_{k} q(\gamma_k) \cdot \prod_{d} q(\betad, \omega_d)
+\end{equation}
+From our choice of conjugate families in the prior distributions, each of variational parameters, with the exception of $q \left( \boldgamma \right)$, can be updated in closed form. Proceeding in standard fashion by taking the expectation with respect to the variational distribution, we can derive the functional form for each of the approximating distributions and their corresponding coordinate ascent updates. \\
+
+% include joint likelihood here since it is used explicitly to compute all of the following updates
+
+
+\subsection{Coorindate Ascent Algorithm: Component-wise VB}
+While the updates for $\{\mathbf{Z}, \boldtau, \boldgamma \}$ are performed in a similar manner as the standard algorithm. the variable selection part of the algorithm iterates over $D$ dimensions, updating the features sequentially. \\
+
+
+\textbf{Update $q \left( z_{nk} \right)$}. As shown in the previous case, we know the optimal distribution for $\mathbf{Z}$ is of the form
+$$q(z_{nk}) = r_{nk}^{z_{nk}}, \quad r_{nk} = \frac{\rho_{nk}}{\sum_{j} \rho_{nj}}$$ 
+Note that $\rho_{nk}$ involves evaluating a number of expectations taken with respect to various variational distribution, each of which is updated during sequentially during each iteration of the coordinate ascent algorithm. In particular, 
+
+\begin{equation} \label{eq:ln_rho_vs}
+\begin{split}
+ \ln \rho_{nk} = &-\frac{1}{2}\ln(2\pi) + \frac{1}{2} \E_{q(\boldsymbol\tau)}[ \ln \tau_k ] - \frac{1}{2} \E_{q(\boldsymbol\tau)}[\tau_k] \cdot \E_{q(\boldbeta, \boldsymbol\omega))}[(y_n - x_n^{\tr}\beta_k)^2] \\ 
+	& + x_n^{\tr}\E_{q(\boldsymbol\gamma)}[\gamma_k] - \E_{q(\boldsymbol\gamma)}\Bigg[\ln \sum_{j}^K \exp \{ x_n^{\tr} \gamma_j \}\Bigg]
+\end{split}
+\end{equation}
+
+so that $\E[z_{nk}] = r_{nk}$. Explicit expressions for each of the expectations, which can either be computed in closed form or approximated, can be found in the supplemental section. \\
+
+
+\textbf{Update $q \left(  \tau_k \right)$}. For $k \in \{1, \ldots, K \}$, $q(\tau_k) = \mathrm{Ga}\left( \tau_k \given a_k, b_k \right)$. The shape and rate parameters can be updated with
+\begin{align}
+	a_k &= a_0 + \frac{N_k}{2} - 1 \label{eq:ak_vs} \\
+	b_k &= b_0 + \frac{1}{2} \nsum (y_n -\transpose{x_n} \tilde{m}_k)^2 + \transpose{x_n}\var{\beta_k} x_n \label{eq:bk_vs}
+\end{align}
+where $\tilde{m}_k = $ and $\var{\beta_k} = $. \\
+
+\textbf{Update $q \left(  \gamma_k \right)$}. The update for $\boldgamma$ remains the same as before:
+\begin{equation} \label{optimal_gmama_vs}
+	q(\gamma_k) = \mathcal{N} \left( \gamma_k \given \mu_k, \mathrm{V}_k^{-1} \right)
+\end{equation}
+
+
+
+\textbf{Update $q ( \betad, \omega_d )$}. We do this sequentially by first deriving the update for $q\left(\betad \given \omega_d = 1 \right)$ and then for $q\left( \omega_d \right)$. It is helpful to rewrite the first term in the log joint likelihood (mixture density) in terms of $\betad$. Conditioning on $\omega_d = 1$, we have the variational distribution with equality written up to constants (in $\betad)$, 
+\begin{align}
+	 \ln q\left(\betad \given \omega_d = 1 \right) &= - \frac{1}{2} \transpose{\betad} \umat_d \betad + \transpose{\betad} \eta_d - \frac{\xi_0}{2} \transpose{\betad} \betad \\
+	 &= - \frac{1}{2} \transpose{\betad} \big[ \umat_d +  \xi_0 \mathrm{I}_K\big] \betad + \transpose{\betad} \eta_d \label{eq:ln_q_beta_vs}
+\end{align}
+Note that we have used the following result (equality written up to constants in $\betad$). 
+\begin{equation}
+	 E_{-q(\boldbeta)} \Bigg[ \frac{1}{2} \nsum \ksum -z_{nk} \tau_k \left( y_n - \transpose{x_n} \beta_k \right)^2 \Bigg] = - \frac{1}{2} \sum_d \transpose{\betad} \umat_d \betad + \sum_{d} \transpose{\betad} \eta_d
+\end{equation}
+
+From (\ref{eq:ln_q_beta_vs}), we see that
+\begin{align*}
+	q(\betad) = \mathcal{N} \left( \betad \given m_d, \qmat_d^{-1} \right)
+\end{align*}
+
+where $m_d = \qmat_d^{-1} \eta_d, \qmat_d = \umat_d + \xi_0 \mathrm{I}_K$, and $\eta_d = \zeta_d - \frac{1}{2} \sum\limits_{j \neq d}^D \mathrm{R}_{dj} \omega_j m_j$. We have made use of the following matrices
+\begin{align*}
+\mathrm{R}_{dj} & = \begin{bmatrix} 
+\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}           &          &          \\ 
+\vertdots   &  \ddots    & \vertdots \\
+            &          & \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj}        \\
+\end{bmatrix} \quad \quad \quad \quad
+\zeta_d =  \begin{bmatrix} 
+\frac{a_1}{b_1} \nsum r_{n1} x_{nd}y_{n} \\ 
+\vdots   \\
+\frac{a_K}{b_K} \nsum r_{nK} x_{nd}y_{n} \\
+\end{bmatrix} \\
+\umat_d & = \begin{bmatrix} 
+\frac{a_1}{b_1} \nsum r_{n1} x_{nd}^2            &               &  \\ 
+            &  \ddots       &  \\
+            &               & \frac{a_K}{b_K} \nsum r_{nK} x_{nd}^2 \\
+\end{bmatrix}
+\end{align*}
+
+
+From (\ref{eq:ln_q_beta_vs}), we have
+\begin{align*}
+	q^{\star}(\betad) = \mathcal{N} \left( \betad \given m_d, \qmat_d^{-1} \right)
+\end{align*}
+
+where $m_d = \qmat_d^{-1} \eta_d, \qmat_d = \umat_d + \xi_0 \mathrm{I}_K$, and $\eta_d = \zeta_d - \frac{1}{2} \sum\limits_{j \neq d} \mathrm{R}_{dj} \omega_j m_j$. We have made use of the following matrices
+\begin{alignat}{2}
+	\umat_d &= \mathrm{diag} &&\left(\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj} \right) \\
+	\mathrm{R}_{dj} &= \mathrm{diag} &&\left(\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj} \right) \\
+	\zeta_d &= &&\transpose{\left( \frac{a_1}{b_1} \nsum r_{n1} x_{nd}y_{n}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}y_{n} \right)}
+\end{alignat}
+
+
+
+Note that we restricted the approximating distribution for $\pr{\boldbeta, \boldsymbol\omega}$ to be of the form
+$$ q \left( \boldbeta, \boldsymbol \omega\right) = \prod_{d} q \left( \betad, \omega_d \right) $$
+where each of the $d$ factors then inherits a spike and slab density of the form
+\[   
+q \left( \betad, \omega_d \right) = 
+\left\{
+\begin{array}{ll}
+      \lambda_d \mathcal{N} \left( \betad \given m_d, \qmat_d^{-1} \right),  & \textrm{ if } \omega_d = 1 \\
+      (1 - \lambda_d) \delta_0 \left( \betad \right) & \textrm{ if } \omega_d = 0 \\
+\end{array} 
+\right. \]
+The variational parameters $(m_d, \qmat_d, \lambda_d)$ can be updated using the following by differentiating the variational lower bound with respect to each of the parameters, setting the resulting partial derivatives to zero and solving for each parameter. Doing so yields following:
+\setlength{\jot}{10pt}
+\begin{alignat}{4}
+  \mathrm{Cov}(\betad \given \omega_d = 1) \textrm{ } &\approx \textrm{ }&& \qmat_d^{-1} &&\textrm{ } & &= \textrm{ } \left(\umat_d + \xi_0 \mathrm{I}_K\right)^{-1} \label{eq:var_betad}\\
+  \E [ \betad \given \omega_d = 1]  \textrm{ }&\approx \textrm{ } && m_d &&\textrm{ }& &= \textrm{ } \qmat_d^{-1} \eta_d  \label{eq:e_betad}\\
+  \frac{\pr{\omega_d = 1\given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}}{\pr{\omega_d = 0 \given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}} \textrm{ } &\approx \textrm{ } && \frac{\lambda_d}{1-\lambda_d}&& \textrm{ }& &= \textrm{ } \frac{\pi}{1-\pi} \cdot \log \xi_0^{\frac{K}{2}} \cdot \exp\Big\{\frac{1}{2}\transpose{m_d}\eta_d\Big\} \label{eq:logodds_lambda}
+\end{alignat}
+
+
+
+\newpage
+
 \appendix
 %%%%% details for updating q(Z) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Variational Update for $q(\mathbf{Z})$} 
@@ -554,201 +760,7 @@ since $\E[\transpose{(\gamma_k - \mu_k)}\mathrm{V}_{k}(\gamma_k - \mu_k)] = D$.
 
 \newpage
 
-\section{Variable Selection} \label{app:vs}  %% variable selection
 
-Recall the previous setup, where we denote $\mathbf{y} = \{y_1, \ldots, y_N \}, \mathbf{X} = \{ x_1, \ldots, x_N \}$, where each $x_n \in \R^{D}$. Let $\boldbeta = \{ \beta_1, \ldots, \beta_K\}$ and $\boldgamma = \{ \gamma_1, \ldots, \gamma_k\}$ denote the $D$-dimensional coefficient vectors  in the mixture weights and in gaussian mixture components, respectively. Finally, let $\boldtau = \{ \tau_1, \ldots, \tau_k \}$ denote the precision parameters for each of the gaussian components in the mixture density. The mixture density can then be written explicitly as
-
-\begin{equation} 
-	 \pr{y_n \given x_n, \boldbeta, \boldtau} = \ksum \pi_k(x_n) \mathcal{N} \left( y_n \given \transpose{x_n}\beta_k, \tau_k^{-1} \right), \quad \pi_k(x_n) = \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sum\limits_{j=1}^{K} \exp\{ \transpose{x_n} \gamma_j\}}
-\end{equation}
-
-% include picture of graphical model
-
-Conditioning on the same set of latent variables, $\mathbf{Z} = \{ z_1, \ldots, z_N \}$, used indicate the membership for each of the response variables, we obtain the mixture density in product form. 
-
-\begin{equation} 
-	p \left( \mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z} \right) = 
-	\prod_{n} \prod_{k} \mathcal{N} \left( y_n \given \transpose{x_n} \beta_k, \tau_{k}^{-1} \right)^{z_{nk}}
-\end{equation}
-\begin{equation} 
-	p \left( \mathbf{Z} \given \mathbf{X}, \boldsymbol\gamma \right) = \nprod \kprod \pi_{k} (x_n)^{z_{nk}} = 
-	\nprod \kprod \left( \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sumexp}\right)^{z_{nk}}
-\end{equation}
-
-For $\boldgamma$, we consider an independent standard normal prior on the $\gamma_k$'s, given by
-\begin{equation}
-\begin{split}
-	 p(\boldgamma) = \kprod p(\gamma_k) = \kprod \mathcal{N} \left( \gamma_k \given 0, \eye_D \right)
-\end{split}
-\end{equation}
-
-Instead of the normal-gamma prior that we used in the standard setup, we place a gamma prior on $\tau_k$'s: 
-\begin{equation}
-	p(\boldtau) = \kprod p(\tau_k) = \kprod \mathrm{Ga} \left( \tau_k \given a_0, b_0 \right)
-\end{equation}
-
-
-
-Finally, to incorporate variable selection we consider the \textit{rows} of $\boldbeta$, as follows:
-
-\[
-\boldbeta = 
-\begin{bmatrix}
-    \vert &    \vert   &   &\vert\\
-    \beta_1  & \beta_2 &   \ldots & \beta_K\\
-    \vert &     \vert  &    &\vert
-\end{bmatrix}
-= 
-\begin{bmatrix}
-    \text{---} \hspace{-0.2cm} & \tilde{\beta}_1 & \hspace{-0.2cm} \text{---} \\
-    \text{   } \hspace{-0.2cm} & \vdots          & \hspace{-0.2cm} \text{   } \\
-    \text{---} \hspace{-0.2cm} & \tilde{\beta}_D & \hspace{-0.2cm} \text{---}
-\end{bmatrix}
-\]
-
-Using the above formulation, $\betad = \transpose{\left( \beta_{1d}, \beta_{2d}, \ldots, \beta_{Kd}\right)} \in \R^K$ represents the $d$-th row of the coefficient matrix. In other words, $\betad$ represents the coefficient vector for the $d$-th predictor across all $K$ clusters. We place independent spike and slab priors on each \textit{row} vectors of $\boldbeta$, 
-
-\begin{equation} 
-	\betad \sim \pi \priorbeta + (1 - \pi) \delta_0 (\betad)
-\end{equation}
-
-for $\betad$ for $d = 1, \ldots, D$. \\
-
-Introducing $\boldsymbol \omega = \{ \omega_1, \ldots, \omega_D\}$, where $\omega_d \sim \mathrm{Ber}(\omega_d \given \pi)$, we can rewrite the prior on $\boldbeta$ as:
-\begin{equation} \label{eq:beta_joint_prior_vs}
-	\pr{\boldbeta} = \prod_{d} \pr{\betad, \omega_d} = \prod_{d} \priorbeta^{\omega_d} \pi^{\omega_d} (1-\pi)^{1 - \omega_d}
-\end{equation}
-
-\subsection{Approximating Distribution}
-
-The variational parameters of interest are $\boldsymbol \theta = \left(\mathbf{Z}, \boldtau, \boldbeta, \boldgamma, \boldsymbol \omega \right)$. We consider an approximating distribution of the following form
-\begin{equation} \label{q_vs}
-	q(\boldsymbol \theta) = q \left(\mathbf{Z}, \boldtau, \boldbeta, \boldgamma, \boldsymbol \omega \right) = q(\mathbf{Z}) \cdot q(\boldtau, \boldgamma) \cdot \prod_{d} q(\betad, \omega_d)
-\end{equation}
-It can be shown $q$ as formulated above in $(\ref{q_vs})$, further factorizes into
-\begin{equation} \label{q_vs_fact}
-	q \left(\mathbf{Z}, \boldtau, \boldbeta, \boldgamma, \boldsymbol \omega \right) =  q(\mathbf{Z}) \cdot q(\boldtau) \cdot q(\boldgamma) \cdot \prod_{d} q(\betad, \omega_d)
-\end{equation}
-where we do not assume anything further about the functional form of each of the factorized approximating distributions. 
-
-
-
-\subsection{Joint Likelihood}
-In order to find closed form updates for the coorindate ascent algorithm, we first compute the log of the joint distribution of these random variables
-\begin{equation} \label{eq:joint_vs}
-\begin{split}
-	\ln  \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} &= 
-	\ln \bigg\{\pr{\mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z}, \boldsymbol\gamma}\pr{\mathbf{Z}\given \mathbf{X}, \boldgamma}\pr{\boldgamma}\pr{\betad, \omega_d}\pr{\tau} \bigg\}\\
-	&= \nsum \ksum z_{nk}\bigg\{ -\frac{1}{2}\ln(2\pi) + \frac{1}{2} \ln \tau_k - \frac{\tau_k}{2} \left( y_n - \transpose{x_n}\beta_k\right)^2 \bigg\} \\
-	& + \nsum \ksum z_{nk} \bigg\{ \transpose{x_n} \gamma_k - \ln \sumexp  \bigg\} + \ksum \bigg\{ -\frac{D}{2} \ln (2\pi) - \frac{1}{2} \transpose{\gamma_k}\gamma_k \bigg\} \\
-	& + \sum_{d} \omega_d \bigg\{ -\frac{K}{2} \ln(2\pi) + \frac{K}{2} \ln \xi_0 - \frac{\xi_0}{2} \transpose{\betad} \betad\bigg\} + \omega_d \ln \pi + ( 1- \omega_d) \ln(1 - \pi) \\
-	& + \ksum \bigg\{ (a_0 - 1) \ln \tau_k - b_0 \tau_k \bigg\}
-\end{split}
-\end{equation}
-
-
-
-\subsection{CAVI Updates}
-
-Proceeding in standard fashion by taking the expectation with respect to the variational distribution, we can derive the functional form for each of the approximating distributions and their corresponding coordinate ascent updates. \\
-
-
-\textbf{Update $q \left( \mathbf{Z} \right)$}. As shown in the previous case, we know the optimal distribution for $\mathbf{Z}$ is of the form
-$$q^{*}(\mathbf{Z}) = \prod_{n} \prod_{k} r_{nk}^{z_{nk}}, \quad r_{nk} = \frac{\rho_{nk}}{\sum_{j} \rho_{nj}}$$ 
-Note that $\rho_{nk}$ involves evaluating a number of expectations taken with respect to various variational distribution, each of which is updated during sequentially during each iteration of the coordinate ascent algorithm. In particular, 
-
-\begin{equation} \label{eq:ln_rho_vs}
-\begin{split}
- \ln \rho_{nk} = &-\frac{1}{2}\ln(2\pi) + \frac{1}{2} \E_{q(\boldsymbol\tau)}[ \ln \tau_k ] - \frac{1}{2} \E_{q(\boldsymbol\tau)}[\tau_k] \cdot \E_{q(\boldbeta, \boldsymbol\omega))}[(y_n - x_n^{\tr}\beta_k)^2] \\ 
-	& + x_n^{\tr}\E_{q(\boldsymbol\gamma)}[\gamma_k] - \E_{q(\boldsymbol\gamma)}\Bigg[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\Bigg]
-\end{split}
-\end{equation}
-
-so that $\E[z_{nk}] = r_{nk}$. Explicit expressions for each of the expectations, which can either be computed in closed form or approximated, can be found in the supplemental section. \\
-
-
-\textbf{Update $q \left(  \boldtau \right)$}. Choosing a gamma prior admits the following induced factorizations and provides a straightforward update for shape and rate parameters:
-\begin{align}
-	q^{\star} \left( \boldtau \right) & = \prod_{k} q \left( \tau_k \right) = \prod_{k} \mathrm{Ga} \left( \tau_k \given a_k, b_k \right) \label{eq:q_gamma_vs} \\
-	a_k &= a_0 + \frac{N_k}{2} - 1 \label{eq:ak_vs} \\
-	b_k &= b_0 + \frac{1}{2} \nsum (y_n -\transpose{x_n} \tilde{m}_k)^2 + \transpose{x_n}\var{\beta_k} x_n \label{eq:bk_vs}
-\end{align}
-where $\tilde{m}_k = $ and $\var{\beta_k} = $. \\
-
-\textbf{Update $q \left(  \boldgamma \right)$}. The update for $\boldgamma$ remains the same as before:
-\begin{equation} \label{optimal_gmama_vs}
-	q^{*}(\gamma_k) = \mathcal{N} \left( \gamma_k \given \mu_k, \mathrm{V}_k^{-1} \right)
-\end{equation}
-
-
-
-\textbf{Update $q \left( \betad, \omega_d \right)$}. We do this sequentially by first deriving the update for $q\left(\betad \given \omega_d = 1 \right)$ and then for $q\left( \omega_d \right)$. It is helpful to rewrite the first term in the log joint likelihood (mixture density) in terms of $\betad$. Conditioning on $\omega_d = 1$, we have the variational distribution with equality written up to constants (in $\betad)$, 
-\begin{align}
-	 \ln q^{\star} \left(\betad \given \omega_d = 1 \right) &= - \frac{1}{2} \transpose{\betad} \umat_d \betad + \transpose{\betad} \eta_d - \frac{\xi_0}{2} \transpose{\betad} \betad \\
-	 &= - \frac{1}{2} \transpose{\betad} \big[ \umat_d +  \xi_0 \mathrm{I}_K\big] \betad + \transpose{\betad} \eta_d \label{eq:ln_q_beta_vs}
-\end{align}
-Note that we have used the following result (equality written up to constants in $\betad$). 
-\begin{equation}
-	 E_{-q(\boldbeta)} \Bigg[ \frac{1}{2} \nsum \ksum -z_{nk} \tau_k \left( y_n - \transpose{x_n} \beta_k \right)^2 \Bigg] = - \frac{1}{2} \sum_d \transpose{\betad} \umat_d \betad + \sum_{d} \transpose{\betad} \eta_d
-\end{equation}
-
-From (\ref{eq:ln_q_beta_vs}), we see that
-\begin{align*}
-	q^{\star}\left(\betad\right) = \mathcal{N} \left( \betad \given m_d, \qmat_d^{-1} \right)
-\end{align*}
-
-where $m_d = \qmat_d^{-1} \eta_d, \qmat_d = \umat_d + \xi_0 \mathrm{I}_K$, and $\eta_d = \zeta_d - \frac{1}{2} \sum\limits_{j \neq d} \mathrm{R}_{dj} \omega_j m_j$. We have made use of the following matrices
-\begin{align*}
-\mathrm{R}_{dj} & = \begin{bmatrix} 
-\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}           &          &          \\ 
-\vertdots   &  \ddots    & \vertdots \\
-            &          & \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj}        \\
-\end{bmatrix} \quad \quad \quad \quad
-\zeta_d =  \begin{bmatrix} 
-\frac{a_1}{b_1} \nsum r_{n1} x_{nd}y_{n} \\ 
-\vdots   \\
-\frac{a_K}{b_K} \nsum r_{nK} x_{nd}y_{n} \\
-\end{bmatrix} \\
-\umat_d & = \begin{bmatrix} 
-\frac{a_1}{b_1} \nsum r_{n1} x_{nd}^2            &               &  \\ 
-            &  \ddots       &  \\
-            &               & \frac{a_K}{b_K} \nsum r_{nK} x_{nd}^2 \\
-\end{bmatrix}
-\end{align*}
-
-
-From (\ref{eq:ln_q_beta_vs}), we have
-\begin{align*}
-	q^{\star}(\betad) = \mathcal{N} \left( \betad \given m_d, \qmat_d^{-1} \right)
-\end{align*}
-
-where $m_d = \qmat_d^{-1} \eta_d, \qmat_d = \umat_d + \xi_0 \mathrm{I}_K$, and $\eta_d = \zeta_d - \frac{1}{2} \sum\limits_{j \neq d} \mathrm{R}_{dj} \omega_j m_j$. We have made use of the following matrices
-\begin{alignat}{2}
-	\umat_d &= \mathrm{diag} &&\left(\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj} \right) \\
-	\mathrm{R}_{dj} &= \mathrm{diag} &&\left(\frac{a_1}{b_1} \nsum r_{n1} x_{nd}x_{nj}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}x_{nj} \right) \\
-	\zeta_d &= &&\transpose{\left( \frac{a_1}{b_1} \nsum r_{n1} x_{nd}y_{n}, \ldots, \frac{a_K}{b_K} \nsum r_{nK} x_{nd}y_{n} \right)}
-\end{alignat}
-
-
-
-Note that we restricted the approximating distribution for $\pr{\boldbeta, \boldsymbol\omega}$ to be of the form
-$$ q \left( \boldbeta, \boldsymbol \omega\right) = \prod_{d} q \left( \betad, \omega_d \right) $$
-where each of the $d$ factors then inherits a spike and slab density of the form
-\[   
-q \left( \betad, \omega_d \right) = 
-\left\{
-\begin{array}{ll}
-      \lambda_d \mathcal{N} \left( \betad \given m_d, \qmat_d^{-1} \right),  & \textrm{ if } \omega_d = 1 \\
-      (1 - \lambda_d) \delta_0 \left( \betad \right) & \textrm{ if } \omega_d = 0 \\
-\end{array} 
-\right. \]
-The variational parameters $(m_d, \qmat_d, \lambda_d)$ can be updated using the following by differentiating the variational lower bound with respect to each of the parameters, setting the resulting partial derivatives to zero and solving for each parameter. Doing so yields following:
-\setlength{\jot}{10pt}
-\begin{alignat}{4}
-  \mathrm{Cov}(\betad \given \omega_d = 1) \textrm{ } &\approx \textrm{ }&& \qmat_d^{-1} &&\textrm{ } & &= \textrm{ } \left(\umat_d + \xi_0 \mathrm{I}_K\right)^{-1} \label{eq:var_betad}\\
-  \E [ \betad \given \omega_d = 1]  \textrm{ }&\approx \textrm{ } && m_d &&\textrm{ }& &= \textrm{ } \qmat_d^{-1} \eta_d  \label{eq:e_betad}\\
-  \frac{\pr{\omega_d = 1\given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}}{\pr{\omega_d = 0 \given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}} \textrm{ } &\approx \textrm{ } && \frac{\lambda_d}{1-\lambda_d}&& \textrm{ }& &= \textrm{ } \frac{\pi}{1-\pi} \cdot \log \xi_0^{\frac{K}{2}} \cdot \exp\Big\{\frac{1}{2}\transpose{m_d}\eta_d\Big\} \label{eq:logodds_lambda}
-\end{alignat}
 
 
 \begin{figure}
@@ -801,7 +813,6 @@ Two useful formulations of the approximating density: $q \left( \betad, \omega_d
 	\var{\betad} &= \lambda_d \qmat_d^{-1} + \lambda_d(1 - \lambda_d) m_d \transpose{m_d}
 \end{align*}
 
-\newpage
 
 \subsection{Expectation Calculations Details}
 
