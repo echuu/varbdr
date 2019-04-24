@@ -1,8 +1,0 @@
-\beamer@sectionintoc {1}{Introduction and Setup}{3}{0}{1}
-\beamer@sectionintoc {2}{Notation and Prior Specification}{5}{0}{2}
-\beamer@sectionintoc {3}{Variational Approach}{7}{0}{3}
-\beamer@subsectionintoc {3}{1}{CAVI Updates}{9}{0}{3}
-\beamer@subsectionintoc {3}{2}{Example Calculation for $q(\mathbf {Z})$}{9}{0}{3}
-\beamer@subsectionintoc {3}{3}{Bouchard Bound for Problematic Quantity}{13}{0}{3}
-\beamer@subsectionintoc {3}{4}{Variational Algorithm}{15}{0}{3}
-\beamer@subsectionintoc {3}{5}{Monitoring Convergence}{18}{0}{3}

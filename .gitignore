@@ -5,3 +5,5 @@
 *.out
 *.xml
 *.gz
+/presentation
+/report/report.tex
