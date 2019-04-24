@@ -1,0 +1,554 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 1.0 (10/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+
+\mode<presentation> {
+
+% The Beamer class comes with a number of default slide themes
+% which change the colors and layouts of slides. Below this is a list
+% of all the themes, uncomment each in turn to see what they look like.
+
+%\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+\usetheme{Madrid}
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Singapore}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+% As well as themes, the Beamer class has a number of color themes
+% for any slide theme. Uncomment each of these in turn to see how it
+% changes the colors of your current slide theme.
+
+%\usecolortheme{albatross}
+%\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{rose}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+
+%\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{hyperref}
+
+% \usepackage{algorithm}
+\usepackage{algorithm,caption}
+\usepackage[options ]{algorithm2e}
+\usepackage[noend]{algpseudocode}
+
+\newcommand{\dataset}{{\cal D}}
+\newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
+\newcommand{\tr}{\intercal}
+\newcommand{\eye}{\mathrm{I}}
+\newcommand\given[1][]{\:#1\vert\:}
+\newcommand{\transpose}[1]{#1^{\intercal}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\nprod}{\prod_{n}}
+\newcommand{\kprod}{\prod_{k}}
+\newcommand{\nsum}{\sum_{n}}
+\newcommand{\ksum}{\sum_{k}}
+\newcommand{\boldbeta}{\boldsymbol\beta}
+\newcommand{\boldgamma}{\boldsymbol\gamma}
+\newcommand{\boldtau}{\boldsymbol\tau}
+\newcommand{\sumexp}{\sum_{j=1}^{K} \exp \{ \transpose{x_n} \gamma_j \}}
+\newcommand{\E}{\mathbb{E}}
+
+
+\usepackage{setspace}
+\let\Algorithm\algorithm
+\renewcommand\algorithm[1][]{\Algorithm[#1]\setstretch{0.75}}
+
+
+\newcommand{\pr}[1]{p \left( #1 \right)}
+
+
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title[]{Variational Approach for Bayesian Density Regression} % The short title appears at the bottom of every slide, the full title is only on the title page
+
+\author{Eric Chuu} % Your name
+\institute[TAMU] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+{
+Texas A\&M University \\ % Your institution for the title page
+\medskip
+\textit{ericchuu@tamu.com} % Your email address
+}
+\date{\today} % Date, can be changed to a custom date
+
+\begin{document}
+
+\begin{frame}
+\titlepage % Print the title page as the first slide
+\end{frame}
+
+\begin{frame}
+\frametitle{Overview} % Table of contents slide, comment this block out to remove it
+\tableofcontents % Throughout your presentation, if you choose to use \section{} and \subsection{} commands, these will automatically be printed on this slide as an overview of your presentation
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+
+%------------------------------------------------
+\section{Introduction and Setup} % Sections can be created in order to organize your presentation into discrete blocks, all sections and subsections are automatically printed in the table of contents as an overview of the talk
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Introduction and Setup}
+\textbf{Problem Setup}
+
+\begin{itemize}
+\item Given data $\big\left( y_n, x_n \big\right)_{n=1}^N$ and we want to estimate the density of $y \given x$
+\item Gaussian mixture models are a common choice due to flexibility 
+$$f(y \given x) = \ksum \pi_k \mathcal{N}(y \given \mu_k(x), \tau_k^{-1})$$
+\item Covariate-independent weights have limited flexibility in practice % requires introduction of many mixture componenets to be useful
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Introduction and Setup}
+\textbf{Covariate Dependent Weights}
+
+\begin{itemize}
+\item Allow for covariate dependence in the mixing weights
+$$f(y \given x) = \ksum \pi_k(x) \mathcal{N}(y \given \mu_k(x), \tau_k^{-1})$$
+\item Existing methods that use kernel stick breaking process (Dunson and Park, 2008), logit stick breaking prior (Rigon and Durante, 2017)
+\item We allow covariates to enter the weights via a logit link function
+$$\pi_k(x) \propto \exp\{\transpose{x}\gamma_k\}$$
+\end{itemize}
+
+\end{frame}
+
+
+%------------------------------------------------
+
+%------------------------------------------------
+\section{Notation and Prior Specification} % Sections can be created in order to organize your presentation into discrete blocks, all sections and subsections are automatically printed in the table of contents as an overview of the talk
+%------------------------------------------------
+
+
+\begin{frame}
+\frametitle{Notation}
+
+\textbf{Notation}
+
+\begin{itemize}
+	\item Observed Data: $\mathbf{y} = \{y_1, \ldots, y_N \}, \mathbf{X} = \{ x_1, \ldots, x_N \} \subseteq \R^{D}$
+	\item Guassian Componenets: $\boldbeta = \{ \beta_1, \ldots, \beta_K\}, \boldtau = \{ \tau_1, \ldots, \tau_k \}$
+	$$f(y \given x) = \ksum \pi_k(x) \textrm{ } \mathcal{N}(y \given \transpose{x}\beta_k, \tau_k^{-1})$$
+	\item coefficient vectors in the weights: $\boldgamma = \{ \gamma_1, \ldots, \gamma_k\}$
+	\item Latent variables: $\mathbf{Z} = \{ z_1, \ldots, z_N \}$
+	\begin{itemize}
+		\item $z_n \in \R^K$ and $z_{nk} = 1$ iff $y_n$ belongs to the $k$-th cluster
+	\end{itemize}
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Prior Specification}
+With the introduction of latent variables, we have the simplified conditional distribution,
+
+\begin{equation} \label{eq:conditional}
+	p \left( \mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z} \right) = 
+	\prod_{n} \prod_{k} \mathcal{N} \left( y_n \given \transpose{x_n} \beta_k, \tau_{k}^{-1} \right)^{z_{nk}}
+\end{equation}
+
+
+The conditional distribution of $\mathbf{Z}$ given $\mathbf{X}, \boldgamma$
+\begin{equation} \label{eq:cond_Z}
+	p \left( \mathbf{Z} \given \mathbf{X}, \boldsymbol\gamma \right) = \nprod \kprod \pi_{k} (x_n)^{z_{nk}} = 
+	\nprod \kprod \left( \frac{\exp\{\transpose{x_n} \gamma_k\}}{\sumexp}\right)^{z_{nk}}
+\end{equation}
+ 
+\textbf{Priors over $\boldbeta, \boldtau, \boldgamma$}
+\begin{itemize}
+	\item $p(\boldgamma) = \kprod p(\gamma_k) = \kprod \mathcal{N} \left( \gamma_k \given 0, \eye_D \right)$
+	\item $p\left( \boldbeta, \boldtau \right) = p\left( \boldbeta \given \boldtau \right) p(\boldtau)= \kprod \mathcal{N} \left( \beta_k \given m_0, (\tau_k \Lambda_0)^{-1} \right) \mathrm{Ga} \left( \tau_k \given a_0, b_0 \right)$
+\end{itemize}
+
+\end{frame}
+
+
+%------------------------------------------------
+\section{Variational Approach}
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{General Approach}
+\begin{block}{Full joint distribution of all random variables}
+$$ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} = \pr{\mathbf{y} \given \mathbf{X}, \boldsymbol\beta, \boldsymbol{\tau}, \mathbf{Z}}\pr{\mathbf{Z}\given \mathbf{X}, \boldgamma}\pr{\boldgamma}\pr{\boldbeta, \boldtau}$$
+\end{block}
+
+\begin{block}{Formulate an approximating distribution}
+$$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma)$$
+\end{block}
+
+\begin{block}{Derive update equations for the variational distributions}
+\begin{align*}
+	& \ln q^{*}(\mathbf{Z}) = \E_{-q(\mathbf{Z})} \Big[ \ln \big\{ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}, \boldgamma} \big\} \Big] \\
+	& \ln q^{*}(\boldbeta, \boldtau, \boldgamma) = \E_{-q(\mathbf{\boldbeta, \boldtau, \boldgamma})}\Big[ \ln \big\{ \pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}, \boldgamma} \big\} \Big]
+\end{align*}
+\end{block}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Variational Approximation}
+\textbf{Joint Distribution of all random variables}
+\begin{equation*} \label{eq:joint}
+\begin{split}
+	\ln &\pr{\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} = \nsum \ksum z_{nk}\bigg\{ -\frac{1}{2}\ln(2\pi) + \frac{1}{2} \ln \tau_k - \frac{\tau_k}{2} \left( y_n - \transpose{x_n}\beta_k\right)^2 \bigg\} \\
+	& + \nsum \ksum z_{nk} \bigg\{ \transpose{x_n} \gamma_k - \ln\left( \sumexp \right) \bigg\} \\
+	& + \ksum  \bigg\{ -\frac{D}{2} \ln (2\pi) + \frac{D}{2} \ln \tau_k + \ln | \Lambda_0| - \frac{\tau_k}{2}\transpose{(\beta_k - m_0)} \Lambda_0 (\beta_k - m_0)\bigg\} \\
+	& + \ksum \bigg\{ (a_0 - 1) \ln \tau_k - b_0 \tau_k \bigg\}
+\end{split}
+\end{equation*}
+\textbf{Approximating Distribution}
+\begin{equation} \label{eq:q}
+	q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma)
+\end{equation}
+
+\end{frame}
+
+%------------------------------------------------
+\subsection{CAVI Updates}
+%------------------------------------------------
+
+\subsection{Example Calculation for $q(\mathbf{Z})$}
+
+\begin{frame}
+\frametitle{Example calculation for $q(\mathbf{Z})$}
+
+\begin{align*}
+	\ln q^{*}(\mathbf{Z}) &= \sum_n \sum_k z_{nk} \Bigg\{  -\frac{1}{2}\ln(2\pi) + \frac{1}{2} E_{q(\boldsymbol\tau)}[ \ln \tau_k ] \\
+	& \qquad \qquad \qquad \quad- \frac{1}{2} E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] \\ 
+	&\qquad \qquad \qquad \quad + x_n^{\tr}E_{q(\boldsymbol\gamma)}[\gamma_k] - E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg]\Bigg\} \\
+	&= \sum_n \sum_k z_{nk} \ln \rho_{nk}
+\end{align*}
+
+Exponentiating and normalizing, we arrive at the optimal variational distribution. Then, $\E[z_{nk}] = r_{nk}$.
+
+\begin{equation} \label{eq:q_z}
+	q^{*}(\mathbf{Z}) = \prod_{n} \prod_{k} r_{nk}^{z_{nk}}, \quad r_{nk} = \frac{\rho_{nk}}{\sum_{j} \rho_{nj}}
+\end{equation}
+
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Example calculation for $q(\mathbf{Z})$}
+
+Consider the quantity $\ln \rho_{nk}$:
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\tau)}[ \ln \tau_k ]$ 
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] $
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\gamma)}[\gamma_k]$
+\end{itemize}
+
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg]$
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Variational Updates}
+
+Our choice of conjugate families tells us that we will have the following form of the variational distributions, for $k = 1, \ldots, K$,
+
+\begin{equation} \label{q_gamma}
+	q^{*}(\gamma_k) = \mathcal{N} \left(\gamma_k \given \mu_k, \mathrm{Q}_k^{-1} \right)
+\end{equation}
+
+\begin{equation} \label{q_beta}
+	q^{*}(\beta_k \given \tau_k) = \mathcal{N}\left(\beta_k \given m_k, (\tau_k \mathrm{V}_k)^{-1} \right)
+\end{equation}
+
+\begin{equation} \label{eq:q_tau}
+	q^{*}(\tau_k) =  \mathrm{Ga}\left( \tau_k \given a_k, b_k \right)
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Example calculation for $q(\mathbf{Z})$}
+
+Consider the quantity $\ln \rho_{nk}$:
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\tau)}[ \ln \tau_k ] = \psi(a_k) - \psi(b_k)$ 
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\beta, \boldsymbol\tau)}[\tau_k (y_n - x_n^{\tr}\beta_k)^2] = \frac{a_k}{b_k}(y_n + m_k^{\tr}x_n)^2 + x_n^{\tr} \mathrm{V}_k^{-1} x_n $
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\gamma)}[\gamma_k] = \mu_k$
+\end{itemize}
+
+\begin{itemize}
+	\item $E_{q(\boldsymbol\gamma)}\Bigg[\ln \left( \sum_{j} \exp \{ x_n^{\tr} \gamma_j \}\right)\Bigg] =  \textrm{ } \ldots \textrm{ oh no!}$
+\end{itemize}
+
+
+\end{frame}
+
+%------------------------------------------------
+\subsection{Bouchard Bound for Problematic Quantity}
+%------------------------------------------------
+
+
+\begin{frame}
+\frametitle{Bouchard's Bound for Problematic Quantity}
+\begin{block}{Upper bound on the sum of exponentials}
+$$\sum_{j = 1}^{K} e^{t_j} \leq \prod_{j=1}^{K} (1 + e^{t_j})$$
+\end{block}
+
+\begin{block}{Tangential Bound (Jaakkola and Jordan, 1996)}
+For $x \in \R, \alpha \in \R, \xi \in [0, \infty)$
+$$\log(1 + e^{x}) \leq \lambda(\xi)(x^2 - \xi^2) + \frac{x-\xi}{2} + \log(1 + e^{\xi})$$
+\end{block}
+
+Taking log the first bound and setting $t_j = \transpose{x_n}\gamma_j - \alpha_n$, we have
+\begin{equation*}
+	\log \sum_{j = 1}^K \exp\{ x_n^{^\intercal} \gamma_j \} & \leq 
+\alpha_n + \sum_{j = 1}^K \frac{x_n^{\intercal} \gamma_j - \alpha_n + \xi_{nj}}{2} + \lambda(\xi_{nj}) \left( (x_n^{\intercal} \gamma_j - \alpha_n)^2 - \xi_{nj}^2\right)\\
+& \qquad \qquad \qquad \qquad \qquad + \log \left( 1 + e^{\xi_{nj}}\right)
+\end{equation*}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame} % Need to use the fragile option when verbatim is used in the slide
+
+\frametitle{Bouchard's Bound for Problematic Quantity}
+
+\textbf{Upper Bound for the problematic expectation}
+
+$\mathrm{E}_{q(\boldsymbol\gamma)} \Big[ \ln \left( \sum_{j}^K \exp \{ x_n^{\tr} \gamma_j \}\right) \Big]$
+\begin{equation*}
+\begin{split}
+	& \leq \alpha_n + \sum_{j}^K  \lambda(\xi_{nj}) \left( (x_n^{\tr} \mu_j - \alpha_k)^2 - \xi_{nj}^2 + x_n^{\tr} \mathrm{Q}_k^{-1} x_n \right) + \log( 1 + e^{\xi_{nj}}) \\
+	& \quad \quad \quad +  \frac{1}{2}\left(x_n^{\tr}\mu_j - \alpha_n + \xi_{nj}\right)
+\end{split}
+\end{equation*}
+
+\textbf{Two new variational parameters that need to be updated}
+
+The additional parameters introduced in the two upper bounds can be updated using the following equations
+\begin{align*}
+    \xi_{nk} & = \sqrt{\left(\mu_k^{\intercal}x_n - \alpha_n \right)^2 + x_n^{\intercal} \mathrm{Q}_k^{-1} x_n} \quad \forall k \\ \\
+    \alpha_n & = \frac{\frac{1}{2}\left( \frac{K}{2} - 1\right) + \sum_{j = 1}^K \lambda \left( \xi_{nj} \right)\mu_j^{\intercal} x_n}{\sum_{j=1}^{K} \lambda \left( \xi_{nj}\right)} 
+\end{align*}
+
+
+
+\end{frame}
+
+%------------------------------------------------
+\subsection{Variational Algorithm}
+%------------------------------------------------
+
+
+\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
+\frametitle{Variational Algorithm}
+\textbf{Input}
+\begin{enumerate}
+\item Data $\left(y_n, x_n\right)_{n=1}^{N}$
+\item Number of components, $K$
+\item Prior mean, precision for coefficients vectors, $\boldbeta_{1:K}$
+\item Prior shape, rate parameters for precision parameters, $\tau_{1:K}$
+\end{enumerate}
+\textbf{Output}
+\begin{enumerate}
+\item A variational density,
+$$q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right) = q(\mathbf{Z}) q(\boldbeta, \boldtau, \boldgamma) = q(\mathbf{Z}) \kprod q(\beta_k, \tau_k) q(\gamma_k)$$
+\item Fully specified by the variational parameters
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
+\frametitle{Variational Algorithm}
+\begin{algorithm}[H]
+\SetAlgoLined
+ \While{the ELBO has not converged}{
+  
+  \For{$n \in \{1, \ldots, N\}$}{
+       \For{$k \in \{1, \ldots, K\}$}{
+       Set $r_{nk} \propto \exp \Big\{-\frac{1}{2} \ln (2\pi) + \frac{1}{2} \E[\ln \tau_k] + \transpose{x_n} \E[\gamma_k]$ \;
+       
+       $\qquad \qquad - \frac{1}{2} \E [\tau_k(y_n - \transpose{x_n}\beta_k)^2]\big  - \E\Big[\ln \left( \sumexp \right)\Big]\Big\}$\;
+       }
+   }
+
+  \For{$n \in \{1, \ldots, N\}$}{ %% order of the following updates matters
+      \For{$k \in \{1, \ldots, K\}$}{
+          % update xi_1k, ... xi_Nk
+	      Set $\xi_{nk} \leftarrow \sqrt{(\transpose{x_n}\mu_k - \alpha_n)^2 + \transpose{x_n}\mathrm{Q}_k^{-1} x_n}$\;          
+       }
+       Set $\alpha_{n} \leftarrow \Big[\frac{1}{2} \left( \frac{K}{2} - 1\right) + \ksum \lambda(\xi_{nk}) \transpose{\mu_k} x_n\Big] \Big/ \Big[\sum_{k} \lambda(\xi_{nk})\Big]$\;  
+   }
+
+   $\texttt{ /** Remaining Variational Updates on Next Slide **/ }$
+   
+}
+ \caption*{\textbf{Algorithm}. CAVI for Conditional Density Estimation}
+\end{algorithm}
+\end{frame}
+
+%------------------------------------------------
+
+
+
+\begin{frame}[fragile] % Need to use the fragile option when verbatim is used in the slide
+\frametitle{Variational Algorithm (cont.)}
+\begin{algorithm}[H]
+\SetAlgoLined
+ \While{the ELBO has not converged}{
+        
+    \big\vdots        
+        
+      
+   \For{$k \in \{1, \ldots, K\}$}{ %% order of the following updates matters
+      
+   $\mathrm{Q}_{k} \leftarrow \eye_D + 2 \sum_{n} r_{nk} \lambda(\xi_{nk}) x_n \transpose{x_n} \quad \qquad \qquad \quad \texttt{/* gamma\char`_k cov */ }$\; % update Q_k
+   
+   $\eta_k \leftarrow \sum_{n} r_{nk} \big[ \frac{1}{2} + 2\lambda(\xi_{nk}) \alpha_n \big]x_n$\; % update eta_k
+         
+   $\mu_k \leftarrow Q_k^{-1} \eta_k \qquad \qquad \qquad \qquad \qquad \qquad \quad \texttt{ /* gamma\char`_k mean */ }$\; % update mu_k = Q_k^{-1} eta_k
+   
+   $\mathrm{V}_k \leftarrow \nsum r_{nk} x_n \transpose{x_n} + \Lambda_0 \qquad \qquad \quad \qquad \qquad \texttt{ /* beta\char`_k cov */ }$\; % update V_k (update parameters of beta don't directly invvolve tau_k)
+   
+   $\zeta_k \leftarrow \sum_{n} r_{nk} y_n x_n + \Lambda_0 m_0$\; % update mean_of_beta_k (update parameters of beta don't directly invvolve tau_k)
+   
+   $m_k \leftarrow \mathrm{V}_k^{-1} \zeta_k \qquad \qquad\qquad\qquad\qquad \qquad \quad \texttt{ /* beta\char`_k mean */ }$\; % update m_k (update parameters of beta don't directly invvolve tau_k)
+   
+   $a_k \leftarrow a_0 + N_k \qquad \qquad \qquad \qquad \qquad\qquad \quad \texttt{ /* tau\char`_k shape */ }$\; % update a_k
+   
+   $b_k \leftarrow b_0 + \frac{1}{2}[\nsum r_{nk} y_n^2 + \transpose{m_0}\Lambda_0 m_0 - \transpose{\zeta_k} \mathrm{V}_k^{-1} \zeta_k] \texttt{ /* tau\char`_k rate */ }$\; % update b_k --> this one last since it involves V_k, and mean of beta_k
+   }
+   Compute ELBO using updated parameters
+ } % end of while
+ \Return $q \left( \mathbf{Z}, \boldbeta, \boldtau, \boldgamma \right)$
+ \caption*{\textbf{Algorithm}. CAVI for Conditional Density Estimation}
+\end{algorithm}
+\end{frame}
+
+%------------------------------------------------
+
+\subsection{Monitoring Convergence}
+
+\begin{frame}
+\frametitle{Monitoring Convergence}
+\textbf{At the end of each iteration, we compute the ELBO}: 
+$$ \mathcal{L}(q) &= \sum_{z} \int \int \int q(\boldbeta, \boldtau, \boldgamma, \mathbf{Z})
+	\ln \Big\{ \frac{p(\mathbf{y}, \mathbf{X}, \boldbeta, \boldtau, \boldgamma, \mathbf{Z})}{q(\boldbeta, \boldtau, \boldgamma, \mathbf{Z})}\Big\} d\boldbeta d\boldtau d\boldgamma $$
+
+\textbf{7 quantities to calculate}:
+
+\begin{itemize}
+	\item $\E[\ln\pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}}]$
+	\item $\E[\ln \pr{\mathbf{Z} \given \mathbf{X}, \boldgamma}]$
+	\item $\E[\ln \pr{\boldgamma}]$
+	\item $\E[\ln \pr{\boldbeta, \boldtau}]$
+	\item $\E[\ln q(\mathbf{Z})]$
+ 	\item $\E[\ln q(\boldbeta, \boldtau)]$
+	\item $\E[\ln q(\boldgamma)]$
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{References}
+\footnotesize{
+\begin{thebibliography}{99} % Beamer does not support BibTeX so references must be inserted manually as below
+Please see report submission for updated set of references.
+\end{thebibliography}
+}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\Huge{\centerline{Thank you!}}
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}

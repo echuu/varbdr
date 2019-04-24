@@ -1,0 +1,7 @@
+# don't track content with .tex extensions
+*.aux
+*.bcf
+*.log
+*.out
+*.xml
+*.gz
