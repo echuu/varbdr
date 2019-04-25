@@ -211,7 +211,7 @@ $\vspace{-2mm} \lambda(\xi) = \frac{1}{4\xi} \tanh \left( \frac{\xi}{2} \right)$
 
 }
 
-\headerbox{5. Application to Bimodal Conditional Densities}{name=bimodal,span=2,column=0,below=model}{ % To reduce this block to 1 column width, remove 'span=2'
+\headerbox{5. Application to Bimodal Conditional Density}{name=bimodal,span=2,column=0,below=model}{ % To reduce this block to 1 column width, remove 'span=2'
 
 For the conditional density, $X \sim \mathcal{N}(0,1), Y \given X \sim 0.5 \mathcal{N}\left( X - 1.5, 0.5^2) + 0.5 \mathcal{N} \left( X + 1.5, 1^2 \right)$, we examine samples of size 1000 and look at the conditional density at the three quartiles of the predictor support: $x = -0.6745$ (left), $x = 0$ (center), $x = 0.6475$ (right). For a sample size of 1000, we plot the approximations below. The true density is a dashed green line, the variational approximation is in red, and the kernel density estimate is in blue. 
 %For each quartile, the variational algorithm does very well in finding the both modes, while the kernel density estimate is not as smooth and is more biased. Another advantage of the variational algorithm is the computational speed, which converges in seconds, while the kernel-based estimate takes more than 10 times as long.
@@ -227,15 +227,18 @@ For the conditional density, $X \sim \mathcal{N}(0,1), Y \given X \sim 0.5 \math
 }
 
 
-\headerbox{6. Application to Speedflow Data}{name=sea,span=3,column=0,below=bimodal, above = bottom}{ % To reduce this block to 1 column width, remove 'span=2'
+\headerbox{6. Application to Conditional Density with Covariate-Dependent Weights}{name=sea,span=2,column=0,below=bimodal, above = bottom}{ % To reduce this block to 1 column width, remove 'span=2'
 
 We consider the following bimodal conditional density, $X \sim \mathcal{N}(0,1), Y \given X \sim 0.5 \mathcal{N}\left( X - 1.5, 0.5^2) + 0.5 \mathcal{N} \left( X + 1.5, 0.5^2 \right)$ In particular, we look at the conditional density at the three quartiles of the predictor support: $x = -0.6745$ (left), $x = 0$ (center), $x = 0.6475$ (right). For a sample size of 1000, we plot the approximations below, where the true conditional density is a dashed green line, the variational approximation is shown in red, and the kernel density estimate is shown in blue. 
 %For each quartile, the variational algorithm does very well in finding the both modes, while the kernel density estimate is not as smooth and is more biased. Another advantage of the variational algorithm is the computational speed, which converges in seconds, while the kernel-based estimate takes more than 10 times as long.
 \begin{center}
-\hspace{0pt}\includegraphics[width=0.75\linewidth]{unimodal_N1000}
+\hspace{0pt}\includegraphics[width=0.85\linewidth]{dp2_plots}
 \end{center}
 
 }
+
+\headerbox{7. References}{name=references,column=2,span=1,below=variational,above=bottom}{
+
 
 
 %\headerbox{6. Extension of Algorithm via Variable Selection}{name=conclusion,column=1,below=sea,span=2,above=bottom}{

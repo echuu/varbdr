@@ -93,7 +93,7 @@ elbo = function(theta, prior) {
         theta$a_k * log(theta$b_k) - theta$a_k - lgamma(theta$a_k)  # (K x 1)
     for (k in 1:K) {
         # print(class(theta$V_k[,,k]))
-        e6_k[k] = e6_k[k] + log(det(as.matrix(theta$V_k[,,k])))
+        e6_k[k] = e6_k[k] + 0.5 * log(det(as.matrix(theta$V_k[,,k])))
     }
     e_ln_q_beta_tau = sum(e6_k) - 0.5 * K * D * (log(2 * pi) + 1)
     theta$e_ln_q_beta_tau = sum(e6_k) - 0.5 * K * D * (log(2 * pi) + 1) # comment out later

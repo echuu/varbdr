@@ -2,7 +2,7 @@
 
 
 
-generatePlots = function(py_df, true_den, k_den) {
+generatePlots = function(py_df, true_den, k_den, xlabs = NULL) {
     
     plot_list = vector('list', length(py_df))
     
@@ -28,11 +28,17 @@ generatePlots = function(py_df, true_den, k_den) {
         }
         
         
+        if (is.null(xlabs)) {
+            x_label = "y"
+        } else {
+            x_label = xlabs[i]
+        }
+        
         plot_list[[i]] = ggplot(df_i_long, 
                                 aes(x = y, y = value, col = variable)) + 
-            geom_line(size = 1.2, 
+            geom_line(size = 1.0, 
                       aes(linetype = factor(df_i_long$is_approx))) +
-            labs(x = "y", y = "p(y)") + theme_bw() +
+            labs(x = x_label, y = "p(y)") + theme_bw() +
             theme(legend.position = "none")
         
     }
@@ -44,7 +50,8 @@ generatePlots = function(py_df, true_den, k_den) {
 }
 
 
-plotCD = function(theta, K, x_in, y_grid, true_den = NULL, k_den = NULL) {
+plotCD = function(theta, K, x_in, y_grid, xlabs = NULL,
+                  true_den = NULL, k_den = NULL) {
     
     
     # if intercept is fitted, then need to include a 1 before each of the 
@@ -108,7 +115,7 @@ plotCD = function(theta, K, x_in, y_grid, true_den = NULL, k_den = NULL) {
     }
     
     
-    cd_plots = generatePlots(py_df, true_den, k_den)
+    cd_plots = generatePlots(py_df, true_den, k_den, xlabs)
     
     
     return(list(py_df = py_df, cd_plots = cd_plots))

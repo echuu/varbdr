@@ -85,7 +85,9 @@ fy.x = npcdens(y ~ x, xy_df)
 
 
 x = c(-0.6745, 0, 0.6745)
-uni_res = plotCD(theta_cpp, K, x, y_grid, d_binorm, k_den = fy.x)
+xlabs = paste("x = ", x, sep = "")
+y_grid = seq(-5, 5, length.out = 1000)
+uni_res = plotCD(theta_cpp, K, x, y_grid, xlabs, d_binorm, k_den = fy.x)
 uni_res$cd_plots
 
 multiplot(plotlist = uni_res$cd_plots, cols = 3)

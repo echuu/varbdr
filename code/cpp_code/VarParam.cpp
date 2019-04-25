@@ -97,8 +97,8 @@ VarParam::VarParam (MAP_VEC y, MAP_MAT X, int N, int D, int K,
 	
 	this->lgd_Lambda_0  = log(Lambda_0.determinant());
 
-	this->a_0           = VEC_TYPE::Ones(K);
-	this->b_0           = VEC_TYPE::Ones(K);
+	this->a_0           = 0.5 * (VEC_TYPE::Ones(K));
+	this->b_0           = 0.5 * (VEC_TYPE::Ones(K));
 
 	this->lg_a0         = (this->a_0).array().lgamma();
 	this->log_b0        = (this->b_0).array().log();
@@ -189,7 +189,7 @@ bool VarParam::elboConverge() {
 
 	double diff = this->L(i) - this->L(i - 1);
 
-	if (i % 1000 == 0) {
+	if (i % 500 == 0) {
 		cout << "It:\t" << i;
 		std::cout << std::setprecision(4) << std::fixed;
 		cout << "\tLB:\t" << this->L(i) << "\tdelta:\t" << diff << endl;
@@ -544,7 +544,7 @@ void VarParam::elbo() {
 		e4_trace(k) = (this->Lambda_0 * (*this->Vk_inv_it)).trace();
 
 		// calculation for (6) -- update e6
-		e6(k) = log((*this->Vk_it).determinant());
+		e6(k) = 0.5 * log((*this->Vk_it).determinant());
 
 
 		// calculation for (7) -- update e7
