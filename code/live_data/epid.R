@@ -16,7 +16,8 @@ epi = read.csv("dde_data.csv", stringsAsFactors = FALSE) # 2380 x 18
 epi_sub = epi %>% filter(GEST_DEL <= 45) # 2313 x 18
 
 # Gestational age vs. DDE_A plot
-ggplot(epi_sub, aes(x = DDE_A, y = GEST_DEL)) + geom_point() + theme_bw()
+ggplot(epi_sub, aes(x = DDE_A, y = GEST_DEL)) + geom_point() + theme_bw() +
+    ggtitle("Gestational Age vs. DDE")
 
 
 
@@ -41,10 +42,10 @@ K = 2
 intercept = FALSE
 max_iter = 5e3 # make bigger after it converges
 
-y_grid = seq(min(y) - 2.5, max(y) + 2.5, length.out = 2000)
 theta_gest = varbdr_cpp(y, X_norm, N, D, K, intercept, max_iter)
 theta_gest$curr
 
+y_grid = seq(min(y) - min(y), max(y) + max(y), length.out = 2000)
 gest_cd = plotCD(theta_gest, K, x_in, y_grid, true_den = NULL, k_den = NULL)
 multiplot(plotlist = gest_cd$cd_plots, cols = 2)
 
