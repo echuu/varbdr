@@ -7,7 +7,7 @@
 # initVarParams() -- initialize the variational parameters
 
 initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter, 
-                         m_k = NULL, mu_k = NULL) {
+                         m_d = NULL, mu_k = NULL) {
 
     I_D   = diag(1, D)                 # (D X D)  identity matrix
     I_K   = diag(1, K)                 # (K x K)  identity matrix
@@ -42,7 +42,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     #                                    (1 - w_d) * delta_0 (beta_d)
     Q_d = array(I_K, c(K, K, D))       # D x (K x K) : array of cov matricies
                                        #               for each beta_d (K x 1)
-    Q_d = array(I_K, c(K, K, D))       # D x (K x K)
+    Q_d_inv = array(I_K, c(K, K, D))   # D x (K x K)
     
     # quantities used to compute Q_d, m_d
     U_d    = array(I_K, c(K, K, D))    # D x (K x K)
