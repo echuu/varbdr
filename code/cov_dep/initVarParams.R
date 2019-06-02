@@ -83,7 +83,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
         # same as in cov-indpt case: replace m_k with mle estimate for beta_k
         # k is determined by first doing k-means on the y-values
         
-        m_k     = matrix(0, D, K)          # D x K       : mean of gamma_k
+        m_k     = matrix(0, D, K)          # D x K       : mean of beta_k
         mu_k    = matrix(0, D, K)          # D x K       : mean of gamma_k
 
         y_kmeans  = kmeans(y, K, nstart = 25)
