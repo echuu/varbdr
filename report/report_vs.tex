@@ -784,8 +784,6 @@ since $\E[\transpose{(\gamma_k - \mu_k)}\mathrm{V}_{k}(\gamma_k - \mu_k)] = D$.
 
 
 
-
-
 \newpage
 
 
@@ -828,7 +826,12 @@ Two useful formulations of the approximating density: $q \left( \betad, \omega_d
 	\E \Big[ \transpose{\betad} \umat_d \betad \Big] &= \transpose{\E(\betad))} \umat_d \E(\betad)) + \trace{\umat_d \var{\betad}} \\
 	&= \lambda_d^2 \transpose{m_d} \umat_d m_d + \trace{\umat_d \left( \lambda_d \qmat_d^{-1} + \lambda_d(1-\lambda_d)m_d \transpose{m_d}} \\
 	&= \lambda_d^2 \transpose{m_d} \umat_d m_d + \lambda_d \trace{\umat_d\qmat_d^{-1}} + \lambda_d(1 - \lambda_d)\transpose{m_d}\umat_dm_d \\
-	&= \lambda_d \trace{\umat_d \qmat_d^{-1}} + \lambda_d \transpose{m_d} \umat_d m_d \\
+	&= \lambda_d \trace{\umat_d \qmat_d^{-1}} + \lambda_d \transpose{m_d} \umat_d m_d
+\end{align*}
+
+\newpage
+
+\begin{align*}
 	\E \Big[ \transpose{(\betad - m_d)} \qmat_{d}(\betad - m_d) \given w_d \Big] &= \transpose{\E \Big[ \transpose{(\betad - m_d)} \given w_d \Big]} \qmat_d \E \Big[ \transpose{(\betad - m_d)} \given w_d \Big] + \trace{\qmat_d \var{\betad \given w_d}} \\
 	&= (w_d-1)^2 \transpose{m_d} \qmat_d m_d + w_d \trace{\qmat_d \qmat_d^{-1}} + w_d(1-w_d)\transpose{m_d}\qmat_d m_d \\
 	&= (w_d^2 - 2w_d + 1)\transpose{m_d} \qmat_d m_d + w_d \trace{\mathrm{I}_K} + w_d\transpose{m_d}\qmat_d m_d -w_d^2\transpose{m_d}\qmat_d m_d \\
