@@ -70,8 +70,8 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     
     
     # (2b) variational parameters for q(gamma_1:K) ~ N(gamma_k | mu_k, Q_k^{-1})
-    Q_k     = array(I_D, c(D, D, K))   # K x (D x D)
-    Q_k_inv = array(I_D, c(D, D, K))   # K x (D x D) precisions for gamma_k
+    V_k     = array(I_D, c(D, D, K))   # K x (D x D)
+    V_k_inv = array(I_D, c(D, D, K))   # K x (D x D) precisions for gamma_k
     eta_k   = matrix(0, D, K)          # D x K       Q_k_inv * eta_k = mu_k
     
     
@@ -134,7 +134,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
                  Q_d = Q_d, Q_d_inv = Q_d_inv, m_d = m_d,
                  U_d = U_d, R_dj = R_dj, zeta_d = zeta_d, eta_d = eta_d,
                  alpha = alpha, xi = xi, lambda = lambda, phi = phi,
-                 Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k, 
+                 V_k = V_k, V_k_inv = V_k_inv, mu_k = mu_k, 
                  eta_k = eta_k, 
                  a_k = a_k, b_k = b_k, 
                  Sigma_k = Sigma_k, m_k = m_k,

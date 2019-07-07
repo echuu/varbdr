@@ -38,15 +38,7 @@ mStep = function(theta_vs, prior_vs) {
     
     # (2) update: q(gamma) = q(gamma_1) x ... x q(gamma_K)
     qgamma = weightUpdate(prior, theta)
-    
-    theta$alpha   = qgamma$alpha
-    theta$xi      = qgamma$xi
-    theta$lambda  = qgamma$lambda
-    theta$phi     = qgamma$phi
-    theta$Q_k     = qgamma$Q_k
-    theta$Q_k_inv = qgamma$Q_k_inv
-    theta$mu_k    = qgamma$mu_k
-    theta$eta_k   = qgamma$eta_k
+    theta = qgamma$theta
     
     
     # (3) update q(beta, omega) = q(beta_1, omega_1) x ... x q(beta_D, omega_D)

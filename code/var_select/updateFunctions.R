@@ -166,23 +166,103 @@ precisionUpdate = function(prior, theta) {
 } # end of precisionUpdate() functio
 
 
-
+# precisionUpdate() : update parmaeters for q(gamma) = N(gamma | mu_k, Q_k_inv)
+#     input       : 
+#         prior   : list of prior (and misc.) parameters
+#         theta   : list of updated variational parameters 
+#     output      : list containing variational parameters relevant to q(gamma)
+#         alpha   : (N x 1)      additional var. param for upper bound
+#         xi      : (N x K)      additional var. param for upper bound
+#         lambda  : (N x K)      function of xi
+#         phi     : (N x 1)      function of alpha, xi
+#         V_k     : K x (D x D)  inverse of precision matrix for gamma_k
+#         V_k_inv : K x (D x D)  precision matrix for gamma_k
+#         mu_k    : (D x K)      mean vectors for gamma_k's, stored col-wise
+#         eta_k   : (D x K)      intermediate vector for computing mu_k
 weightUpdate = function(prior, theta) {
     
-    alpha   = 0
-    xi      = 0
-    lambda  = 0
-    phi     = 0
-    V_k     = 0
-    V_k_inv = 0
-    mu_k    = 0
-    eta_k   = 0  # consider renaming so avoid confusion - nu?
+    X = prior$X
+    y = prior$y
+    N = prior$N
+    K = prior$K
+    D = prior$D
+    
+    I_D        = diag(1, D)                       # (D X D) : identity matrix
+    X_mu       = X %*% theta$mu_k                 # (N x K) : (N x D) * (D x K)
+    
+    ## TODO: code below needs to be adapted to the variables used during v.s.
+    
+    ## update additional variational params used in Bouchard bound -------------
+    #     (0.1) alpha                 # (N x 1)
+    #     (0.2) xi                    # (N x K)
+    #     (0.3) lambda                # (N x K)
+    #     (0.4) phi                   # (N x 1)
+    for (n in 1:N) {
+        
+        # (0.1) update alpha ---------------------------------------------------
+        theta$alpha[n] = 1 / sum(theta$lambda[n,]) * 
+            (0.5 * (0.5 * K - 1) + crossprod(X_mu[n,], theta$lambda[n,]))
+        
+        # (0.2) update xi (computed row-wise) ----------------------------------
+        xVx = numeric(K)
+        for (k in 1:K) {
+            xVx[k] = quadMult(X[n,], theta$V_k_inv[,,k]) # function in misc.R
+        }
+        
+        theta$xi[n,] = sqrt((X_mu[n,] - theta$alpha[n])^2 + xVx)
+    }
+    
+    # (0.3) compute lambda(xi) using updated value of xi  ----------------------
+    theta$lambda = lambda_xi(theta$xi)              # (N x K), misc.R
+    
+    # (0.4) compute phi (function of alpha, xi) --------------------------------
+    for (n in 1:N) {
+        theta$phi[n] = sum(0.5 * (X_mu[n,] - theta$alpha[n] - theta$xi[n,]) + 
+                               log(1 + exp(theta$xi[n,])))
+    } # end update for phi
     
     
-    gammaUpdate = list(alpha = alpha, xi = xi, lambda = lambda, phi = phi,
-                       Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k, 
-                       eta_k = eta_k)
+    # end of Bouchard variational parameter updates ----------------------------
     
+    
+    ## update q(gamma) = N(gamma | mu_k, V_k^{-1} ) ----------------------------
+
+    # (1.1) update q(gamma) : V_k, V_k^{-1}, eta_k, mu_k -----------------------
+    for (k in 1:K) {
+        
+        r_x = 0
+        rl_nk_xx = matrix(0, D, D)               # used to calculate q(gamma)
+
+        for (n in 1:N) {
+            ## TODO: save x_n * x_n' calculation since this is done every 
+            # iteration of CAVI -> store N x (N x N) matrices (worth it?)
+            # may be too expensive for large N
+            rl_nk_xx = rl_nk_xx + 
+                theta$r_nk[n,k] * theta$lambda[n,k] * crossprod(t(X[n,]))
+        }
+        
+        
+        # (1.1) update q(gamma) : V_k, V_k^{-1}, eta_k, mu_k ------------------
+        theta$V_k[,,k] = I_D + 2 * rl_nk_xx
+        theta$V_k_inv[,,k] = solve(theta$V_k[,,k])
+        
+        theta$eta_k[,k] = t(X) %*% 
+            (theta$r_nk[,k] * (0.5 + 2 * theta$lambda[,k] * theta$alpha))
+        
+        theta$mu_k[,k] =  theta$V_k_inv[,,k] %*% theta$eta_k[,k]
+        
+        
+    } # end of q(gamma)
+    
+    # --------------------------------------------------------------------------
+    
+    
+    # prepare output
+    
+    # gammaUpdate = list(alpha = alpha, xi = xi, lambda = lambda, phi = phi,
+    #                    V_k = V_k, V_k_inv = V_k_inv, mu_k = mu_k, 
+    #                    eta_k = eta_k)
+    return(theta)
 }
 
 
