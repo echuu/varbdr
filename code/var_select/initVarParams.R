@@ -15,7 +15,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     L     = rep(-Inf, max_iter)        # Store the variational lower bounds
     
     
-    # variables for inverence
+    # variables for inference
     beta_k    = matrix(0, D, K)        # (D x K) : each beta_k stored col-wise
     tau_k     = rep(1, K)              # (1 x K) : scale for precision, V_k
     gamma_k   = matrix(0, D, K)        # (D x K) : each gamma_k stored col-wise
@@ -78,8 +78,8 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     
     # (3) variational parameters for tau_k
     a_k = rep(1, K)                    # K x 1 : shape param for tau_k
-    b_k = rep(1, K)                    # K x 1 : rate param for tau_k  
-    
+    b_k = rep(1, K)                    # K x 1 : rate param for tau_k 
+
     
     # initialize m_d, mu_k
     if (is.null(m_d) && is.null(mu_k)) {
@@ -109,6 +109,20 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     }
         
     
+    ## TODO: calculate m_k, Sigma_k for *column-wise* coefficient vectors;
+    # these depend on the values of lambda_1:D, m_1:D, Q_1:D (init. above)
+    # Also: check the order of the updates in the m-step / updateFunctions.R
+    
+    # covariance matrix should be fine as is since Q_d initialized as identity
+    # m_k needs to be re-computed using the results of the random initialization
+    # of m_d done in previous step
+    
+    Sigma_k = array(I_D, c(D, D, K)) # K x (D x D) : cov matrix for each beta_k
+    m_k     = matrix(0, D, K)        # D x K : mean components for beta_k, 
+                                     #         stored col-wise
+    
+    
+    
     # current iteration of CAVI: start at 2, because we look at *previous* elbo
     #                            elements when checking for convergence
     curr = 2 
@@ -123,6 +137,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
                  Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k, 
                  eta_k = eta_k, 
                  a_k = a_k, b_k = b_k, 
+                 Sigma_k = Sigma_k, m_k = m_k,
                  L = L, curr = curr, intercept = intercept)
     
 } # end initVarParams() function

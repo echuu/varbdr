@@ -2,13 +2,13 @@
 
 # test_modules.R
 
-source("C:/Users/chuu/varbdr/code/globals.R")
+source("~/varbdr/code/globals.R")
 setwd(HOME_DIR)
 source(DP_BDR)    # so that we have access to data
 
 
 
-setwd("C:/Users/chuu/varbdr/code/var_select")
+setwd("~/varbdr/code/var_select")
 source("misc.R")
 
 
@@ -45,6 +45,18 @@ prior = initPriors(y, X, K,
 source("initVarParams.R")
 theta = initVarParams(y, X, N, D, K, intercept = FALSE, max_iter, 
                       m_d = NULL, mu_k = NULL)
+
+#### test updateFunctions.R
+source("updateFunctions.R")
+
+# test spikeSlabUpdate() function
+
+out_ss = spikeSlabUpdate(prior, theta) # runs with no complaints
+
+out_tau = precisionUpdate(prior, theta) # runs with no complaints
+
+
+
 
 
 

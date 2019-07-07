@@ -2,19 +2,17 @@
 
 
 
-
-
 # spike and slab update for D covariates
 
 # output:
-#        spikeSlabObj  : object containing parameters for s&s update
-#              Q_d     : D x (K x K) inverse of precision matrix
-#              Q_d_inv : D x (K x K) precision matrix for beta_d
-#              m_d     : (K x D) mean vector for beta_d stored col-wise
-#              R_dj    : D x (K x K) intermediate matrix for eta_d
-#              U_d     : D x (K x K) intermediate matrix for Q_d
-#              zeta_d  : (K x D) intermediate vector for eta_d
-#              eta_d   : (K x D) intermediate vector for m_d
+#        spikeSlabObj  :              obj containing parameters for s&s update
+#              Q_d     : D x (K x K)  inverse of precision matrix
+#              Q_d_inv : D x (K x K)  precision matrix for beta_d
+#              m_d     : (K x D)      mean vector for beta_d stored col-wise
+#              R_dj    : D x (K x K)  intermediate matrix for eta_d
+#              U_d     : D x (K x K)  intermediate matrix for Q_d
+#              zeta_d  : (K x D)      intermediate vector for eta_d
+#              eta_d   : (K x D)      intermediate vector for m_d
 
 spikeSlabUpdate = function(prior, theta) {
     
@@ -79,14 +77,14 @@ spikeSlabUpdate = function(prior, theta) {
             x_dj = X[,d] * X[,j] # (N x 1)        
             
             for (k in 1:K) { # compute elements of the R_dj matrix
-                R_dj[j, k] = theta$tau_k[k] * crossprod(r_nk[,k], x_dj)
+                R_dj[k, j] = theta$tau_k[k] * crossprod(r_nk[,k], x_dj)
             } 
             print(paste("d = ", d, "; ", "update R_dj", sep = ''))
         } # end of R_dj computation
         
         # (1.2) compute U_d
         for (k in 1:K) {
-            U_d[d, k] = theta$tau_k[k] * crossprod(r_nk[,k], xd_sq)
+            U_d[k, d] = theta$tau_k[k] * crossprod(r_nk[,k], xd_sq)
             print(paste("d = ", d, "; ", "update U_d", sep = ''))
         } # end of U_d computation
         
@@ -123,11 +121,69 @@ spikeSlabUpdate = function(prior, theta) {
     } # end outer loop
     
     # prepare output
-    spikeSlabObj = list(Q_d, Q_d_inv, R_dj, U_d, zeta_d, eta_d)
+    spikeSlabObj = list(Q_d = Q_d, Q_d_inv = Q_d_inv, R_dj = R_dj, 
+                        U_d = U_d, zeta_d = zeta_d, eta_d = eta_d)
     
     return(spikeSlabObj)    
 }
 
+
+# precisionUpdate() : update parmaeters for q(tau) = Ga(tau | a_k, b_k)
+#     input     : 
+#         prior : list of prior (and misc.) parameters
+#         theta : list of updated variational parameters 
+#     output    : list containing shape, rate parameters for q(tau)
+#         a_k   : (K x 1) vector of shape parameters for the K precision comps
+#         b_k   : (K x 1) vector of rate parameters for the K precision comps
+precisionUpdate = function(prior, theta) {
+    
+    K = prior$K
+    X = prior$X
+    y = prior$y
+    
+    a_k = numeric(K)
+    b_k = numeric(K)
+    
+    a_k = prior$a_0 + 0.5 * theta$N_k - 1
+    
+    X_mk    = X %*% theta$m_k  # (N x K) : (N x D) * (D x K)
+    b_k_tmp = numeric(K)       # (K x 1) : 1st term in summation
+    xSigmax = numeric(K)       # (K x 1) : 2nd term in summation
+    
+    for (k in 1:K) {
+         b_k_tmp[k] = b_k_tmp[k] + sum((y - X_mk[,k])^2)
+    }
+    
+    for (k in 1:K) {
+        for (n in 1:N) {
+            xSigmax[k] = xSigmax[k] + t(X[n,]) %*% theta$Sigma_k[,,k] %*% X[n,]
+        }
+    }
+    
+    b_k = b_0 + 0.5 * (b_k_tmp + xSigmax)
+    
+    return(list(a_k = a_k, b_k = b_k))
+} # end of precisionUpdate() functio
+
+
+
+weightUpdate = function(prior, theta) {
+    
+    alpha   = 0
+    xi      = 0
+    lambda  = 0
+    phi     = 0
+    V_k     = 0
+    V_k_inv = 0
+    mu_k    = 0
+    eta_k   = 0  # consider renaming so avoid confusion - nu?
+    
+    
+    gammaUpdate = list(alpha = alpha, xi = xi, lambda = lambda, phi = phi,
+                       Q_k = Q_k, Q_k_inv = Q_k_inv, mu_k = mu_k, 
+                       eta_k = eta_k)
+    
+}
 
 
 
