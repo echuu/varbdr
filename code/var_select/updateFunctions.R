@@ -3,9 +3,10 @@
 
 
 # spike and slab update for D covariates
-
-# output:
-#        spikeSlabObj  :              obj containing parameters for s&s update
+#     input            : 
+#                prior : list of prior (and misc.) parameters
+#                theta : list of current values of variational parameters 
+#     output           : theta, list of variational params w/ following updated
 #              Q_d     : D x (K x K)  inverse of precision matrix
 #              Q_d_inv : D x (K x K)  precision matrix for beta_d
 #              m_d     : (K x D)      mean vector for beta_d stored col-wise
@@ -13,12 +14,7 @@
 #              U_d     : D x (K x K)  intermediate matrix for Q_d
 #              zeta_d  : (K x D)      intermediate vector for eta_d
 #              eta_d   : (K x D)      intermediate vector for m_d
-
 spikeSlabUpdate = function(prior, theta) {
-    
-    # TODO: figure out if it's better to modify in place for final/intermediate
-    # vectors/matricies; if pre-define everything, that's a lot of space needed.
-    # For now, define/allocate as needed
 
     # dimensions
     N = prior$N
@@ -124,20 +120,27 @@ spikeSlabUpdate = function(prior, theta) {
         
     } # end outer loop
     
-    # prepare output
-    spikeSlabObj = list(Q_d = Q_d, Q_d_inv = Q_d_inv, m_d = m_d,
-                        R_dj = R_dj, U_d = U_d, zeta_d = zeta_d, 
-                        eta_d = eta_d, lambda_d = lambda_d)
+    # primary quantities
+    theta$Q_d      = Q_d
+    theta$Q_d_inv  = Q_d_inv      # V [ beta_d | omega_d = 1 ] = Q_d^(-1)
+    theta$m_d      = m_d          # E [ beta_d | omega_d = 1 ] = m_d
+    theta$lambda_d = lambda_d     # posterior inclusion probabilities
     
-    return(spikeSlabObj)    
-}
+    # secondary quantities (may come up in ELBO later)
+    theta$R_dj   = R_dj
+    theta$U_d    = U_d
+    theta$zeta_d = zeta_d
+    theta$eta_d  = eta_d
+    
+    return(theta)    
+} # end spikeSlabUpdate() function
 
 
 # precisionUpdate() : update parmaeters for q(tau) = Ga(tau | a_k, b_k)
 #     input     : 
 #         prior : list of prior (and misc.) parameters
-#         theta : list of updated variational parameters 
-#     output    : list containing shape, rate parameters for q(tau)
+#         theta : list of current values of variational parameters 
+#     output    : theta, list of variational params w/ following updated
 #         a_k   : (K x 1) vector of shape parameters for the K precision comps
 #         b_k   : (K x 1) vector of rate parameters for the K precision comps
 precisionUpdate = function(prior, theta) {
@@ -167,15 +170,18 @@ precisionUpdate = function(prior, theta) {
     
     b_k = b_0 + 0.5 * (b_k_tmp + xSigmax)
     
-    return(list(a_k = a_k, b_k = b_k))
+    theta$a_k = a_k
+    theta$b_k = b_k
+    
+    return(theta)
 } # end of precisionUpdate() functio
 
 
 # precisionUpdate() : update parmaeters for q(gamma) = N(gamma | mu_k, Q_k_inv)
 #     input       : 
-#         prior   : list of prior (and misc.) parameters
-#         theta   : list of updated variational parameters 
-#     output      : list containing variational parameters relevant to q(gamma)
+#         prior   : list of prior (and misc) parameters
+#         theta   : list of current values of variational parameters 
+#     output      : theta, list of variational params w/ following updated
 #         alpha   : (N x 1)      additional var. param for upper bound
 #         xi      : (N x K)      additional var. param for upper bound
 #         lambda  : (N x K)      function of xi
@@ -261,15 +267,13 @@ weightUpdate = function(prior, theta) {
     
     # --------------------------------------------------------------------------
     
-    
-    # prepare output
-    
-    # gammaUpdate = list(alpha = alpha, xi = xi, lambda = lambda, phi = phi,
-    #                    V_k = V_k, V_k_inv = V_k_inv, mu_k = mu_k, 
-    #                    eta_k = eta_k)
-    
     return(theta)
-}
+} # end weightUpdate() function
+
+
+
+
+
 
 
 
