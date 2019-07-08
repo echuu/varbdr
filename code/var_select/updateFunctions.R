@@ -37,8 +37,8 @@ spikeSlabUpdate = function(prior, theta) {
     # define final matricies, vectors
     Q_d       = array(I_K, c(K, K, D))           # D x (K x K): inv precision
     Q_d_inv   = array(I_K, c(K, K, D))           # D x (K x K): precision 
-    m_d       = matrix(0, K, D)                  # (K x D) : ean comps 
-    lambda_d  = numeric(D)                    # (D x 1) : inclusion probs.
+    m_d       = matrix(0, K, D)                  # (K x D) : mean comps 
+    lambda_d  = numeric(D)                       # (D x 1) : inclusion probs.
     
     # allocate space for intermediate matrics
     
@@ -125,9 +125,9 @@ spikeSlabUpdate = function(prior, theta) {
     } # end outer loop
     
     # prepare output
-    spikeSlabObj = list(Q_d = Q_d, Q_d_inv = Q_d_inv, R_dj = R_dj, 
-                        U_d = U_d, zeta_d = zeta_d, eta_d = eta_d,
-                        lambda_d = lambda_d)
+    spikeSlabObj = list(Q_d = Q_d, Q_d_inv = Q_d_inv, m_d = m_d,
+                        R_dj = R_dj, U_d = U_d, zeta_d = zeta_d, 
+                        eta_d = eta_d, lambda_d = lambda_d)
     
     return(spikeSlabObj)    
 }

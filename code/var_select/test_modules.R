@@ -49,6 +49,8 @@ theta = initVarParams(y, X, N, D, K, intercept = FALSE, max_iter,
 #### test updateFunctions.R
 source("updateFunctions.R")
 
+source("mStep_vs.R")
+
 # test spikeSlabUpdate() function
 
 out_ss = spikeSlabUpdate(prior, theta) # runs with no complaints
@@ -57,8 +59,6 @@ out_tau = precisionUpdate(prior, theta) # runs with no complaints
 
 out_gamma = weightUpdate(prior, theta)
 
-
-
-
+theta_mStep = mStep(prior, theta)
 
 

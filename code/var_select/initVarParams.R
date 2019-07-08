@@ -24,7 +24,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     # variables included for sparsity assumption
         # TODO: the initial value for probability of inclusion might have
         # to be tuned later
-    lambda_d = rep(0.5, D)            # (D x 1) : probability of inclusion
+    # lambda_d = rep(0.5, D)            # (D x 1) : probability of inclusion
     
     
     # e-step parameters: 
@@ -47,12 +47,13 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     # quantities used to compute Q_d, m_d
     U_d    = array(I_K, c(K, K, D))    # D x (K x K)
     R_dj   = array(I_K, c(K, K, D))    # D x (K x K)
-    zeta_d = matrix(0, D, K)           # (D x K)
-    eta_d  = matrix(0, D, K)           # (D x K)
+    zeta_d = matrix(0, K, D)           # (K x D) // updated 7/8
+    eta_d  = matrix(0, K, D)           # (K x D) // updated 7/8
     
     
     # (1b) q(w_d) = Ber(w_d | lambda_d)
     omega_d  = rep(1, D)              # (D x 1) : indicator for inclusion
+    lambda_d = rep(0.3, D)            # (D x 1) : inlusion probabilities
     
     ## END variable selection parameters ---------------------------------------
     
@@ -84,7 +85,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     # initialize m_d, mu_k
     if (is.null(m_d) && is.null(mu_k)) {
         
-        m_d     = matrix(0, D, K)          # D x K       : mean of beta_d
+        m_d     = matrix(0, K, D)          # K x D       : mean of beta_d
         mu_k    = matrix(0, D, K)          # D x K       : mean of gamma_k
         
         y_kmeans  = kmeans(y, K, nstart = 25)
@@ -94,7 +95,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
             y_k       = y[y_k_index == k]  # response vec for the k-th cluster
             X_k       = X[y_k_index == k,] # design mat for the k-th cluster                   
             beta_mle  = solve(t(X_k) %*% X_k, t(X_k) %*% y_k)
-            m_d[,k]   = beta_mle
+            m_d[k,]   = beta_mle
             mu_k[,k]  = beta_mle
         }
         
@@ -115,7 +116,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     
     # covariance matrix should be fine as is since Q_d initialized as identity
     # m_k needs to be re-computed using the results of the random initialization
-    # of m_d done in previous step
+    # of m_d done in previous step (transpose of m_d done in the prev. loop?)
     
     Sigma_k = array(I_D, c(D, D, K)) # K x (D x D) : cov matrix for each beta_k
     m_k     = matrix(0, D, K)        # D x K : mean components for beta_k, 
@@ -129,7 +130,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
     
     # list containing all variational parameters
     theta = list(beta_k = beta_k, tau_k = tau_k, gamma_k = gamma_k, 
-                 omega_d, lambda_d,
+                 omega_d = omega_d, lambda_d = lambda_d,
                  r_nk = r_nk, log_r_nk = log_r_nk, N_k = N_k, 
                  Q_d = Q_d, Q_d_inv = Q_d_inv, m_d = m_d,
                  U_d = U_d, R_dj = R_dj, zeta_d = zeta_d, eta_d = eta_d,
