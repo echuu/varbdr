@@ -55,7 +55,7 @@ out_ss = spikeSlabUpdate(prior, theta) # runs with no complaints
 
 out_tau = precisionUpdate(prior, theta) # runs with no complaints
 
-
+out_gamma = weightUpdate(prior, theta)
 
 
 

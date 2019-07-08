@@ -37,8 +37,8 @@ spikeSlabUpdate = function(prior, theta) {
     # define final matricies, vectors
     Q_d       = array(I_K, c(K, K, D))           # D x (K x K): inv precision
     Q_d_inv   = array(I_K, c(K, K, D))           # D x (K x K): precision 
-    m_d       = matrix(0, K, D)                  # (K x D)
-    
+    m_d       = matrix(0, K, D)                  # (K x D) : ean comps 
+    lambda_d  = numeric(D)                    # (D x 1) : inclusion probs.
     
     # allocate space for intermediate matrics
     
@@ -104,7 +104,7 @@ spikeSlabUpdate = function(prior, theta) {
         
         # end of intermediate calculations -------------------------------------
         
-        ## (2) update variational parameters: Q_d, m_d
+        ## (2) update variational parameters: Q_d, m_d, lambda_d
         
         # (2.1) update Q_d
         Q_d[,,d]     = I_K + prior$xi_0 * diag(U_d[,d])
@@ -116,13 +116,18 @@ spikeSlabUpdate = function(prior, theta) {
         m_d = Q_d_inv[,,d] %*% eta_d[,d]
         print(paste("d = ", d, "; ", "update m_d", sep = ''))
         
-        # end of variatioal updates --------------------------------------------
+        # (2.3) update lambda_d : sigmoid of log(lambda_d / (1 - lambda_d))
+        lambda_d[d] = sigmoid(prior$log_odds[d] + K / 2 * log(prior$xi_0) + 
+            0.5 * crossprod(m_d[,d], eta_d[,d]))
+        
+        # end of variational updates -------------------------------------------
         
     } # end outer loop
     
     # prepare output
     spikeSlabObj = list(Q_d = Q_d, Q_d_inv = Q_d_inv, R_dj = R_dj, 
-                        U_d = U_d, zeta_d = zeta_d, eta_d = eta_d)
+                        U_d = U_d, zeta_d = zeta_d, eta_d = eta_d,
+                        lambda_d = lambda_d)
     
     return(spikeSlabObj)    
 }
@@ -262,6 +267,7 @@ weightUpdate = function(prior, theta) {
     # gammaUpdate = list(alpha = alpha, xi = xi, lambda = lambda, phi = phi,
     #                    V_k = V_k, V_k_inv = V_k_inv, mu_k = mu_k, 
     #                    eta_k = eta_k)
+    
     return(theta)
 }
 

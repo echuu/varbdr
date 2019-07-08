@@ -48,6 +48,7 @@ initPriors = function(y, X, K,
     
     # probability of beta_d drawn from the slab (choose all to be same prob)
     prior$pi_d     = rep(pi_d, D)
+    prior$log_odds = logit(prior$pi_d)
     
     # prior shape, rate for tau_1:K
     prior$a_0      = a_0
