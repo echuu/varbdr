@@ -634,7 +634,7 @@ Exponentiating, we can recover $q^{*}(\gamma_k) = \mathcal{N} \left(\gamma_k \gi
 \begin{equation} \label{eq:gamma_params}
 \begin{split}
 	& \mu_k = \mathrm{V}_k^{-1} \eta_k \\
-	& \eta_k = \sum_{n} r_{nk} \left( \frac{1}{2} + 2 \lambda(\xi_{nj}) \alpha_n \right) x_n \\
+	& \eta_k = \sum_{n} r_{nk} \left( \frac{1}{2} + 2 \lambda(\xi_{nk}) \alpha_n \right) x_n \\
 	& \mathrm{V}_k = \eye_D + 2 \sum_{n} r_{nk} \lambda(\xi_{nk}) x_n x_n^{\tr}
 \end{split}
 \end{equation}
@@ -847,6 +847,43 @@ Two useful formulations of the approximating density: $q \left( \betad, \omega_d
 	&= \lambda_d \left( \qmat_d^{-1} + m_d \transpose{m_d} \right) - \lambda_d^2 m_d \transpose{m_d} \\
 	&= \lambda_d \qmat_d^{-1} + \lambda_d(1 - \lambda_d) m_d \transpose{m_d}
 \end{align*}
+
+\newpage
+
+\section{Variational Update for $q(\betad \given \omega_d = 1)$}
+
+\begin{align*}
+	 \ln q\left(\betad \given \omega_d = 1 \right) &= - \frac{1}{2}\E \Big[ \nsum \ksum z_{nk} \tau_k \left( y_n - \transpose{x_n} \beta_k \right)^2\Big] - \frac{\xi_0}{2} \transpose{\betad} \betad \\
+	 &= - \frac{1}{2} \transpose{\betad} \mathrm{U}_d \betad - \frac{1}{2} \transpose{\betad} \sum_{j \neq d} \mathrm{R}_{dj} \E \big[ \tilde{\beta}_j \big] + \transpose{\betad} \zeta_d - \frac{\xi_0}{2}  \transpose{\betad} \betad \\
+	 &= - \frac{1}{2} \transpose{\betad} \big[ \umat_d +  \xi_0 \mathrm{I}_K\big] \betad + \transpose{\betad} \eta_d 
+\end{align*}
+
+
+\begin{align*}
+	\E \Big[ \nsum \ksum z_{nk} \tau_k \left( y_n - \transpose{x_n} \beta_k \right)^2 \Big]  &= \nsum \ksum r_{nk} \cdot \frac{a_k}{b_k} \cdot \E \left( y_n^2 + \transpose{\beta_k} x_n \transpose{x_n} \beta_k - 2y_n \transpose{\beta_k}x_n \right) \\
+	&=  \sum_d \transpose{\betad} \mathrm{U}_d \betad + \sum_d \transpose{\betad} \sum_{j \neq d} \mathrm{R}_{dj} \E \big[ \tilde{\beta}_j \big] - 2 \sum_d \transpose{\betad} \zeta_d
+\end{align*}
+
+
+\begin{align*}
+	\nsum \ksum r_{nk} \cdot \frac{a_k}{b_k} \cdot \E \left( \transpose{\beta_k} x_n \transpose{x_n} \beta_k \right) &= \nsum \ksum r_{nk} \cdot \frac{a_k}{b_k} \cdot \E \left( \sum_{d=1}^D \beta_{kd} x_{nd} \right) \left( \sum_{j=1}^D \beta_{kj} x_{nj} \right) \\
+	&= \nsum \ksum r_{nk} \cdot \frac{a_k}{b_k} \cdot \E\left( \sum_{d=1}^D (\beta_{kd}x_{nd})^2 + \sum_{d=1}^D \beta_{kd} x_{nd} \cdot \sum_{j\neq d}^D \beta_{kj}x_{nj}\right) \\
+	&= \nsum \ksum r_{nk} \cdot \frac{a_k}{b_k} \cdot \E \left( \sum_{d=1}^D (\beta_{kd}x_{nd})^2 + \sum_{d=1}^D \sum_{j\neq d}^D \beta_{kd} \beta_{kj} x_{nd} x_{nj} \right) \\
+	&= \sum_{d} \ksum \beta_{kd}^2 \cdot \frac{a_k}{b_k} \cdot \nsum r_{nk} x_{nd}^2 + \sum_{d} \ksum \beta_{kd} \cdot \frac{a_k}{b_k} \cdot \sum_{j\neq d} \big[\sum_n r_{nk} x_{nd} x_{nj} \big] \beta_{kj} \\
+	&= \sum_d \transpose{\betad} \mathrm{U}_d \betad + \sum_d \transpose{\betad} \sum_{j \neq d} \mathrm{R}_{dj} \E \big[ \tilde{\beta}_j \big]
+\end{align*}
+
+\begin{align*}
+	\nsum \ksum r_{nk} \cdot \frac{a_k}{b_k} \cdot \E \left( y_n \transpose{\beta_k}x_n \right) &= 
+	\nsum \ksum r_{nk} \cdot \frac{a_k}{b_k} \cdot y_n \cdot \E \left( \sum_{d=1}^D \beta_{kd} x_{nd}\right)\\
+	&= \sum_d \sum_k \beta_{kd} \cdot \frac{a_k}{b_k} \cdot \sum_n y_n r_{nk} x_{nd} \\
+	&= \sum_d \transpose{\betad} \zeta_d
+\end{align*}
+
+
+\newpage
+
+\section{ELBO Computation Details}
 
 
 

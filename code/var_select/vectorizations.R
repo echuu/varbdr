@@ -39,10 +39,11 @@ for (d in 1:D) {
 
 sum_res # -2.56325
 
-
 sum_res = 0
 
 for (d in 1:D) {
+    
+    j_sum = 0
     
     for (j in 1:D) {
         
@@ -50,21 +51,20 @@ for (d in 1:D) {
             next
         }
         
-        for (n in 1:N) {
-            
-            xprod = X[n,j] * X[n,d]
-            
-            k_sum = 0
-            #for (k in 1:K) {
-            #    k_sum = k_sum + tau_k[k] * r_nk[n,k] * beta[k,d] * beta[k,j]
-                
-            #}
-            
-            k_sum = t(beta[d,]) %*% diag(tau_k * r_nk[n,]) %*% beta[j,]
-            
-            sum_res = sum_res + xprod * k_sum
-        }
+        R_dj = matrix(0, K, K)
+        
+        # construct the (K x K) R_dj matrix
+        for (k in 1:K) {
+            R_dj[k,k] = tau_k[k] * sum(r_nk[,k] * X[,j] * X[,d])
+        }     
+        
+        # compute the summation over j != d
+        j_sum = j_sum + R_dj %*% beta[j,]
+
     }
+    
+    # compute the summation over d
+    sum_res = sum_res + t(beta[d,]) %*% j_sum 
 }
 
 sum_res # -2.56325
@@ -137,3 +137,15 @@ for (d in 1:D) {
 }
 
 vec_res
+
+
+
+
+
+
+
+
+
+
+
+
