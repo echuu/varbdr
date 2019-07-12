@@ -530,7 +530,7 @@ The variational parameters $(m_d, \qmat_d, \lambda_d)$ can be updated using the 
 \begin{alignat}{4}
   \mathrm{Cov}(\betad \given \omega_d = 1) \textrm{ } &\approx \textrm{ }&& \qmat_d^{-1} &&\textrm{ } & &= \textrm{ } \left(\umat_d + \xi_0 \mathrm{I}_K\right)^{-1} \label{eq:var_betad}\\
   \E [ \betad \given \omega_d = 1]  \textrm{ }&\approx \textrm{ } && m_d &&\textrm{ }& &= \textrm{ } \qmat_d^{-1} \eta_d  \label{eq:e_betad}\\
-  \frac{\pr{\omega_d = 1\given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}}{\pr{\omega_d = 0 \given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}} \textrm{ } &\approx \textrm{ } && \frac{\lambda_d}{1-\lambda_d}&& \textrm{ }& &= \textrm{ } \frac{\pi}{1-\pi} \cdot \log \xi_0^{\frac{K}{2}} \cdot \exp\Big\{\frac{1}{2}\transpose{m_d}\eta_d\Big\} \label{eq:logodds_lambda}
+  \frac{\pr{\omega_d = 1\given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}}{\pr{\omega_d = 0 \given \mathbf{X}, \mathbf{y}, \boldsymbol\theta}} \textrm{ } &\approx \textrm{ } && \frac{\lambda_d}{1-\lambda_d}&& \textrm{ }& &= \textrm{ } \frac{\pi}{1-\pi} \cdot \xi_0^{\frac{K}{2}} \cdot |\qmat_d|^{-\frac{1}{2}}\cdot \exp\Big\{\frac{1}{2} \cdot \transpose{m_d}\eta_d\Big\} \label{eq:logodds_lambda}
 \end{alignat}
 
 
@@ -822,6 +822,7 @@ Two useful formulations of the approximating density: $q \left( \betad, \omega_d
 	\E \Big[ \betad \transpose{\betad} \given \omega_d \Big] &= \omega_d \left( \qmat_d^{-1} + m_d \transpose{m_d} \right) \\
 	\var{\betad \given \omega_d} &= \omega_d \qmat_d^{-1} + \omega_d(1-\omega_d) m_d \transpose{m_d} \\
 	\E\Big[ \betad - m_d \given \omega_d \Big] &= (\omega_d - 1) m_d \\
+	\E \Big[ \transpose{\betad} \betad \Big] &= \lambda_d \left( \trace{\qmat_d^{-1}} + \transpose{m_d} m_d \right) \\
 	\E \Big[ \transpose{\betad} \umat_d \betad \Big] &= \lambda_d \trace{\umat_d \qmat_d^{-1}} + \lambda_d \transpose{m_d} \umat_d m_d \\
 	\E \Big[ \transpose{(\betad - m_d)} \qmat_{d}(\betad - m_d) \given \omega_d \Big] &= K \cdot \omega_d + \transpose{m_d}\qmat_d m_d - \omega_d \transpose{m_d}\qmat_d m_d\\
 	\E \Big[ \omega_d \transpose{(\betad - m_d)} \qmat_{d}(\betad - m_d) \Big] &= K \cdot \lambda_d \\
@@ -903,6 +904,34 @@ Note that the first equality decomposes into three terms, the first of which we 
 \end{align*}
 
 
+In order to obtain the update equation for $\lambda_d$, we first consider the terms in the variational lower bound that have $\lambda_d$ terms, denoted below as $F(\lambda_d)$. Equality is written up to constants in $\lambda_d$.
+
+\begin{align*}
+	F(\lambda_d) &= \E_q \ln \pr{\mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z}} + \E_q \ln \pr{\beta_d, \omega_d} - \E_q \ln q \left( \beta_d, \omega_d \right) \\
+	&= - \frac{1}{2}\Big\{ \E_q \left( \transpose{\betad} \umat_d \betad\right) - 2 \transpose{\E_q \left( \betad \right)} \eta_d \Big\} \\
+	& \quad + \E_q \Big\{ \omega_d \left( -\frac{K}{2} \ln (2\pi) + \frac{K}{2} \ln \xi_0 - \frac{\xi_0}{2} \transpose{\betad} \betad  \right) + \omega_d \ln \pi + (1 - \omega_d) \ln (1 - \pi) \Big\} \\
+	& \quad - \E_q \Big\{ \frac{\omega_d}{2} \left( -K \ln (2 \pi) + \ln |\qmat_d | - \transpose{\left( \betad - m_d \right)} \qmat_d \left( \betad - m_d \right)\right) + \omega_d \ln \lambda_d + (1-\omega_d) \ln (1 - \lambda_d) \Big\} \\
+	&= -\frac{\lambda_d }{2}  \cdot \Big\{ \trace{\umat_d \qmat_d^{-1}} + \transpose{m_d} \umat_d m_d - 2 \transpose{m_d} \eta_d \Big\}-\frac{\lambda_d }{2}  \cdot \Big\{ K \ln(2\pi) - K \ln \xi_0 \Big\} \\
+	& \quad -\frac{\lambda_d }{2}  \cdot \Big\{ \xi_0 \cdot \trace{\qmat_d^{-1}} + \xi_0 \cdot \transpose{m_d} m_d \Big\} + \lambda_d \cdot \frac{K}{2} + \frac{\lambda_d}{2}  \cdot \Big\{ K \ln (2\pi) - \ln |\qmat_d | \Big\} + \nu_d \\
+	&= \frac{\lambda_d}{2} \cdot \Bigg\{ K \ln \xi_0 - \ln |\qmat_d | + K -  \trace{\left(\umat_d + \xi_0 \cdot \mathrm{I}_K \right) \qmat_d^{-1}} - \transpose{m_d} \left( \umat_d + \xi_0 \cdot \mathrm{I}_K \right) m_d + 2\transpose{m_d}\eta_d \Bigg\} + \nu_d\\
+	&= \frac{\lambda_d}{2} \cdot \Bigg\{ K \ln \xi_0 - \ln |\qmat_d | + K -  \trace{\qmat_d \qmat_d^{-1}} - \transpose{m_d} \qmat_d m_d + 2\transpose{m_d}\eta_d \Bigg\} + \nu_d\\ 
+	&= \frac{\lambda_d}{2} \cdot \Bigg\{ K \ln \xi_0 - \ln |\qmat_d | + K - K - \transpose{m_d} \qmat_d \qmat_d^{-1} \eta_d + 2\transpose{m_d}\eta_d \Bigg\} + \nu_d\\ 
+	&= \frac{\lambda_d}{2} \cdot \Bigg\{ K \ln \xi_0 - \ln |\qmat_d | - \transpose{m_d} \eta_d + 2\transpose{m_d}\eta_d \Bigg\} + \nu_d\\ 
+	&= \frac{\lambda_d}{2} \cdot \Bigg\{ K \ln \xi_0 - \ln |\qmat_d | + \transpose{m_d} \eta_d \Bigg\} + \nu_d
+\end{align*}
+
+Differentiating with respect to $\lambda_d$, we obtain the following expression:
+\begin{align*}
+	\frac{\partial F(\lambda_d)}{\partial \lambda_d} &= \ln \frac{\pi}{1-\pi} - \ln \frac{\lambda_d}{1-\lambda_d} + \ln \xi^{\frac{\xi_0}{2}} + \ln |\qmat_d|^{- \frac{1}{2}} + \frac{1}{2} \transpose{m_d} \eta_d
+\end{align*}
+
+Setting the derivative to 0, we obtain the following update:
+\begin{align*}
+	\frac{\lambda_d}{1- \lambda_d} = \frac{\pi}{1-\pi} \cdot \xi_0^{\frac{K}{2}} \cdot |\qmat|^{-\frac{1}{2}} \cdot \exp \Big\{ \frac{1}{2} \cdot \transpose{m_d} \eta_d\Big\}
+\end{align*}
+
+We have used the following definition to ease notation in the calculations, $\nu_d = \lambda_d \ln \pi + (1 - \lambda_d) \ln(1-\pi) - \lambda_d \ln \lambda_d - (1 - \lambda_d) \ln (1 - \lambda_d)$
+
 \newpage
 
 \section{ELBO Computation Details}
@@ -940,7 +969,7 @@ Note that the first equality decomposes into three terms, the first of which we 
 
 \begin{align*}
 	\E_q \ln p\left( \boldbeta, \boldomega \right) &= \E_q \sum_d \omega_d \ln \Big\{ (2\pi)^{-\frac{K}{2}} e^{-\frac{\xi_0}{2} \transpose{\betad} \betad}\Big\} + \omega_d \ln \pi + (1 - \omega_d) \ln \left( 1 - \pi \right) \\
-	&= )
+	&= 
 \end{align*}
 
 %%% expectation of variational distributions
