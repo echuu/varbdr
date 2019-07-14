@@ -552,6 +552,22 @@ In order to evaluate the convergence of the coordinate ascent algorithm, we can 
 
 
 
+\begin{align*}
+	& \E_q \ln p\left( \mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z} \right) = - \frac{1}{2} \nsum \ksum r_{nk} \Big\{  \ln(2\pi) - (\psi(a_k) - \psi(b_k)) + \frac{a_k}{b_k} \cdot y_n^2 \Big\} \\ & \qquad \qquad \qquad\qquad \qquad - \frac{1}{2} \cdot \sum_d \lambda_d \left( \transpose{m_d} U_d m_d + \trace{\mathrm{U}_d \mathrm{Q}_d^{-1}} - 2\transpose{m_d} \Bigg[ \zeta_d - \frac{1}{2} \sum_{j\neq d} \lambda_j \mathrm{R}_{dj} m_j\Bigg] \right)\\
+	& \E_q \ln p\left( \mathbf{Z} \given \mathbf{X}, \boldgamma \right)  = \nsum \ksum r_{nk} \Big\{ \transpose{x_n} \mu_k - \alpha_n - \varphi_n \Big\}\\
+	& \E_q \ln p\left( \boldgamma \right) = -\frac{KD}{2} \ln(2\pi) - \frac{1}{2} \left( \transpose{\mu_k} \mu_k + \trace{\mathrm{V}_k^{-1}} \right) \\
+	& \E_q \ln p\left( \boldtau \right) = K \left( a_0 \ln b_0 - \ln \Gamma(a_0) \right) - \ksum b_0 \cdot \frac{a_k}{b_k} + (a_0 - 1) \left( \psi(a_k) - \psi(b_k) \right) \\
+	& \E_q \ln p\left( \boldbeta, \boldomega \right) = \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \frac{\lambda_d}{2} \cdot \Big\{ K \xi_0 - K \ln (2 \pi) - \xi_0 \left( \trace{\qmat_d^{-1}} + \transpose{m_d}m_d \right) \Big\} \\
+	& \E_q \ln q\left( \boldbeta, \boldomega \right) = \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \frac{\lambda_d}{2} \cdot \Big\{ K \xi_0 - K \ln (2 \pi) - \xi_0 \left( \trace{\qmat_d^{-1}} + \transpose{m_d}m_d \right) \Big\}\\
+	& \E_q \ln q\left( \boldgamma \right) = - \frac{KD}{2} \left( \ln(2\pi) + 1 \right) + \frac{1}{2} \cdot \ksum \mathrm{V}_k \\
+	& \E_q \ln q\left( \mathbf{Z} \right) = \nsum \ksum r_{nk} \ln r_{nk} \\
+	& \E_q \ln q\left( \mathbf{\tau} \right) = \ksum a_k \left( \ln b_k - 1 \right) - \ln \Gamma(a_k)  + (a_k - 1) \cdot \left( \psi(a_k) - \psi(b_k) \right)
+\end{align*}
+
+
+
+
+
 \newpage
 
 \appendix
@@ -779,8 +795,6 @@ since $\E[\transpose{(\gamma_k - \mu_k)}\mathrm{V}_{k}(\gamma_k - \mu_k)] = D$.
 \newpage
 
 
-
-
 \begin{figure}
   \centering
   \tikz{ %
@@ -799,11 +813,6 @@ since $\E[\transpose{(\gamma_k - \mu_k)}\mathrm{V}_{k}(\gamma_k - \mu_k)] = D$.
     \edge {xn} {z}
   }
 \end{figure}
-
-
-
-\newpage
-
 
 \subsection{Commonly Used Expectations}
 
@@ -830,27 +839,35 @@ Two useful formulations of the approximating density: $q \left( \betad, \omega_d
 	\var{\betad} &= \lambda_d \qmat_d^{-1} + \lambda_d(1 - \lambda_d) m_d \transpose{m_d}
 \end{align*}
 
-
 \subsection{Expectation Calculations Details}
 
 \begin{align*}
 	\E \Big[ \betad \Big] &= \int \betad \cdot  \lambda_d \cdot \qbeta d\beta_d = \lambda_d m_d \\
 	\E \Big[ \betad \given \omega_d \Big] &= \int  \betad \cdot \omega_d \cdot \qbeta d \betad = \omega_d m_d \\
+	\E \Big[ \transpose{\betad} \betad \given \omega_d \Big] &= \transpose{\E \Big[ \betad \given \omega_d \Big]} \E \Big[ \transpose{\betad} \given \omega_d \Big] + \trace{\var{\betad \given \omega_d}} \\
+	&= \omega_d^2 \transpose{m_d} m_d + \trace{\omega_d \qmat_d^{-1} + \omega_d(1 - \omega_d) m_d \transpose{m_d}} \\
+	&= \omega_d \left( \trace{\qmat_d^{-1}} + m_d \transpose{m_d} \right) \\
+	\E \Big[ \omega_d \transpose{\betad} \betad \Big] &= \E \Big[ \omega_d \cdot \E \left( \transpose{\betad} \betad \given \omega_d\right) \Big] \\
+	&= \E \Big[ \omega_d^2 \left( \trace{\qmat_d^{-1}} + \transpose{m_d} m_d \right)\Big] \\
+	&= \lambda_d \left( \trace{\qmat_d^{-1}} + \transpose{m_d} m_d\right) \\
+	\E \Big[ \transpose{\betad} \betad\Big] &= \E \Big[ \E \left( \transpose{\betad} \betad \given \omega_d\right)\Big] \\
+	&= \E \Big[ \omega_d \left( \trace{\qmat_d^{-1}} + m_d \transpose{m_d} \right) \Big]\\
+	&= \lambda_d \left( \trace{\qmat_d^{-1}} + m_d \transpose{m_d} \right)\\
 	\E \Big[ \betad \transpose{\betad} \given \omega_d \Big] &= \int \betad \transpose{\betad} \cdot \omega_d \qbeta d\betad  = \omega_d \left( \qmat_d^{-1} + m_d \transpose{m_d} \right) \\
 	\var{\betad \given \omega_d} &= \E\Big[  (\betad - \E(\betad))\transpose{(\betad - \E(\betad))} \given \omega_d \Big] \\
 	&= \E\Big[\betad \transpose{\betad} \given \omega_d \Big] + \E \Big[ \betad \given \omega_d \Big] \transpose{\E \Big[ \betad \given \omega_d \Big]} - 2 \E \Big[ \betad \given \omega_d \Big] \transpose{\E \Big[ \betad \given \omega_d \Big]} \\
 	&= \omega_d \left( m_d \transpose{m_d} + \qmat_d^{-1} \right) + \omega_d^2 m_d \transpose{m_d} - 2\omega_d^2 m_d\transpose{m_d} \\
 	&= \omega_d \qmat_d^{-1} + \omega_d(1-\omega_d) m_d \transpose{m_d} \\
-	\E\Big[ \betad - m_d \given \omega_d \Big] &= \omega_d m_d - m_d = (\omega_d - 1) m_d \\
-	\E \Big[ \transpose{\betad} \umat_d \betad \Big] &= \transpose{\E(\betad))} \umat_d \E(\betad)) + \trace{\umat_d \var{\betad}} \\
-	&= \lambda_d^2 \transpose{m_d} \umat_d m_d + \trace{\umat_d \left( \lambda_d \qmat_d^{-1} + \lambda_d(1-\lambda_d)m_d \transpose{m_d}} \\
+	\E \Big[ \transpose{\betad} \umat_d \betad \Big] &= \transpose{\E(\betad)} \umat_d \E(\betad) + \trace{\umat_d \var{\betad}} \\
+	&= \lambda_d^2 \transpose{m_d} \umat_d m_d + \trace{\umat_d \left( \lambda_d \qmat_d^{-1} + \lambda_d(1-\lambda_d)m_d \transpose{m_d} \right)} \\
 	&= \lambda_d^2 \transpose{m_d} \umat_d m_d + \lambda_d \trace{\umat_d\qmat_d^{-1}} + \lambda_d(1 - \lambda_d)\transpose{m_d}\umat_dm_d \\
 	&= \lambda_d \trace{\umat_d \qmat_d^{-1}} + \lambda_d \transpose{m_d} \umat_d m_d
 \end{align*}
 
-\newpage
+
 
 \begin{align*}
+	\E\Big[ \betad - m_d \given \omega_d \Big] &= \omega_d m_d - m_d = (\omega_d - 1) m_d \\
 	\E \Big[ \transpose{(\betad - m_d)} \qmat_{d}(\betad - m_d) \given \omega_d \Big] &= \transpose{\E \Big[ \transpose{(\betad - m_d)} \given \omega_d \Big]} \qmat_d \E \Big[ \transpose{(\betad - m_d)} \given \omega_d \Big] + \trace{\qmat_d \var{\betad \given \omega_d}} \\
 	&= (\omega_d-1)^2 \transpose{m_d} \qmat_d m_d + \omega_d \trace{\qmat_d \qmat_d^{-1}} + \omega_d(1-\omega_d)\transpose{m_d}\qmat_d m_d \\
 	&= (\omega_d^2 - 2\omega_d + 1)\transpose{m_d} \qmat_d m_d + \omega_d \trace{\mathrm{I}_K} + \omega_d\transpose{m_d}\qmat_d m_d -\omega_d^2\transpose{m_d}\qmat_d m_d \\
@@ -868,6 +885,7 @@ Two useful formulations of the approximating density: $q \left( \betad, \omega_d
 \end{align*}
 
 \newpage
+
 
 \section{Variational Update for $q(\betad \given \omega_d = 1)$}
 
@@ -939,25 +957,22 @@ We have used the following definition to ease notation in the calculations, $\nu
 %%% expectation of prior distributions
 
 % E[ln p (y | - )]
-\begin{flalign*}
+\begin{align*}
 	\E_q \ln p\left( \mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z} \right) &= 
 	\E_q \nsum \ksum z_{nk} \Big\{ - \frac{1}{2} \ln(2\pi) + \frac{1}{2} \ln \tau_k - \frac{\tau_k}{2}(y_n - \transpose{x_n} \beta_k)^2\Big\} \\
 	&= \nsum \ksum r_{nk} \Big\{ - \frac{1}{2} \ln(2\pi) + \frac{1}{2} (\psi(a_k) - \psi(b_k)) - \frac{a_k}{2b_k} \cdot \E(y_n - \transpose{x_n} \beta_k)^2\Big\} \\
 	&= - \frac{1}{2} \nsum \ksum r_{nk} \Big\{  \ln(2\pi) - (\psi(a_k) - \psi(b_k)) + \frac{a_k}{b_k} \cdot y_n^2 \Big\} \\ & \qquad -\frac{1}{2} \cdot \E_q \sum_d \transpose{\betad} \mathrm{U}_d \betad + \transpose{\betad} \Bigg[\sum_{j \neq d} \mathrm{R}_{dj} \tilde{\beta}_j \Bigg] - 2 \transpose{\betad} \zeta_d \\
 	&= - \frac{1}{2} \nsum \ksum r_{nk} \Big\{  \ln(2\pi) - (\psi(a_k) - \psi(b_k)) + \frac{a_k}{b_k} \cdot y_n^2 \Big\} \\ & \qquad -\frac{1}{2} \cdot \sum_d \E_q \Big[ \transpose{\betad} \mathrm{U}_d \betad \Big] - 2 \cdot \transpose{\E\left(\betad\right)} \Bigg[ \zeta_d - \frac{1}{2} \sum_{j \neq d} \mathrm{R}_{dj} \E\left(\tilde{\beta}_j\right) \Bigg] \\
 	&= - \frac{1}{2} \nsum \ksum r_{nk} \Big\{  \ln(2\pi) - (\psi(a_k) - \psi(b_k)) + \frac{a_k}{b_k} \cdot y_n^2 \Big\} \\ & \qquad - \frac{1}{2} \cdot \sum_d \lambda_d \left( \transpose{m_d} U_d m_d + \trace{\mathrm{U}_d \mathrm{Q}_d^{-1}} - 2\transpose{m_d} \Bigg[ \zeta_d - \frac{1}{2} \sum_{j\neq d} \lambda_j \mathrm{R}_{dj} m_j\Bigg] \right)
-\end{flalign*}
+\end{align*}
 
 % E[ln p (z | - )]
 \begin{align*}
-	\E_q \ln p\left( \mathbf{Z} \given \mathbf{X}, \boldgamma \right) &= \E_q \nsum \ksum z_{nk} \Big\{ \transpose{x_n} \gamma_k - \ln \sum_{j=1}^K e^{\transpose{x_n}\gamma_j}\Big\} \\
-	&= \nsum \ksum r_{nk} \Big\{ \transpose{x_n} \mu_k - \alpha_n - \varphi_n \Big\}
+	\E_q \ln p\left( \mathbf{Z} \given \mathbf{X}, \boldgamma \right) &= \E_q \nsum \ksum z_{nk} \Big\{ \transpose{x_n} \gamma_k - \ln \sum_{j=1}^K e^{\transpose{x_n}\gamma_j}\Big\} = \nsum \ksum r_{nk} \Big\{ \transpose{x_n} \mu_k - \alpha_n - \varphi_n \Big\}
 \end{align*}
 
 \begin{align*}
-	\E_q \ln p\left( \boldgamma \right) &= \E_q \ksum  \ln \Big\{ (2\pi)^{-\frac{D}{2}} \cdot e^{-\frac{1}{2} \transpose{\gamma_k}\gamma_k}\Big\} \\
-	&= \ksum - \frac{D}{2} \ln(2\pi) - \frac{1}{2} \E_q \left( \transpose{\gamma_k} \gamma_k \right) \\
-	&= -\frac{KD}{2} \ln(2\pi) - \frac{1}{2} \left( \transpose{\mu_k} \mu_k + \trace{\mathrm{V}_k^{-1}} \right)
+	\E_q \ln p\left( \boldgamma \right) &= \E_q \ksum  \ln \Big\{ (2\pi)^{-\frac{D}{2}} \cdot e^{-\frac{1}{2} \transpose{\gamma_k}\gamma_k}\Big\} = -\frac{KD}{2} \ln(2\pi) - \frac{1}{2} \left( \transpose{\mu_k} \mu_k + \trace{\mathrm{V}_k^{-1}} \right)
 \end{align*}
 
 \begin{align*}
@@ -969,29 +984,34 @@ We have used the following definition to ease notation in the calculations, $\nu
 
 \begin{align*}
 	\E_q \ln p\left( \boldbeta, \boldomega \right) &= \E_q \sum_d \omega_d \ln \Big\{ (2\pi)^{-\frac{K}{2}} e^{-\frac{\xi_0}{2} \transpose{\betad} \betad}\Big\} + \omega_d \ln \pi + (1 - \omega_d) \ln \left( 1 - \pi \right) \\
-	&= 
+	&= \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \E_q \Big[ \omega_d \left( - \frac{K}{2} \ln (2\pi) - \frac{K}{2} \cdot \xi_0 \right) - \frac{\xi_2}{2} \cdot \omega_d \transpose{\betad} \betad\Big] \\
+	&= \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \frac{\lambda_d}{2} \cdot \Big\{ K \cdot \xi_0 - K \cdot \ln (2 \pi) - \xi_0 \cdot \left( \trace{\qmat_d^{-1}} + \transpose{m_d}m_d \right) \Big\}
 \end{align*}
 
 %%% expectation of variational distributions
 
 \begin{align*}
-	\E_q \ln q\left( \boldbeta, \boldomega \right) &= \\
-	&= 
+	\E_q \ln q\left( \boldbeta, \boldomega \right) &=  \E_q \sum_d \omega_d \cdot \ln \Big\{ -\frac{K}{2} \ln (2\pi) + \frac{1}{2} \ln |\qmat_d | - \frac{1}{2} \transpose{\left( \betad - m_d \right)} \qmat_d \left( \betad - m_d \right) \Big\} \\
+	& \qquad \qquad  + \omega_d \ln \lambda_d + (1 - \omega_d) \ln (1 - \lambda_d) \\
+	&= \sum_d \lambda_d \ln \lambda_d + (1 - \lambda_d) \ln (1-\lambda_d) + \frac{\lambda_d}{2} \Big\{ - K \ln (2\pi) + \ln |\qmat_d|\Big\} \\
+	& \qquad \qquad  - \frac{1}{2} \cdot \E_q \Big[ \omega_d \transpose{\left( \betad - m_d \right)} \qmat_d \left( \betad - m_d \right) \Big] \\
+	&= \sum_d \lambda_d \ln \lambda_d + (1 - \lambda_d) \ln (1-\lambda_d) + \frac{\lambda_d}{2} \Big\{ - K \ln (2\pi) + \ln |\qmat_d| - K\Big\}
 \end{align*}
 
 \begin{align*}
-	\E_q \ln q\left( \boldgamma \right) &= \\
-	&= 
+	\E_q \ln q\left( \boldgamma \right) &= \E_q \ksum \ln \Big\{ (2\pi)^{-\frac{D}{2}} |\mathrm{V}_k|^{\frac{1}{2}} \cdot e^{-\frac{1}{2} \transpose{(\gamma_k	- \mu_k)} \mathrm{V}_k (\gamma_k - \mu_k)}\Big\}\\
+	&= \ksum -\frac{D}{2} \ln (2\pi) + \frac{1}{2} \ln |\mathrm{V}_k|  -\frac{1}{2} \E_q \Big[ \transpose{(\gamma_k - \mu_k)} \mathrm{V}_k (\gamma_k- \mu_k)\Big] \\
+	&= -\frac{KD}{2} \ln (2\pi) + \frac{1}{2} \cdot \ksum \ln \mathrm{V}_k - D \\
+	&= - \frac{KD}{2} \left( \ln(2\pi) + 1 \right) + \frac{1}{2} \cdot \ksum \mathrm{V}_k
 \end{align*}
 
 \begin{align*}
-	\E_q \ln q\left( \mathbf{Z} \right) &= \\
-	&= 
+	\E_q \ln q\left( \mathbf{Z} \right) &= \E_q \nsum \ksum z_{nk} \ln r_{nk} = \nsum \ksum r_{nk} \ln r_{nk}
 \end{align*}
 
 \begin{align*}
-	\E_q \ln q\left( \boldtau \right) &= \\
-	&= 
+	\E_q \ln q\left( \boldtau \right) &= \E_q \ksum \ln \Bigg\{ \frac{b_k^{a_k}}{\Gamma(a_k)} \cdot  e^{-b_k \tau_k} \cdot  \tau_k^{a_k - 1}\Bigg\}\\
+	&= \ksum a_k \left( \ln b_k - 1 \right) - \ln \Gamma(a_k)  + (a_k - 1) \cdot \left( \psi(a_k) - \psi(b_k) \right)
 \end{align*}
 
 
