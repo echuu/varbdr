@@ -116,7 +116,7 @@ While the representation of the density using predictor-independent weights yiel
 \begin{equation} \label{eq:covdep_gm}
 	 f(y \given x) = \sum_{k}^{K} \pi_k(x) \mathcal{N} \left( y \given \mu_k(x), \tau_k^{-1} \right) 
 \end{equation} 
-where and $\pi_{k} \propto \exp(\transpose{x} \gamma_k)$. In order to perform fast inference on the model parameters, we adopt a variational approach to obtain an approximating distribution to the true posterior. Using this covariate-dependent setup, however, introduces a problem in the traditional coordinate ascent algorithm such that it prevents closed form updates of the variational distributions. In section \ref{sec:priors}, we give an overview of the priors used in the problem. In section \ref{sec:variational}, we consider the family of variational distributions that we use to approximate the true posterior. We then propose a way to obtain closed form updates by considering an upper bound on the problematic quantity, and in section \ref{alg1}, we formulate the complete algorithm. Finally, we discuss potential shortcomings of the proposed algorithm and other bounds that could be used to obtain more accurate approximating distributions.
+where and $\pi_{k} \propto \exp(\transpose{x} \gamma_k)$. In order to perform fast inference on the model parameters, we adopt a variational approach to obtain an approximating distribution to the true posterior. Using this covariate-dependent setup, however, introduces a problem in the traditional coordinate ascent algorithm such that it prevents closed form updates of the variational parameters. In section \ref{sec:priors}, we give an overview of the priors used in the problem. In section \ref{sec:variational}, we consider a family of variational distributions that we use to approximate the true posterior. We then propose a way to obtain closed form updates by considering an upper bound on the problematic quantity, and in section \ref{alg1}, we formulate the complete algorithm. In section \ref{vs}, we incorporate a sparsity assumption so that we can perform variable selection in the Gaussian components of the mixture density. Finally, we discuss potential shortcomings and potential extensions of the proposed algorithms.
 
 \section{Notation and Prior Specification} \label{sec:priors}
 For the set of observed data, we denote $\mathbf{y} = \{y_1, \ldots, y_N \}, \mathbf{X} = \{ x_1, \ldots, x_N \}$, where each $x_n \in \R^{D}$. Let $\boldbeta = \{ \beta_1, \ldots, \beta_K\}$ and $\boldgamma = \{ \gamma_1, \ldots, \gamma_k\}$ denote the $D$-dimensional coefficient vectors  in the mixture weights and in gaussian mixture components, respectively. Finally, let $\boldtau = \{ \tau_1, \ldots, \tau_k \}$ denote the precision parameters. The mixture density can then be written explicitly as
@@ -321,19 +321,6 @@ Using the updates discussed in the previous section, we can formalize the variat
 \end{algorithm}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Conclusion}
-In this project, we focused on one primary approximation to the difficult-to-compute expectation of the log sum of exponentials, $\E_{q(\boldsymbol\gamma)}\big[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \} \big]$. 
-Alternatively, we also considered a simpler bound in section \ref{sec:alt}, which only requires us to compute moment generating functions. As has been noted in previous work and simulations, the former bound provides better approximations when the variance of $q(\boldgamma)$ is extremely large because the approximation is asymptotically optimal \parencite{bouchard:07}, but in most other cases, the performance deteriorated \parencite{Depraetere:17}. Although both of these methods require additional variational parameters, this increase in model complexity is offset by the faster inference that variational Bayesian methods provide. As a result, even though each iteration involves $2K$ ($D \times D$)-matrix inversions to update the variational distributions for $\beta_k$ and $\gamma_k$, we expect the number of iterations in the coordinate ascent algorithm to be far fewer than if we use a traditional Gibbs sampling scheme. \\
-
-While we only considered two candidate approximations in this project, there are numerous ways to approach the problem. Although in a slightly different context, Depraeteret and Vandebroek (2017) provide several approximations to the same quantity of interest, all of which admit closed form updates so that variational Bayesian methods are tractable. 
-
-
-% Acknowledgements should go at the end, before appendices and references
-
-\newpage
-
 \section{Variable Selection for Gaussian Component} \label{vs}  %% variable selection
 
 
@@ -534,7 +521,6 @@ The variational parameters $(m_d, \qmat_d, \lambda_d)$ can be updated using the 
 \end{alignat}
 
 
-
 \newpage
 
 \subsection{Evidence Lower Bound (ELBO)}
@@ -555,17 +541,32 @@ In order to evaluate the convergence of the coordinate ascent algorithm, we can 
 \begin{align*}
 	& \E_q \ln p\left( \mathbf{y} \given \mathbf{X}, \boldbeta, \boldtau, \mathbf{Z} \right) = - \frac{1}{2} \nsum \ksum r_{nk} \Big\{  \ln(2\pi) - (\psi(a_k) - \psi(b_k)) + \frac{a_k}{b_k} \cdot y_n^2 \Big\} \\ & \qquad \qquad \qquad\qquad \qquad - \frac{1}{2} \cdot \sum_d \lambda_d \left( \transpose{m_d} U_d m_d + \trace{\mathrm{U}_d \mathrm{Q}_d^{-1}} - 2\transpose{m_d} \Bigg[ \zeta_d - \frac{1}{2} \sum_{j\neq d} \lambda_j \mathrm{R}_{dj} m_j\Bigg] \right)\\
 	& \E_q \ln p\left( \mathbf{Z} \given \mathbf{X}, \boldgamma \right)  = \nsum \ksum r_{nk} \Big\{ \transpose{x_n} \mu_k - \alpha_n - \varphi_n \Big\}\\
-	& \E_q \ln p\left( \boldgamma \right) = -\frac{KD}{2} \ln(2\pi) - \frac{1}{2} \left( \transpose{\mu_k} \mu_k + \trace{\mathrm{V}_k^{-1}} \right) \\
+	& \E_q \ln p\left( \boldgamma \right) = -\frac{KD}{2} \ln(2\pi) - \frac{1}{2} \ksum  \transpose{\mu_k} \mu_k + \trace{\mathrm{V}_k^{-1}}  \\
 	& \E_q \ln p\left( \boldtau \right) = K \left( a_0 \ln b_0 - \ln \Gamma(a_0) \right) - \ksum b_0 \cdot \frac{a_k}{b_k} + (a_0 - 1) \left( \psi(a_k) - \psi(b_k) \right) \\
 	& \E_q \ln p\left( \boldbeta, \boldomega \right) = \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \frac{\lambda_d}{2} \cdot \Big\{ K \xi_0 - K \ln (2 \pi) - \xi_0 \left( \trace{\qmat_d^{-1}} + \transpose{m_d}m_d \right) \Big\} \\
-	& \E_q \ln q\left( \boldbeta, \boldomega \right) = \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \frac{\lambda_d}{2} \cdot \Big\{ K \xi_0 - K \ln (2 \pi) - \xi_0 \left( \trace{\qmat_d^{-1}} + \transpose{m_d}m_d \right) \Big\}\\
-	& \E_q \ln q\left( \boldgamma \right) = - \frac{KD}{2} \left( \ln(2\pi) + 1 \right) + \frac{1}{2} \cdot \ksum \mathrm{V}_k \\
+	& \E_q \ln q\left( \boldbeta, \boldomega \right) = \sum_d \lambda_d \ln \lambda_d + (1 - \lambda_d) \ln (1-\lambda_d) + \frac{\lambda_d}{2} \Big\{ - K \ln (2\pi) + \ln |\qmat_d| - K\Big\}\\
+	& \E_q \ln q\left( \boldgamma \right) = - \frac{KD}{2} \left( \ln(2\pi) + 1 \right) + \frac{1}{2} \cdot \ksum \ln |\mathrm{V}_k| \\
 	& \E_q \ln q\left( \mathbf{Z} \right) = \nsum \ksum r_{nk} \ln r_{nk} \\
 	& \E_q \ln q\left( \mathbf{\tau} \right) = \ksum a_k \left( \ln b_k - 1 \right) - \ln \Gamma(a_k)  + (a_k - 1) \cdot \left( \psi(a_k) - \psi(b_k) \right)
 \end{align*}
 
 
 
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusion}
+In this project, we focused on one primary approximation to the difficult-to-compute expectation of the log sum of exponentials, $\E_{q(\boldsymbol\gamma)}\big[\ln \sum_{j} \exp \{ x_n^{\tr} \gamma_j \} \big]$. 
+Alternatively, we also considered a simpler bound in section \ref{sec:alt}, which only requires us to compute moment generating functions. As has been noted in previous work and simulations, the former bound provides better approximations when the variance of $q(\boldgamma)$ is extremely large because the approximation is asymptotically optimal \parencite{bouchard:07}, but in most other cases, the performance deteriorated \parencite{Depraetere:17}. Although both of these methods require additional variational parameters, this increase in model complexity is offset by the faster inference that variational Bayesian methods provide. As a result, even though each iteration involves $2K$ ($D \times D$)-matrix inversions to update the variational distributions for $\beta_k$ and $\gamma_k$, we expect the number of iterations in the coordinate ascent algorithm to be far fewer than if we use a traditional Gibbs sampling scheme. \\
+
+While we only considered two candidate approximations in this project, there are numerous ways to approach the problem. Although in a slightly different context, Depraeteret and Vandebroek (2017) provide several approximations to the same quantity of interest, all of which admit closed form updates so that variational Bayesian methods are tractable. 
+
+
+% Acknowledgements should go at the end, before appendices and references
 
 
 \newpage
@@ -940,7 +941,7 @@ In order to obtain the update equation for $\lambda_d$, we first consider the te
 
 Differentiating with respect to $\lambda_d$, we obtain the following expression:
 \begin{align*}
-	\frac{\partial F(\lambda_d)}{\partial \lambda_d} &= \ln \frac{\pi}{1-\pi} - \ln \frac{\lambda_d}{1-\lambda_d} + \ln \xi^{\frac{\xi_0}{2}} + \ln |\qmat_d|^{- \frac{1}{2}} + \frac{1}{2} \transpose{m_d} \eta_d
+	\frac{\partial F(\lambda_d)}{\partial \lambda_d} &= \ln \frac{\pi}{1-\pi} - \ln \frac{\lambda_d}{1-\lambda_d} + \ln \xi_0^{\frac{K}{2}} + \ln |\qmat_d|^{- \frac{1}{2}} + \frac{1}{2} \transpose{m_d} \eta_d
 \end{align*}
 
 Setting the derivative to 0, we obtain the following update:
@@ -972,7 +973,7 @@ We have used the following definition to ease notation in the calculations, $\nu
 \end{align*}
 
 \begin{align*}
-	\E_q \ln p\left( \boldgamma \right) &= \E_q \ksum  \ln \Big\{ (2\pi)^{-\frac{D}{2}} \cdot e^{-\frac{1}{2} \transpose{\gamma_k}\gamma_k}\Big\} = -\frac{KD}{2} \ln(2\pi) - \frac{1}{2} \left( \transpose{\mu_k} \mu_k + \trace{\mathrm{V}_k^{-1}} \right)
+	\E_q \ln p\left( \boldgamma \right) &= \E_q \ksum  \ln \Big\{ (2\pi)^{-\frac{D}{2}} \cdot e^{-\frac{1}{2} \transpose{\gamma_k}\gamma_k}\Big\} = -\frac{KD}{2} \ln(2\pi) - \frac{1}{2} \ksum \transpose{\mu_k} \mu_k + \trace{\mathrm{V}_k^{-1}} 
 \end{align*}
 
 \begin{align*}
@@ -984,8 +985,8 @@ We have used the following definition to ease notation in the calculations, $\nu
 
 \begin{align*}
 	\E_q \ln p\left( \boldbeta, \boldomega \right) &= \E_q \sum_d \omega_d \ln \Big\{ (2\pi)^{-\frac{K}{2}} e^{-\frac{\xi_0}{2} \transpose{\betad} \betad}\Big\} + \omega_d \ln \pi + (1 - \omega_d) \ln \left( 1 - \pi \right) \\
-	&= \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \E_q \Big[ \omega_d \left( - \frac{K}{2} \ln (2\pi) - \frac{K}{2} \cdot \xi_0 \right) - \frac{\xi_2}{2} \cdot \omega_d \transpose{\betad} \betad\Big] \\
-	&= \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \frac{\lambda_d}{2} \cdot \Big\{ K \cdot \xi_0 - K \cdot \ln (2 \pi) - \xi_0 \cdot \left( \trace{\qmat_d^{-1}} + \transpose{m_d}m_d \right) \Big\}
+	&= \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \E_q \Big[ \omega_d \left( - \frac{K}{2} \ln (2\pi) - \frac{K}{2} \xi_0 \right) - \frac{\xi_2}{2} \cdot \omega_d \transpose{\betad} \betad\Big] \\
+	&= \sum_d \lambda_d \ln \pi + (1 - \lambda_d) \ln (1 - \pi) + \frac{\lambda_d}{2} \cdot \Big\{ K \ln \xi_0 - K \ln (2 \pi) - \xi_0 \left( \trace{\qmat_d^{-1}} + \transpose{m_d}m_d \right) \Big\}
 \end{align*}
 
 %%% expectation of variational distributions
@@ -1001,8 +1002,8 @@ We have used the following definition to ease notation in the calculations, $\nu
 \begin{align*}
 	\E_q \ln q\left( \boldgamma \right) &= \E_q \ksum \ln \Big\{ (2\pi)^{-\frac{D}{2}} |\mathrm{V}_k|^{\frac{1}{2}} \cdot e^{-\frac{1}{2} \transpose{(\gamma_k	- \mu_k)} \mathrm{V}_k (\gamma_k - \mu_k)}\Big\}\\
 	&= \ksum -\frac{D}{2} \ln (2\pi) + \frac{1}{2} \ln |\mathrm{V}_k|  -\frac{1}{2} \E_q \Big[ \transpose{(\gamma_k - \mu_k)} \mathrm{V}_k (\gamma_k- \mu_k)\Big] \\
-	&= -\frac{KD}{2} \ln (2\pi) + \frac{1}{2} \cdot \ksum \ln \mathrm{V}_k - D \\
-	&= - \frac{KD}{2} \left( \ln(2\pi) + 1 \right) + \frac{1}{2} \cdot \ksum \mathrm{V}_k
+	&= -\frac{KD}{2} \ln (2\pi) + \frac{1}{2} \cdot \ksum \ln |\mathrm{V}_k| - D \\
+	&= - \frac{KD}{2} \left( \ln(2\pi) + 1 \right) + \frac{1}{2} \cdot \ksum \ln |\mathrm{V}_k|
 \end{align*}
 
 \begin{align*}

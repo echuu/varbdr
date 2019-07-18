@@ -30,6 +30,9 @@ initPriors = function(y, X, K,
     prior$y        = y
     prior$X        = X
     
+    # square of response
+    prior$y_sq = y^2
+    
     # num observations, dim of covariates, num of clusters
     prior$N        = nrow(X)
     prior$D        = ncol(X)
