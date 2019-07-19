@@ -2,6 +2,61 @@
 
 
 
+rnkUpdate = function(prior, theta) {
+    
+    # extract design, response, and dimensions for local use
+    X = prior$X                                 # (N x D) design matrix
+    y = prior$y
+    N = prior$N                                 # num of observations
+    K = prior$K                                 # num of clusters
+    D = prior$D                                 # dimension of covariates
+    
+    
+    # initialize the 3 matrices used to compute r_nk
+    r_nk       = matrix(0, N, K)
+    log_r_nk   = matrix(0, N, K)
+    log_rho_nk = matrix(0, N, K)
+    
+    # commonly computed quantities
+    ak_bk = theta$a_k / theta$b_k
+    X_mu  = X %*% theta$mu_k       # (N x K)
+    X_mk  = X %*% theta$m_k        # (N x K)
+    
+    # precompute digamma functions
+    dig_a = digamma(theta$a_k)
+    dig_b = digamma(theta$b_k)
+    
+    
+    for (n in 1:N) { # fill in ln_rho_nk row-wise
+        
+        xSigmax = numeric(K)
+        
+        for (k in 1:K) {
+            xSigmax[k] = quadMult(X[n,], theta$Sigma_k[,,k])
+        }
+        
+        log_rho_nk[n,] = - 0.5 * log(2 * pi) + 0.5 * (dig_a - dig_b) + 
+            X_mu[n,] - theta$alpha[n] - theta$phi[n] - 
+            0.5 * ak_bk * ((y[n] - X_mk[n,])^2 + xSigmax)
+        
+    } # end outer for()
+    
+    
+    logZ     = apply(log_rho_nk, 1, log_sum_exp)  # log of normalizing constant
+    log_r_nk = log_rho_nk - logZ                  # log of r_nk
+    r_nk     = apply(log_r_nk, 2, exp)            # exponentiate to recover r_nk
+    
+    theta$log_rho_nk  = log_rho_nk
+    theta$log_r_nk    = log_r_nk        # (N x K)
+    theta$r_nk        = r_nk            # (N x K)
+    theta$N_k         = colSums(r_nk)   # (K x 1)
+    
+    return(theta)
+
+} # end of rnkUpdate() function
+
+
+
 # spike and slab update for D covariates
 #     input            : 
 #                prior : list of prior (and misc.) parameters
@@ -55,6 +110,8 @@ spikeSlabUpdate = function(prior, theta) {
     # d-th covariate -- used for intermediate calculation
     eta_d  = matrix(0, K, D)
     
+    ak_bk = theta$a_k / theta$b_k
+    
     
     for (d in 1:D) {
         
@@ -73,21 +130,22 @@ spikeSlabUpdate = function(prior, theta) {
             x_dj = X[,d] * X[,j] # (N x 1)        
             
             for (k in 1:K) { # compute elements of the R_dj matrix
-                R_dj[k, j] = theta$tau_k[k] * crossprod(r_nk[,k], x_dj)
+                # R_dj[k, j] = theta$tau_k[k] * crossprod(r_nk[,k], x_dj)
+                R_dj[k, j] = ak_bk[k] * crossprod(r_nk[,k], x_dj)
             } 
-            print(paste("d = ", d, "; ", "update R_dj", sep = ''))
+            # print(paste("d = ", d, "; ", "update R_dj", sep = ''))
         } # end of R_dj computation
         
         # (1.2) compute U_d
         for (k in 1:K) {
-            U_d[k, d] = theta$tau_k[k] * crossprod(r_nk[,k], xd_sq)
-            print(paste("d = ", d, "; ", "update U_d", sep = ''))
+            U_d[k, d] = ak_bk[k] * crossprod(r_nk[,k], xd_sq)
+            # print(paste("d = ", d, "; ", "update U_d", sep = ''))
         } # end of U_d computation
         
         # (1.3) compute zeta_d
         for (k in 1:K) {
-            zeta_d[k, d] = theta$tau_k[k] * crossprod(r_nk[,k], xd_y)
-            print(paste("d = ", d, "; ", "update zeta_d", sep = ''))
+            zeta_d[k, d] = ak_bk[k] * crossprod(r_nk[,k], xd_y)
+            # print(paste("d = ", d, "; ", "update zeta_d", sep = ''))
         } # end of zeta_d computation
         
         # (1.4) compute eta_d
@@ -106,15 +164,18 @@ spikeSlabUpdate = function(prior, theta) {
         Q_d[,,d]     = I_K + prior$xi_0 * diag(U_d[,d])
         Q_d_inv[,,d] = solve(Q_d[,,d])
         
-        print(paste("d = ", d, "; ", "update Q_d", sep = ''))
+        # print(paste("d = ", d, "; ", "update Q_d", sep = ''))
         
         # (2.2) update m_d
-        m_d = Q_d_inv[,,d] %*% eta_d[,d]
-        print(paste("d = ", d, "; ", "update m_d", sep = ''))
+        m_d[,d] = Q_d_inv[,,d] %*% eta_d[,d]
+        # print(paste("d = ", d, "; ", "update m_d", sep = ''))
         
         # (2.3) update lambda_d : sigmoid of log(lambda_d / (1 - lambda_d))
-        lambda_d[d] = sigmoid(prior$log_odds[d] + K / 2 * log(prior$xi_0) + 
-            0.5 * crossprod(m_d[,d], eta_d[,d]))
+        lambda_d[d] = sigmoid(prior$log_odds[d] + 0.5 * K * log(prior$xi_0) -
+                                  0.5 * log(det(as.matrix(Q_d[,,d]))) + 
+                                  0.5 * crossprod(m_d[,d], eta_d[,d]))
+        
+        print(paste("lambda_d = ", lambda_d[d], sep = ''))
         
         # end of variational updates -------------------------------------------
         

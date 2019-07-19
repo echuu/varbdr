@@ -100,10 +100,17 @@ elbo_vs = function(prior, theta) {
     q1_tmp = numeric(D)
     for (d in 1:D) {
         q1_tmp[d] = log(det(as.matrix(theta$Q_d[,,d])))
+        cat("q1_tmp = ", q1_tmp[d], '\n')
     }
+    
+    cat("q1_1 = ", theta$lambda_d * log(theta$lambda_d), '\n')
+    cat("q1_2 = ", (1 - theta$lambda_d) * log(1 - theta$lambda_d), '\n')
+    cat("q1_3 = ", 0.5 * theta$lambda_d * (- K * log(2 * pi) + q1_tmp), '\n')
+    
     q1 = sum(theta$lambda_d * log(theta$lambda_d) + 
         (1 - theta$lambda_d) * log(1 - theta$lambda_d) + 
         0.5 * theta$lambda_d * (- K * log(2 * pi) + q1_tmp))
+    
     
     
     # (7) E [ln q (gamma)] =: q2 -----------------------------------------------
@@ -114,11 +121,24 @@ elbo_vs = function(prior, theta) {
     q2 = - 0.5 * K * D * (log(2 * pi) + 1)  + 0.5 * sum(q2_tmp)
     
     # (8) E [ln q (Z)] =: q3 ---------------------------------------------------
-    q3 = sum(r_nk * log(r_nk))
+    q3 = sum(r_nk * theta$log_r_nk)
     
     # (9) E [ln q (tau)] =: q4 -------------------------------------------------
     q4 = sum(theta$a_k * (theta$b_k - 1) - lgamma(theta$a_k) + 
         (theta$a_k - 1) * (dig_a - dig_b))
+    
+    
+    # print(paste('E [ln p (y | - )] =', p1))
+    cat('E [ln p (y | - )]',      '=',   p1,  '\n',  sep = '\t')
+    cat('E [ln p (Z | - )]',      '=',   p2,  '\n',  sep = '\t')
+    cat('E [ln p (gamma)]',       '=',   p3,  '\n',  sep = '\t')
+    cat('E [ln p (tau)]\t\t',     '=\t', p4,  '\n',  sep = '')
+    cat('E [ln p (beta, omega)]', '=',   p5,  '\n',  sep = '\t')
+    
+    cat('E [ln q (beta, omega)]', '=',   q1,  '\n',  sep = '\t')
+    cat('E [ln q (gamma)]',       '=',   q2,  '\n',  sep = '\t')
+    cat('E [ln q (Z)]\t\t',       '=\t', q3,  '\n',  sep = '')
+    cat('E [ln q (tau)]\t\t',     '=\t', q4,  '\n',  sep = '')
     
     elbo = p1 + p2 + p3 + p4 + p5 - q1 - q2 - q3 - q4
     

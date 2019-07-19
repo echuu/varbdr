@@ -20,6 +20,7 @@ K = 2
 synth_data_1d = r_dpmix2(N)
 y = synth_data_1d$y
 X = synth_data_1d$X
+X = scale(X, scale = TRUE)
 
 intercept = FALSE;     # dated setting? used to check that 1st column is 1 vec
 
@@ -48,21 +49,39 @@ theta = initVarParams(y, X, N, D, K, intercept = FALSE, max_iter,
 
 #### test updateFunctions.R
 source("updateFunctions.R")
-
+source("eStep_vs.R")
 source("mStep_vs.R")
 
-source("computeELBO.R")
 
-# test spikeSlabUpdate() function
-
-out_ss = spikeSlabUpdate(prior, theta) # runs with no complaints
 
 out_tau = precisionUpdate(prior, theta) # runs with no complaints
 
-out_gamma = weightUpdate(prior, theta)
+out_gamma = weightUpdate(prior, out_tau)
 
-theta_mStep = mStep(prior, theta)
+out_ss = spikeSlabUpdate(prior, out_gamma) # runs with no complaints
 
+
+
+
+source("updateFunctions.R")
+theta_eStep = eStep_vs(prior, theta)
+
+out_tau = precisionUpdate(prior, theta_eStep) # runs with no complaints
+
+out_gamma = weightUpdate(prior, out_tau)
+
+out_ss = spikeSlabUpdate(prior, out_gamma) # runs with no complaints
+
+
+
+theta_mStep = mStep_vs(prior, theta_eStep)
+
+
+# will return NaN for now because r_nk = 0; need to implement e-step before this
+# (hopefully) returns real values
 source("computeELBO.R")
-(elbo_0 = elbo_vs(prior, theta))
+elbo_0 = elbo_vs(prior, theta_mStep)
+
+elbo_0
+                                        
 

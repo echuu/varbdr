@@ -139,7 +139,7 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
                  eta_k = eta_k, 
                  a_k = a_k, b_k = b_k, 
                  Sigma_k = Sigma_k, m_k = m_k,
-                 L = L, curr = curr, intercept = intercept)
+                 L = L, curr = curr, intercept = intercept, max_iter = max_iter)
     
 } # end initVarParams() function
 

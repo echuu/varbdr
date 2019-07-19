@@ -1,7 +1,7 @@
 
 
 
-## mStep.R -- covariate dependent with sparsity assumption
+## mStep_vs.R -- covariate dependent with sparsity assumption
 ## perform one iteration of the variational m-step
 
 
@@ -12,7 +12,7 @@
 #          theta : list of variational parameters with 
 #                  variational parameters updated
 
-mStep = function(prior, theta) {
+mStep_vs = function(prior, theta) {
     
     # extract design, response, and dimensions for local use
     X = prior$X                                 # (N x D) design matrix
