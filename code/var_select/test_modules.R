@@ -51,7 +51,7 @@ source("updateFunctions.R")
 
 source("mStep_vs.R")
 
-source(computeELBO.R)
+source("computeELBO.R")
 
 # test spikeSlabUpdate() function
 
@@ -63,7 +63,6 @@ out_gamma = weightUpdate(prior, theta)
 
 theta_mStep = mStep(prior, theta)
 
-
-elbo_0 = elbo_vs(prior, theta)
-
+source("computeELBO.R")
+(elbo_0 = elbo_vs(prior, theta))
 

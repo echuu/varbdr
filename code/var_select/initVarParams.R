@@ -44,11 +44,11 @@ initVarParams = function(y, X, N, D, K, intercept = FALSE, max_iter,
                                        #               for each beta_d (K x 1)
     Q_d_inv = array(I_K, c(K, K, D))   # D x (K x K)
     
-    # quantities used to compute Q_d, m_d
-    U_d    = array(I_K, c(K, K, D))    # D x (K x K)
-    R_dj   = array(I_K, c(K, K, D))    # D x (K x K)
-    zeta_d = matrix(0, K, D)           # (K x D) // updated 7/8
-    eta_d  = matrix(0, K, D)           # (K x D) // updated 7/8
+    # quantities used to compute Q_d, m_d -- updated 7/17
+    U_d    = matrix(0, K, D)           # (K x D) : d-th col reps diag K x K mat
+    R_dj   = matrix(0, K, D)           # (K x D) : d-th col reps diag K x K mat
+    zeta_d = matrix(0, K, D)           # (K x D) : d-th col reps diag K x K mat
+    eta_d  = matrix(0, K, D)           # (K x D) : d-th col reps diag K x K mat
     
     
     # (1b) q(w_d) = Ber(w_d | lambda_d)
