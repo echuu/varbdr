@@ -443,7 +443,7 @@ so that $\E[z_{nk}] = r_{nk}$. Explicit expressions for each of the expectations
 	a_k &= a_0 + \frac{N_k}{2} - 1 \label{eq:ak_vs} \\
 	b_k &= b_0 + \frac{1}{2} \nsum (y_n -\transpose{x_n} \tilde{m}_k)^2 + \transpose{x_n}\var{\beta_k} x_n \label{eq:bk_vs}
 \end{align}
-where $\tilde{m}_k = $ and $\var{\beta_k} = $. \\
+where $\tilde{m}_k = \transpose{\left( \lambda_1 m_{1k}, \ldots, \lambda_D m_{Dk} \right)}$ and $$\var{\beta_k} = \mathrm{diag} \left( \Big[ \lambda_1 \qmat_1^{-1} + \lambda_1(1 - \lambda_1) m_1 \transpose{m_1}\Big]_{kk} \textrm{ }, \textrm{ }\ldots\textrm{ }, \Big[ \lambda_D \qmat_D^{-1} + \lambda_D(1 - \lambda_D) m_D \transpose{m_D}\Big]_{kk} \right)$$ 
 
 \textbf{Update $q \left(  \gamma_k \right)$}. The update for $\boldgamma$ remains the same as before:
 \begin{equation} \label{optimal_gmama_vs}
