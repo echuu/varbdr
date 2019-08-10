@@ -1,5 +1,5 @@
 
-## initPriors.R -- covariate-DEPENDENT case
+## initPriors.R -- covariate-DEPENDENT case w/ variable selection
 
 # create a prior list using the priors passed in for each parameter
 # input:
