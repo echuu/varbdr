@@ -1,7 +1,7 @@
 
 
 ## updateFunctions.R --- implementation of the the (closed-form) variational
-##                       updates for covariate-dependent weights with
+##                       updates for covariate-independent weights with
 ##                       sparsity assumption in the gaussian components
 
 
@@ -25,13 +25,14 @@ rnkUpdate = function(prior, theta) {
     
     # commonly computed quantities
     ak_bk = theta$a_k / theta$b_k
-    X_mu  = X %*% theta$mu_k       # (N x K)
     X_mk  = X %*% theta$m_k        # (N x K)
     
     # precompute digamma functions
     dig_a = digamma(theta$a_k)
     dig_b = digamma(theta$b_k)
     
+    # precompute E[ln pi_k] \in R^K
+    eln_pi_k = digamma(theta$alpha_k) - digamma(sum(theta$alpha_k))
     
     for (n in 1:N) { # fill in ln_rho_nk row-wise
         
@@ -41,43 +42,42 @@ rnkUpdate = function(prior, theta) {
             xSigmax[k] = quadMult(X[n,], theta$Sigma_k[,,k])
         }
         
-        log_rho_nk[n,] = - 0.5 * log(2 * pi) + 0.5 * (dig_a - dig_b) + 
-            X_mu[n,] - theta$alpha[n] - theta$phi[n] - 
-            0.5 * ak_bk * ((y[n] - X_mk[n,])^2 + xSigmax)
+        log_rho_nk[n,] = - 0.5 * log(2 * pi) + 0.5 * (dig_a - dig_b) - 
+            0.5 * ak_bk * ((y[n] - X_mk[n,])^2 + xSigmax) + 
+            eln_pi_k
         
     } # end outer for()
-    
     
     logZ     = apply(log_rho_nk, 1, log_sum_exp)  # log of normalizing constant
     log_r_nk = log_rho_nk - logZ                  # log of r_nk
     r_nk     = apply(log_r_nk, 2, exp)            # exponentiate to recover r_nk
     
-    theta$log_rho_nk  = log_rho_nk
+    theta$log_rho_nk  = log_rho_nk      # (N x K)
     theta$log_r_nk    = log_r_nk        # (N x K)
     theta$r_nk        = r_nk            # (N x K)
     theta$N_k         = colSums(r_nk)   # (K x 1)
     
     return(theta)
-
-} # end of rnkUpdate() function
-
-
+    
+} # end rnkUpdate() function
 
 
-# spike and slab update for D covariates
-#     input            : 
-#                prior : list of prior (and misc.) parameters
-#                theta : list of current values of variational parameters 
-#     output           : theta, list of variational params w/ following updated
-#              Q_d     : D x (K x K)  inverse of precision matrix
-#              Q_d_inv : D x (K x K)  precision matrix for beta_d
-#              m_d     : (K x D)      mean vector for beta_d stored col-wise
-#              R_dj    : D x (K x K)  intermediate matrix for eta_d
-#              U_d     : D x (K x K)  intermediate matrix for Q_d
-#              zeta_d  : (K x D)      intermediate vector for eta_d
-#              eta_d   : (K x D)      intermediate vector for m_d
-spikeSlabUpdate = function(prior, theta) {
 
+
+## q(pi)
+wtUpdate = function(prior, theta) {
+    
+    theta$alpha_k = prior$alpha_0 + theta$N_k    # (K x 1)
+    return(theta)    
+    
+} # end wtUpdate() function
+
+
+
+
+## update q(beta_d, omega_d)
+ssUpdate = function(prior, theta) {
+    
     # dimensions
     N = prior$N
     K = prior$K
@@ -201,17 +201,14 @@ spikeSlabUpdate = function(prior, theta) {
     theta$eta_d  = eta_d
     
     return(theta)    
-} # end spikeSlabUpdate() function
+    
+} # end ssUpdate() function
 
 
-# precisionUpdate() : update parmaeters for q(tau) = Ga(tau | a_k, b_k)
-#     input     : 
-#         prior : list of prior (and misc.) parameters
-#         theta : list of current values of variational parameters 
-#     output    : theta, list of variational params w/ following updated
-#         a_k   : (K x 1) vector of shape parameters for the K precision comps
-#         b_k   : (K x 1) vector of rate parameters for the K precision comps
-precisionUpdate = function(prior, theta) {
+
+
+## update q(tau)
+precUpdate = function(prior, theta) {
     
     K = prior$K
     X = prior$X
@@ -220,14 +217,14 @@ precisionUpdate = function(prior, theta) {
     a_k = numeric(K)
     b_k = numeric(K)
     
-    a_k = prior$a_0 + 0.5 * theta$N_k
+    a_k = prior$a_0 + 0.5 * theta$N_k # (K x 1)
     
     X_mk    = X %*% theta$m_k  # (N x K) : (N x D) * (D x K)
     b_k_tmp = numeric(K)       # (K x 1) : 1st term in summation
     xSigmax = numeric(K)       # (K x 1) : 2nd term in summation
     
     for (k in 1:K) {
-         b_k_tmp[k] = b_k_tmp[k] + sum((y - X_mk[,k])^2)
+        b_k_tmp[k] = b_k_tmp[k] + sum((y - X_mk[,k])^2)
     }
     
     for (k in 1:K) {
@@ -236,114 +233,12 @@ precisionUpdate = function(prior, theta) {
         }
     }
     
-    b_k = b_0 + 0.5 * (b_k_tmp + xSigmax)
+    b_k = b_0 + 0.5 * (b_k_tmp + xSigmax) # (K x 1)
     
     theta$a_k = a_k
     theta$b_k = b_k
     
     return(theta)
-} # end of precisionUpdate() functio
-
-
-# weightUpdate()  : update parmaeters for q(gamma) = N(gamma | mu_k, Q_k_inv)
-#     input       : 
-#         prior   : list of prior (and misc) parameters
-#         theta   : list of current values of variational parameters 
-#     output      : theta, list of variational params w/ following updated
-#         alpha   : (N x 1)      additional var. param for upper bound
-#         xi      : (N x K)      additional var. param for upper bound
-#         lambda  : (N x K)      function of xi
-#         phi     : (N x 1)      function of alpha, xi
-#         V_k     : K x (D x D)  inverse of precision matrix for gamma_k
-#         V_k_inv : K x (D x D)  precision matrix for gamma_k
-#         mu_k    : (D x K)      mean vectors for gamma_k's, stored col-wise
-#         eta_k   : (D x K)      intermediate vector for computing mu_k
-weightUpdate = function(prior, theta) {
     
-    X = prior$X
-    y = prior$y
-    N = prior$N
-    K = prior$K
-    D = prior$D
-    
-    I_D        = diag(1, D)                       # (D X D) : identity matrix
-    X_mu       = X %*% theta$mu_k                 # (N x K) : (N x D) * (D x K)
-    
-    ## TODO: code below needs to be adapted to the variables used during v.s.
-    
-    ## update additional variational params used in Bouchard bound -------------
-    #     (0.1) alpha                 # (N x 1)
-    #     (0.2) xi                    # (N x K)
-    #     (0.3) lambda                # (N x K)
-    #     (0.4) phi                   # (N x 1)
-    for (n in 1:N) {
-        
-        # (0.1) update alpha ---------------------------------------------------
-        theta$alpha[n] = 1 / sum(theta$lambda[n,]) * 
-            (0.5 * (0.5 * K - 1) + crossprod(X_mu[n,], theta$lambda[n,]))
-        
-        # (0.2) update xi (computed row-wise) ----------------------------------
-        xVx = numeric(K)
-        for (k in 1:K) {
-            xVx[k] = quadMult(X[n,], theta$V_k_inv[,,k]) # function in misc.R
-        }
-        
-        theta$xi[n,] = sqrt((X_mu[n,] - theta$alpha[n])^2 + xVx)
-    }
-    
-    # (0.3) compute lambda(xi) using updated value of xi  ----------------------
-    theta$lambda = lambda_xi(theta$xi)              # (N x K), misc.R
-    
-    # (0.4) compute phi (function of alpha, xi) --------------------------------
-    for (n in 1:N) {
-        theta$phi[n] = sum(0.5 * (X_mu[n,] - theta$alpha[n] - theta$xi[n,]) + 
-                               log(1 + exp(theta$xi[n,])))
-    } # end update for phi
-    
-    
-    # end of Bouchard variational parameter updates ----------------------------
-    
-    
-    ## update q(gamma) = N(gamma | mu_k, V_k^{-1} ) ----------------------------
-
-    # (1.1) update q(gamma) : V_k, V_k^{-1}, eta_k, mu_k -----------------------
-    for (k in 1:K) {
-        
-        r_x = 0
-        rl_nk_xx = matrix(0, D, D)               # used to calculate q(gamma)
-
-        for (n in 1:N) {
-            ## TODO: save x_n * x_n' calculation since this is done every 
-            # iteration of CAVI -> store N x (N x N) matrices (worth it?)
-            # may be too expensive for large N
-            rl_nk_xx = rl_nk_xx + 
-                theta$r_nk[n,k] * theta$lambda[n,k] * crossprod(t(X[n,]))
-        }
-        
-        
-        # (1.1) update q(gamma) : V_k, V_k^{-1}, eta_k, mu_k ------------------
-        theta$V_k[,,k] = I_D + 2 * rl_nk_xx
-        theta$V_k_inv[,,k] = solve(theta$V_k[,,k])
-        
-        theta$eta_k[,k] = t(X) %*% 
-            (theta$r_nk[,k] * (0.5 + 2 * theta$lambda[,k] * theta$alpha))
-        
-        theta$mu_k[,k] =  theta$V_k_inv[,,k] %*% theta$eta_k[,k]
-        
-        
-    } # end of q(gamma)
-    
-    # --------------------------------------------------------------------------
-    
-    return(theta)
-} # end weightUpdate() function
-
-
-
-
-
-
-
-
-
+} # end precUpdate() function
 

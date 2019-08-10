@@ -119,6 +119,20 @@ quadMult = function(x, A) {
 }
 
 
+# sigmoid(x) returns the sigmoid of the elements of x. The sigmoid
+# function is also known as the logistic link function. It is the
+# inverse of logit(x).
+sigmoid <- function (x) {
+    1/(1 + exp(-x))
+}
+
+# ----------------------------------------------------------------------
+# logit(x) returns the logit of the elements of X. It is the inverse of
+# sigmoid(x).
+logit <- function (x) {
+    log((x)/((1 - x)))
+}
+
 
 
 

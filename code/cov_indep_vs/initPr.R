@@ -24,7 +24,7 @@ initPriors = function(y, X, K,
                       m_0, xi_0,                  # beta : mean, scale for slab
                       pi_d,                       # beta : prior pip
                       a_0, b_0,                   # tau  : shape, rate
-                      max_iter, tol, VERBOSE) {
+                      tol, VERBOSE) {
     
     prior = list()
     
@@ -53,7 +53,7 @@ initPriors = function(y, X, K,
     prior$b_0 = b_0    # (1 x 1)
     
     # other algorithm-related parameters that are determined before CAVI iters
-    prior$max_iter = max_iter
+    # prior$max_iter = max_iter
     prior$tol      = tol
     prior$VERBOSE  = VERBOSE
     
