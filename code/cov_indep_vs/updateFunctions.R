@@ -175,6 +175,9 @@ ssUpdate = function(prior, theta) {
         
         # (2.2) update m_d
         m_d[,d] = Q_d_inv[,,d] %*% eta_d[,d]
+        # m_k needs to be udpate at this point as well
+        # otherwise the next iteration of cavi that uses m_k will be wrong
+        
         # print(paste("d = ", d, "; ", "update m_d", sep = ''))
         
         # (2.3) update lambda_d : sigmoid of log(lambda_d / (1 - lambda_d))
@@ -192,6 +195,11 @@ ssUpdate = function(prior, theta) {
     theta$Q_d      = Q_d
     theta$Q_d_inv  = Q_d_inv      # V [ beta_d | omega_d = 1 ] = Q_d^(-1)
     theta$m_d      = m_d          # E [ beta_d | omega_d = 1 ] = m_d
+                                  # note: this is conditional mean
+    
+    theta$m_k      = t(m_d)       # TODO: needs to be fixed (8/10)
+                                  # this is the unconditional mean (wrong)
+    
     theta$lambda_d = lambda_d     # posterior inclusion probabilities
     
     # secondary quantities (may come up in ELBO later)

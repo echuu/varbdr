@@ -60,7 +60,28 @@ theta = precUpdate(prior, theta)
 theta = wtUpdate(prior, theta)
 
 
+# ---------------------------------------------------------------------------- #
 
+# test updateQ() function
+source('updateQ.R')
+theta_p = updateQ(prior, theta)
+
+# TODO: update m_k after updating m_d; this is not just the transpose of m_d
+# since m_d = E(beta_d | omega_d = 1), whereas we're interpreting m_k as
+# E(beta_k), the unconditional expectation (which is used in updates for
+# q(tau), q(z)), nor used in the ELBO, E[ln p(y | -)] written in terms fo beta_d
+
+# TODO: update Sigma_k (where did I do this before?)
+
+### takeaway: m_k, Sigma_k need to be updated in the same chunk of the code 
+###           as the other spike and slab parameters since they are used 
+###           in successive calculations (next iteration)
+
+
+
+
+## test varbdr() function
+source('varbdr.R')
 
 
 
