@@ -23,8 +23,7 @@ initPriors = function(y, X, K,
                       alpha_0,                    # pi   : concentration param
                       m_0, xi_0,                  # beta : mean, scale for slab
                       pi_d,                       # beta : prior pip
-                      a_0, b_0,                   # tau  : shape, rate
-                      tol, VERBOSE) {
+                      a_0, b_0) {                 # tau  : shape, rate
     
     prior = list()
     
@@ -52,10 +51,11 @@ initPriors = function(y, X, K,
     prior$a_0 = a_0    # (1 x 1)
     prior$b_0 = b_0    # (1 x 1)
     
+    # convergence/algorithm-related variables moved to initVP()
     # other algorithm-related parameters that are determined before CAVI iters
     # prior$max_iter = max_iter
-    prior$tol      = tol
-    prior$VERBOSE  = VERBOSE
+    # prior$tol      = tol
+    # prior$VERBOSE  = VERBOSE
     
     return(prior)
     

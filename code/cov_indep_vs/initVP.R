@@ -1,11 +1,12 @@
 
 
-# initVP.R -- initilaize variatonal parameters for covaraite-independent weights
+# initVP.R -- initilaize variatonal parameters for covariate-independent weights
 #             w/ variable selection implemented for gaussian componenets
 
 
-initVarParams_indep = function(y, X, N, D, K, intercept = FALSE, max_iter = 1e4, 
-                               m_d = NULL) {
+initVarParams_indep = function(y, X, N, D, K, m_d = NULL,
+                               intercept = FALSE, max_iter = 1e4, 
+                               tol = 1e-3, VERBOSE = TRUE) {
     
     I_D   = diag(1, D)                 # (D X D)  identity matrix
     I_K   = diag(1, K)                 # (K x K)  identity matrix
@@ -85,6 +86,10 @@ initVarParams_indep = function(y, X, N, D, K, intercept = FALSE, max_iter = 1e4,
     # m_k := E(beta_k) \in R^D
     # Sigma_k := Cov(beta_k) \in R^{D x D}
     Sigma_k = array(I_D, c(D, D, K)) # K x (D x D) : cov matrix for each beta_k
+    
+    # TODO: this should not just be the transpose of m_d because m_d is the
+    # conditional mean of beta_d, whereas m_k is the unconditional mean 
+    # of beta_k
     m_k     = t(m_d)                 # (D x K)     : mean components for beta_k, 
                                      #               stored col-wise
     
@@ -92,6 +97,8 @@ initVarParams_indep = function(y, X, N, D, K, intercept = FALSE, max_iter = 1e4,
     #                            elements when checking for convergence
     curr = 2
     
+    # convergence status
+    converge = FALSE
     
     # list containing all variational parameters
     theta = list(beta_k = beta_k, tau_k = tau_k, pi_k = pi_k, 
@@ -102,7 +109,8 @@ initVarParams_indep = function(y, X, N, D, K, intercept = FALSE, max_iter = 1e4,
                  alpha_k = alpha_k, 
                  a_k = a_k, b_k = b_k, 
                  Sigma_k = Sigma_k, m_k = m_k,
-                 L = L, curr = curr, intercept = intercept, max_iter = max_iter)
+                 L = L, curr = curr, intercept = intercept, max_iter = max_iter,
+                 tol = tol, converge = converge, VERBOSE = VERBOSE)
 }
 
 

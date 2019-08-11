@@ -10,7 +10,10 @@ varbdr = function(prior, theta) {
         # variational update
         theta = updateQ(prior, theta)            
         
-        if (converge(prior, theta)) {
+        # compute variational lower bound
+        theta = computeELBO(prior, theta)
+        
+        if (theta$converge) {
             break
         }    
         

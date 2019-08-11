@@ -37,8 +37,8 @@ prior = initPriors(y, X, K,
                    alpha_0,                    # pi   : concentration param
                    m_0, xi_0,                  # beta : mean, scale for slab
                    pi_d,                       # beta : prior pip
-                   a_0, b_0,                   # tau  : shape, rate
-                   tol, VERBOSE)
+                   a_0, b_0)                   # tau  : shape, rate
+                   
 
 # test initVarParams() function
 source("initVP.R")
