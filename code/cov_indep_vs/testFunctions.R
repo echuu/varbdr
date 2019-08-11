@@ -41,8 +41,12 @@ prior = initPriors(y, X, K,
                    
 
 # test initVarParams() function
-source("initVP.R")
-theta = initVarParams_indep(y, X, N, D, K)
+
+
+# check these unconditional exp/cov quantities
+theta$Sigma_k
+theta$m_k
+theta$var_beta_d
 
 source('updateFunctions.R')
 
@@ -51,6 +55,33 @@ theta = rnkUpdate(prior, theta)
 
 # (1) test ssUpdate() function
 theta = ssUpdate(prior, theta)
+
+
+
+## ---- testing ------------------------------------------------------------- ##
+
+source("initVP.R")
+source('updateFunctions.R')
+theta = initVarParams_indep(y, X, N, D, K)
+theta = rnkUpdate(prior, theta)
+theta = ssUpdate(prior, theta)
+
+# (1.1) test betak_update() function
+theta = betak_update(prior, theta)
+
+# check these unconditional exp/cov quantities
+theta$Sigma_k
+theta$m_k
+theta$var_beta_d
+
+
+## TODO: betak_update() needs to be called before the first e-step update
+## problem -- betak_upate() requires prior, theta object, but the update would
+## be called from within initVP() -- solution (?) : call betak update the rest
+## of the updates since it's only used "after" the spike and slab update which
+## is the last step of the coordinate ascent updates
+
+## ---- testing ------------------------------------------------------------- ##
 
 
 # (2) test precUpdate() function

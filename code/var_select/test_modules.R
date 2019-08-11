@@ -9,6 +9,9 @@ source(DP_BDR)    # so that we have access to data
 
 
 setwd("~/varbdr/code/var_select")
+
+
+setwd("~/varbdr/code/cov_indep")
 source("misc.R")
 
 

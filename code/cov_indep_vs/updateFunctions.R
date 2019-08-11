@@ -212,6 +212,44 @@ ssUpdate = function(prior, theta) {
     
 } # end ssUpdate() function
 
+## betak_update() --- perform additional updates that compute various
+##                    unconditional expectations/covariances
+## update:
+##         (0) UNCONDITIONAL covariance of beta_d
+##         (1) UNCONDITIONAL mean and covariance of beta_k
+##
+## (0)   V(beta_d)  =  var_beta_d \in  R^{K x K}
+## (1.1) E(beta_k)  =  m_k        \in  R^{D x K} -- filled columnwise
+## (1.2) V(beta_k)  =  Sigma_k    \in  R^{D x D}
+betak_update = function(prior, theta) {
+    
+    
+    # dimensions: m_d (K x D), lambda_d (D x 1), Q_d (K x K)
+    
+    # (0) compute Var(beta_d) 
+    for (d in 1:prior$D) {
+         theta$var_beta_d[,,d] = theta$lambda_d[d] * 
+             (theta$Q_d_inv[,,d] + 
+                  (1 - theta$lambda_d[d]) * theta$m_d[,d] %*% t(theta$m_d[,d]))
+    }
+    
+    # (1.1) compute Var(beta_k)
+    for (k in 1:prior$K) {
+        
+        for (d in 1:prior$D) {
+            theta$Sigma_k[d,d,k] = theta$var_beta_d[k,k,d] 
+        }
+        
+    }
+    
+    # (1.2) compute E(beta_k)
+    for (k in 1:prior$K) {
+        theta$m_k[,k] = theta$lambda_d * theta$m_d[k,]
+    }
+    
+    return(theta)
+} # end betak_update() function
+
 
 
 
@@ -249,4 +287,7 @@ precUpdate = function(prior, theta) {
     return(theta)
     
 } # end precUpdate() function
+
+
+
 

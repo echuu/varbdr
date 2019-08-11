@@ -46,6 +46,7 @@ initVarParams_indep = function(y, X, N, D, K, m_d = NULL,
     
     Q_d = array(I_K, c(K, K, D))       # D x (K x K) : array of cov matricies
                                        #               for each beta_d (K x 1)
+                                       #               condition on omega_d = 1
     Q_d_inv = array(I_K, c(K, K, D))   # D x (K x K)
     
     # quantities used to compute Q_d, m_d 
@@ -66,7 +67,7 @@ initVarParams_indep = function(y, X, N, D, K, m_d = NULL,
     # initialize m_d
     if (is.null(m_d)) {
         
-        m_d       = matrix(0, K, D)            # (K x D) : mean of beta_d
+        m_d       = matrix(0, K, D)            # (K x D) : E( - | omega_d = 1)
         y_kmeans  = kmeans(y, K, nstart = 25)
         y_k_index = y_kmeans$cluster           # cluster index
         
@@ -83,15 +84,18 @@ initVarParams_indep = function(y, X, N, D, K, m_d = NULL,
         print("Using random initialization of m_k, mu_k")
     }
     
-    # m_k := E(beta_k) \in R^D
-    # Sigma_k := Cov(beta_k) \in R^{D x D}
-    Sigma_k = array(I_D, c(D, D, K)) # K x (D x D) : cov matrix for each beta_k
+    # m_k         :=  E(beta_k)   \in  R^D
+    # Sigma_k     :=  Cov(beta_k) \in  R^{D x D}
+    # var_beta_d  :=  Var(beta_d) \in  R^{K x K} 
     
     # TODO: this should not just be the transpose of m_d because m_d is the
     # conditional mean of beta_d, whereas m_k is the unconditional mean 
     # of beta_k
+    Sigma_k    = array(I_D, c(D, D, K))       # K x (D x D) : Cov(beta_k)
+    var_beta_d = array(I_K, c(K, K, D))       # D x (K x K) : Cov(beta_d)   
     m_k     = t(m_d)                 # (D x K)     : mean components for beta_k, 
                                      #               stored col-wise
+    
     
     # current iteration of CAVI: start at 2, because we look at *previous* elbo
     #                            elements when checking for convergence
@@ -108,7 +112,7 @@ initVarParams_indep = function(y, X, N, D, K, m_d = NULL,
                  U_d = U_d, R_dj = R_dj, zeta_d = zeta_d, eta_d = eta_d,
                  alpha_k = alpha_k, 
                  a_k = a_k, b_k = b_k, 
-                 Sigma_k = Sigma_k, m_k = m_k,
+                 Sigma_k = Sigma_k, var_beta_d = var_beta_d, m_k = m_k,
                  L = L, curr = curr, intercept = intercept, max_iter = max_iter,
                  tol = tol, converge = converge, VERBOSE = VERBOSE)
 }

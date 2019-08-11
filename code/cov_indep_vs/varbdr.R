@@ -4,6 +4,7 @@
 
 varbdr = function(prior, theta) {
     
+    conv_status = ''
     
     for (i in 2:theta$max_iter) {
         
@@ -14,8 +15,14 @@ varbdr = function(prior, theta) {
         theta = computeELBO(prior, theta)
         
         if (theta$converge) {
+            conv_status = 'elbo converged'
             break
         }    
+        
+        # convergence status messages -- set VERBOSE = FALSE to suppress
+        if (theta$VERBOSE) {
+            print(paste('iter:', theta$curr - 1, conv_status, sep = ' '))
+        }
         
         theta$curr = theta$curr + 1
         
