@@ -1,7 +1,6 @@
 
-## misc.R
-
-## misc calculations performed in CAVI for covariate-INDEPENDENT case
+## misc.R -- misc calculations performed in CAVI for covariate-INDEPENDENT case
+##           with sparsity assumption in the gaussian componenets
 
 
 library(ggplot2)
@@ -12,14 +11,14 @@ library(ggplot2)
 # i            : current iteration
 # max_iter     : max # of iterations
 # epsilon_conv : tolerance used to assess convergence
-checkELBO = function(theta, prior) {
+checkELBO = function(prior, theta) {
     
     CONVERGE = FALSE
     
     i = theta$curr
     
     # display iteration, ELBO, change in ELBO
-    if (prior$VERBOSE) {
+    if (theta$VERBOSE) {
         cat("It:\t",        i,
             "\tLB:\t",      theta$L[i], 
             "\tLB_diff:\t", theta$L[i] - theta$L[i - 1],
@@ -27,18 +26,19 @@ checkELBO = function(theta, prior) {
     }
     
     # Check if lower bound decreases
-    if (theta$L[i] < theta$L[i - 1]) { 
-        message("Warning: Lower bound decreases!\n")
-    }
-    # Check for convergence
-    if (abs(theta$L[i] - theta$L[i - 1]) < prior$tol) { 
+    # if (theta$L[i] < theta$L[i - 1]) { 
+    #    message("Warning: Lower bound decreases!\n")
+    # }
+    
+    # Check for convergence using abs difference in value of elbo
+    if (abs(theta$L[i] - theta$L[i - 1]) < theta$tol) { 
         CONVERGE = TRUE 
     }
     
     # Check if VB converged in the given maximum iterations
-    if (i == prior$max_iter) {
-        warning("VB did not converge!\n")
-    }
+    # if (i == theta$max_iter) {
+    #     warning("VB did not converge!\n")
+    # }
     
     return(CONVERGE)
 } # end of checkELBO() function
@@ -72,6 +72,9 @@ log_dir_const = function(alpha_k, K) {
   
     log_const = 0
     
+    # enter this if() when computing log of dirichlet constant for the prior
+    # distribution b/c alpha_k = (alpha_0, alpha_0, ... , alpha_0) \in R^K
+    # but it is saved as a scalar upon input
     if (K != length(alpha_k)) {      # symmetric dirichlet, alpha_k is scalar
         alpha_k = rep(alpha_k, K)    # in this case, turn it into k-dim vec
     }

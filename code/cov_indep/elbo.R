@@ -91,10 +91,9 @@ elbo = function(theta, prior) {
     # E[ln p(pi)] --- does not exist in covariate-dependent case ---------------
     #                 note distinction between E[ln p(pi)] and E[ln pi]
     # compute log of dirichlet constant for pi ~ Dir(alpha_0) (prior)
-    log_C_alpha_0 = log_dir_const(prior$alpha_0, 1) # log_dir_const() in misc.R
+    log_C_alpha_0 = log_dir_const(prior$alpha_0, K) # log_dir_const() in misc.R
     e_ln_p_pi = log_C_alpha_0 + sum((prior$alpha_0 - 1) * e_ln_pi)
     
-
     # E[ln q(z)] --- same as covariate-dependent case --------------------------
     e_ln_q_z = sum(theta$r_nk * theta$log_r_nk) # sum over (N x K) matrix
     

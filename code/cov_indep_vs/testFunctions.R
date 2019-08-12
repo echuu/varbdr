@@ -74,12 +74,21 @@ theta$Sigma_k
 theta$m_k
 theta$var_beta_d
 
+## 8/11 progress update --- 
 
 ## TODO: betak_update() needs to be called before the first e-step update
 ## problem -- betak_upate() requires prior, theta object, but the update would
 ## be called from within initVP() -- solution (?) : call betak update the rest
 ## of the updates since it's only used "after" the spike and slab update which
 ## is the last step of the coordinate ascent updates
+
+## solution: put betak_update() code into the initVP() so that all the values 
+## are updated accordingly. Then call betak_update() as planned after after
+## the ssUpdate()
+
+## other issues: lambda_d = 1 on the first iteration causing errors in the elbo
+## computatio b/c there is log(lambda_d - 1) = log(0) = NaN
+
 
 ## ---- testing ------------------------------------------------------------- ##
 
@@ -108,7 +117,8 @@ theta_p = updateQ(prior, theta)
 ###           as the other spike and slab parameters since they are used 
 ###           in successive calculations (next iteration)
 
-
+source('elbo.R')
+theta_elbo = computeELBO(prior, theta)
 
 
 ## test varbdr() function

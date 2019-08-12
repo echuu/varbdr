@@ -15,7 +15,7 @@ varbdr = function(prior, theta) {
         theta = eStep_vs(prior, theta)
         theta = mStep_vs(prior, theta)
         
-        theta$L = elbo_vs(prior, theta)
+        theta$L[theta$curr] = elbo_vs(prior, theta)
         
         # TODO: implement converge() -- previously called checkELBO()
         if (converge(prior, theta)) {
