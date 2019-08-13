@@ -1,4 +1,6 @@
 
+# testFunctions.R -- test functions for SSCI-MoE
+
 
 source("~/varbdr/code/globals.R")
 setwd(HOME_DIR)
@@ -123,6 +125,68 @@ theta_elbo = computeELBO(prior, theta)
 
 ## test varbdr() function
 source('varbdr.R')
+
+
+
+
+
+# ---------------------------------------------------------------------------- #
+
+
+# generate data from conditional density
+source("simulation.R")
+
+# generate data
+N = 1000
+D = 4
+K = 3
+data = gmm_sim_xy(N, D)
+y = data$y
+X = data$X
+X = scale(X, scale = TRUE)
+
+intercept = FALSE;     # dated setting? used to check that 1st column is 1 vec
+
+# plot y ~ x
+xy_df = data.frame(x = X[,1], y = y)
+ggplot(xy_df, aes(x, y)) + geom_point()
+
+# plot conditional densities for different values of x
+y_grid   = seq(-3, 2, length.out = 1000)
+x        = c(-0.6745, 0, 0.6745)
+f_yx     = matrix(0, nrow = length(y_grid), ncol = length(x)) # (1000 x 3)
+
+for(i in 1:length(x)) {
+    # compute the conditional density for each (y, x) pair using the 
+    # mixture of normals density 
+    # write this in the simulation.R file and generalize the probability p 
+    # used in the gmm_sim_xy() function
+}
+
+
+# initialize parameters needed to pass into initPriors() function
+# TODO: figure out the appropriate value to initialize pi_d with
+# C&S implementation seems to normalize the probabilities over all features (?)
+
+alpha_0 = rep(1 / K, K);                         # pi_k params
+m_0 = 0; xi_0 = 0.3;                             # beta params             
+pi_d = 0.3;                                      # prior prob of inclusion
+a_0 = 1; b_0 = 1;                                # tau params
+VERBOSE = TRUE; tol = 1e-3;  max_iter = 1e4;     # algo/converge params
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

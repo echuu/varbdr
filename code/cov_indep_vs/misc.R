@@ -19,12 +19,12 @@ checkELBO = function(theta, prior) {
     i = theta$curr
     
     # display iteration, ELBO, change in ELBO
-    if (prior$VERBOSE) {
-        cat("It:\t",        i,
-            "\tLB:\t",      theta$L[i], 
-            "\tLB_diff:\t", theta$L[i] - theta$L[i - 1],
-            "\n")
-    }
+    # if (prior$VERBOSE) {
+    #    cat("It:\t",        i,
+    #        "\tLB:\t",      theta$L[i], 
+    #        "\tLB_diff:\t", theta$L[i] - theta$L[i - 1],
+    #        "\n")
+    #}
     
     # Check if lower bound decreases
     if (theta$L[i] < theta$L[i - 1]) { 

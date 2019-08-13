@@ -132,12 +132,12 @@ computeELBO = function(prior, theta) {
     if (theta$VERBOSE) {
         cat('E [ln p (y | - )]',      '=',   p1,  '\n',  sep = '\t')
         cat('E [ln p (Z | - )]',      '=',   p2,  '\n',  sep = '\t')
-        cat('E [ln p (pi)]',       '=',      p3,  '\n',  sep = '\t')
+        cat('E [ln p (pi)]\t',       '=',      p3,  '\n',  sep = '\t')
         cat('E [ln p (tau)]\t\t',     '=\t', p4,  '\n',  sep = '')
         cat('E [ln p (beta, omega)]', '=',   p5,  '\n',  sep = '\t')
         
         cat('E [ln q (beta, omega)]', '=',   q1,  '\n',  sep = '\t')
-        cat('E [ln q (pi)]',       '=',      q2,  '\n',  sep = '\t')
+        cat('E [ln q (pi)]\t',       '=',      q2,  '\n',  sep = '\t')
         cat('E [ln q (Z)]\t\t',       '=\t', q3,  '\n',  sep = '')
         cat('E [ln q (tau)]\t\t',     '=\t', q4,  '\n',  sep = '')
     }
