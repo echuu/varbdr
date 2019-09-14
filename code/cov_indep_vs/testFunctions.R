@@ -143,7 +143,7 @@ K = 3
 data = gmm_sim_xy(N, D)
 y = data$y
 X = data$X
-X = scale(X, scale = TRUE)
+# X = scale(X, scale = TRUE)
 
 intercept = FALSE;     # dated setting? used to check that 1st column is 1 vec
 
@@ -153,15 +153,36 @@ ggplot(xy_df, aes(x, y)) + geom_point()
 
 # plot conditional densities for different values of x
 y_grid   = seq(-3, 2, length.out = 1000)
-x        = c(-0.6745, 0, 0.6745)
+x        = (c(0, 0.33, 0.66) - mean(data$X[,1])) / sd(data$X[,1])
+x        = c(-0, 0.5, 0.9)
 f_yx     = matrix(0, nrow = length(y_grid), ncol = length(x)) # (1000 x 3)
+
+## compute conditional density for each value of x
+source("simulation.R")
+# store the conditional density of (y | x) for each covariate
+yx_curves = matrix(0, nrow = length(y_grid), ncol = length(x))
+yx_plots = list()
 
 for(i in 1:length(x)) {
     # compute the conditional density for each (y, x) pair using the 
     # mixture of normals density 
     # write this in the simulation.R file and generalize the probability p 
     # used in the gmm_sim_xy() function
+    
+    # for each value of x, find the conditional density and plot its curve
+    # y_eval = data.frame(y = y_grid, x = x[i])
+    yx_curves[,i] = gmm_pdf(y_grid, x[i]) # gmm_pdf() in simulation.R file
+    
+    # create ggplot() object and store in yx_plots'
+    df_fy = data.frame(y = y_grid, f_yx = yx_curves[,i])
+    yx_plots[[i]] = ggplot(df_fy, aes(y, f_yx)) + geom_line(size = 0.8) + 
+        labs(x = 'y', y = 'f(y|x)') + theme_bw()
+
 }
+
+# plot the 3 conditional density curves
+multiplot(plotlist = yx_plots, cols = 3)
+
 
 
 # initialize parameters needed to pass into initPriors() function

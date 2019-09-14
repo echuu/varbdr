@@ -256,6 +256,7 @@ betak_update = function(prior, theta) {
 ## update q(tau)
 precUpdate = function(prior, theta) {
     
+    N = prior$N
     K = prior$K
     X = prior$X
     y = prior$y
@@ -266,23 +267,42 @@ precUpdate = function(prior, theta) {
     a_k = prior$a_0 + 0.5 * theta$N_k # (K x 1)
     
     X_mk    = X %*% theta$m_k  # (N x K) : (N x D) * (D x K)
-    b_k_tmp = numeric(K)       # (K x 1) : 1st term in summation
-    xSigmax = numeric(K)       # (K x 1) : 2nd term in summation
     
-    for (k in 1:K) {
-        b_k_tmp[k] = b_k_tmp[k] + sum((y - X_mk[,k])^2)
-    }
+    ## old implementation -- missing r_nk term
+    #b_k_tmp = numeric(K)       # (K x 1) : 1st term in summation
+    #xSigmax = numeric(K)       # (K x 1) : 2nd term in summation
     
-    for (k in 1:K) {
+    #for (k in 1:K) {
+    #    b_k_tmp[k] = b_k_tmp[k] + sum((y - X_mk[,k])^2)
+    #}
+    
+    #for (k in 1:K) {
+    #    
+    #    b_k_tmp[k] = b_k_tmp[k] + sum((y - X_mk[,k])^2)
+    #    
+    #    for (n in 1:N) {
+    #        xSigmax[k] = xSigmax[k] + t(X[n,]) %*% theta$Sigma_k[,,k] %*% X[n,]
+    #    }
+    #}
+    #b_k = b_0 + 0.5 * (b_k_tmp + xSigmax) # (K x 1)
+    # --------------------------------------------------------------------------
+    
+    # updated 9/14/19
+    y_diff = (y - X_mk)^2
+    for (k in 1:K) {         # element-wise update for each b_k
+        
+        xSigmax = numeric(N) # (N x 1) : store intermediate summations during
+                             #           interm. calculations of each b_kt
+        
         for (n in 1:N) {
-            xSigmax[k] = xSigmax[k] + t(X[n,]) %*% theta$Sigma_k[,,k] %*% X[n,]
+            xSigmax[n] = xSigmax[n] + t(X[n,]) %*% Sigma[,,k] %*% X[n,]
         }
+        
+        b_k[k] = sum(r_nk[,k] * (y_diff + xSigmax)) # summation over n
     }
-    
-    b_k = b_0 + 0.5 * (b_k_tmp + xSigmax) # (K x 1)
     
     theta$a_k = a_k
-    theta$b_k = b_k
+    theta$b_k = prior$b_0 + 0.5 * b_k
     
     return(theta)
     
