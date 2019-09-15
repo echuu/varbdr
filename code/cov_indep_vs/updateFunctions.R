@@ -4,6 +4,12 @@
 ##                       updates for covariate-independent weights with
 ##                       sparsity assumption in the gaussian components
 
+## rnkUpdate()
+## wtUpdate()
+## ssUpdate()
+## betak_update()
+## precUpdate()
+
 
 
 
@@ -64,7 +70,7 @@ rnkUpdate = function(prior, theta) {
 
 
 
-## q(pi)
+## q(pi) -- need to update posterior means for these in approx_f_xy() function
 wtUpdate = function(prior, theta) {
     
     theta$alpha_k = prior$alpha_0 + theta$N_k    # (K x 1)
@@ -197,7 +203,7 @@ ssUpdate = function(prior, theta) {
     theta$m_d      = m_d          # E [ beta_d | omega_d = 1 ] = m_d
                                   # note: this is conditional mean
     
-    theta$m_k      = t(m_d)       # TODO: needs to be fixed (8/10)
+    #theta$m_k      = t(m_d)       # TODO: needs to be fixed (8/10)
                                   # this is the unconditional mean (wrong)
     
     theta$lambda_d = lambda_d     # posterior inclusion probabilities
@@ -295,10 +301,10 @@ precUpdate = function(prior, theta) {
                              #           interm. calculations of each b_kt
         
         for (n in 1:N) {
-            xSigmax[n] = xSigmax[n] + t(X[n,]) %*% Sigma[,,k] %*% X[n,]
+            xSigmax[n] = xSigmax[n] + t(X[n,]) %*% theta$Sigma_k[,,k] %*% X[n,]
         }
         
-        b_k[k] = sum(r_nk[,k] * (y_diff + xSigmax)) # summation over n
+        b_k[k] = sum(theta$r_nk[,k] * (y_diff + xSigmax)) # summation over n
     }
     
     theta$a_k = a_k

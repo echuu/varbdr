@@ -18,7 +18,7 @@ K = 2
 synth_data_1d = r_dpmix2(N)
 y = synth_data_1d$y
 X = synth_data_1d$X
-X = scale(X, scale = TRUE)
+# X = scale(X, scale = TRUE)
 
 intercept = FALSE;     # dated setting? used to check that 1st column is 1 vec
 
@@ -137,9 +137,9 @@ source('varbdr.R')
 source("simulation.R")
 
 # generate data
-N = 1000
-D = 4
-K = 3
+N = 1000   # number of observations
+D = 4      # dimension of covariates
+K = 3      # number of clusters
 data = gmm_sim_xy(N, D)
 y = data$y
 X = data$X
@@ -153,8 +153,8 @@ ggplot(xy_df, aes(x, y)) + geom_point()
 
 # plot conditional densities for different values of x
 y_grid   = seq(-3, 2, length.out = 1000)
-x        = (c(0, 0.33, 0.66) - mean(data$X[,1])) / sd(data$X[,1])
-x        = c(-0, 0.5, 0.9)
+# x        = (c(0, 0.33, 0.66) - mean(data$X[,1])) / sd(data$X[,1])
+x        = c(0, 0.5, 0.9)
 f_yx     = matrix(0, nrow = length(y_grid), ncol = length(x)) # (1000 x 3)
 
 ## compute conditional density for each value of x
@@ -176,7 +176,7 @@ for(i in 1:length(x)) {
     # create ggplot() object and store in yx_plots'
     df_fy = data.frame(y = y_grid, f_yx = yx_curves[,i])
     yx_plots[[i]] = ggplot(df_fy, aes(y, f_yx)) + geom_line(size = 0.8) + 
-        labs(x = 'y', y = 'f(y|x)') + theme_bw()
+        labs(x = 'y', y = '') + theme_bw()
 
 }
 
@@ -194,6 +194,71 @@ m_0 = 0; xi_0 = 0.3;                             # beta params
 pi_d = 0.3;                                      # prior prob of inclusion
 a_0 = 1; b_0 = 1;                                # tau params
 VERBOSE = TRUE; tol = 1e-3;  max_iter = 1e4;     # algo/converge params
+
+# initialize objects needed for cavi
+# test initPriors() function
+source("initPr.R")
+source("initVP.R")
+prior = initPriors(y, X, K, 
+                   alpha_0,                    # pi   : concentration param
+                   m_0, xi_0,                  # beta : mean, scale for slab
+                   pi_d,                       # beta : prior pip
+                   a_0, b_0)                   # tau  : shape, rate
+
+theta = initVarParams_indep(y, X, N, D, K)
+
+# perform each of the updates:
+source("updateFunctions.R")
+theta_p = theta
+
+
+## rnkUpdate() : r_nk values changed -------------------------------------------
+theta_p = rnkUpdate(prior, theta_p) # pass in updated theta: theta_p
+
+head(theta_p$r_nk)
+
+## wtUpdate() : alpha_k values changed -----------------------------------------
+theta_p = wtUpdate(prior, theta_p) # pass in updated theta: theta_p
+
+theta_p$alpha_k
+
+## ssUpdate() : m_d, Q_d values updated ----------------------------------------
+
+# before update values
+theta_p$lambda_d
+theta_p$m_d
+theta_p$Q_d_inv
+
+theta_p = ssUpdate(prior, theta_p) # pass in updated theta: theta_p 
+
+# after update values
+theta_p$lambda_d
+theta_p$m_d
+theta_p$Q_d_inv
+
+## betak_update() : m_k, Sigma_k values updated --------------------------------
+
+# before update values
+theta_p$m_k
+theta_p$Sigma_k
+
+theta_p = betak_update(prior, theta_p) # pass in updated theta: theta_p
+
+# after update values
+theta_p$m_k
+theta_p$Sigma_k
+
+
+## precUpdate() : a_k, b_k values updated --------------------------------------
+
+# before update values
+theta_p$a_k
+theta_p$b_k
+
+theta_p = precUpdate(prior, theta_p) # pass in updated theta: theta_p
+
+theta_p$a_k 
+theta_p$b_k # these values are massive (>10k)
 
 
 

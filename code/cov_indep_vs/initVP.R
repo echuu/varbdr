@@ -93,9 +93,9 @@ initVarParams_indep = function(y, X, N, D, K, m_d = NULL,
     # of beta_k
     Sigma_k    = array(I_D, c(D, D, K))       # K x (D x D) : Cov(beta_k)
     var_beta_d = array(I_K, c(K, K, D))       # D x (K x K) : Cov(beta_d)   
-    m_k     = t(m_d)                 # (D x K)     : mean components for beta_k, 
-                                     #               stored col-wise
-    
+    #m_k     = t(m_d)                 # (D x K)     : mean components for beta_k, 
+    #                                 #               stored col-wise
+    m_k = matrix(runif(K * D), D, K)  # (D x K) 
     
     # current iteration of CAVI: start at 2, because we look at *previous* elbo
     #                            elements when checking for convergence
