@@ -133,6 +133,15 @@ source('varbdr.R')
 # ---------------------------------------------------------------------------- #
 
 
+source("~/varbdr/code/globals.R")
+setwd(HOME_DIR)
+source(DP_BDR)    # so that we have access to data
+
+setwd("~/varbdr/code/cov_indep_vs")
+source("misc.R")
+
+
+
 # generate data from conditional density
 source("simulation.R")
 
@@ -145,7 +154,7 @@ y = data$y
 X = data$X
 # X = scale(X, scale = TRUE)
 
-intercept = FALSE;     # dated setting? used to check that 1st column is 1 vec
+# intercept = FALSE;     # dated setting? used to check that 1st column is 1 vec
 
 # plot y ~ x
 xy_df = data.frame(x = X[,1], y = y)
@@ -262,6 +271,14 @@ theta_p$b_k # these values are massive (>10k)
 
 
 
+
+for (t in 1:200) {
+    theta_p = rnkUpdate(prior, theta_p)
+    theta_p = wtUpdate(prior, theta_p) 
+    theta_p = ssUpdate(prior, theta_p) 
+    theta_p = betak_update(prior, theta_p)
+    theta_p = precUpdate(prior, theta_p)
+}
 
 
 
