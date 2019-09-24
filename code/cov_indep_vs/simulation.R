@@ -7,7 +7,7 @@
 sigsq_1 = 0.01  # variance of first gaussian
 sigsq_2 = 0.04  # variance of second gaussian
 p = 0.3         # prob of drawing from first gaussian
-d = 1           # covariate used in the mixture density (non-noise)
+d = 3           # covariate used in the mixture density (non-noise)
 
 # gmm_sim_xy() --- generate data points (x, y) where y is drawn from a 
 #                  conditional density f(y|x)

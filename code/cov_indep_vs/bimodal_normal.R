@@ -54,7 +54,7 @@ source("initVP.R") # load initVarParams_indep() function
 
 ## initialize model hyper-parameters
 alpha_0 = rep(1 / K, K);                         # pi_k params
-m_0 = 0; xi_0 = 0.3;                             # beta params             
+m_0 = 0; xi_0 = 10;                              # beta params             
 pi_d = 0.3;                                      # prior prob of inclusion
 a_0 = 1; b_0 = 1;                                # tau params
 VERBOSE = TRUE; tol = 1e-3;  max_iter = 50;      # algo/converge params
