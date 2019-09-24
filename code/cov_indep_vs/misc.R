@@ -12,7 +12,7 @@ library(ggplot2)
 # i            : current iteration
 # max_iter     : max # of iterations
 # epsilon_conv : tolerance used to assess convergence
-checkELBO = function(theta, prior) {
+checkELBO = function(theta) {
     
     CONVERGE = FALSE
     
@@ -31,12 +31,12 @@ checkELBO = function(theta, prior) {
         message("Warning: Lower bound decreases!\n")
     }
     # Check for convergence
-    if (abs(theta$L[i] - theta$L[i - 1]) < prior$tol) { 
+    if (abs(theta$L[i] - theta$L[i - 1]) < theta$tol) { 
         CONVERGE = TRUE 
     }
     
     # Check if VB converged in the given maximum iterations
-    if (i == prior$max_iter) {
+    if (i == theta$max_iter) {
         warning("VB did not converge!\n")
     }
     

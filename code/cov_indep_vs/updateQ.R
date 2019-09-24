@@ -25,6 +25,9 @@ updateQ = function(prior, theta) {
     # (3.2) update omega_d, d = 1:D
     theta = ssUpdate(prior, theta)
     
+    # (3.3) update the unconditional mean and variance of beta_k
+    theta = betak_update(prior, theta)
+    
     return(theta)
     
 } # end updateQ() function

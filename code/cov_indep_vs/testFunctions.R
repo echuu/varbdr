@@ -147,8 +147,8 @@ source("simulation.R")
 
 # generate data
 N = 1000   # number of observations
-D = 4      # dimension of covariates
-K = 3      # number of clusters
+D = 6      # dimension of covariates
+K = 2      # number of clusters
 data = gmm_sim_xy(N, D)
 y = data$y
 X = data$X
@@ -268,8 +268,6 @@ theta_p = precUpdate(prior, theta_p) # pass in updated theta: theta_p
 
 theta_p$a_k 
 theta_p$b_k # these values are massive (>10k)
-
-
 
 
 for (t in 1:200) {

@@ -191,7 +191,7 @@ ssUpdate = function(prior, theta) {
                                   0.5 * log(det(as.matrix(Q_d[,,d]))) + 
                                   0.5 * crossprod(m_d[,d], eta_d[,d]))
         
-        print(paste("lambda_d = ", lambda_d[d], sep = ''))
+        # print(paste("lambda_d = ", lambda_d[d], sep = ''))
         
         # end of variational updates -------------------------------------------
         

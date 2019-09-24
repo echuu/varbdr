@@ -21,7 +21,8 @@ varbdr = function(prior, theta) {
         
         # convergence status messages -- set VERBOSE = FALSE to suppress
         if (theta$VERBOSE) {
-            print(paste('iter:', theta$curr - 1, conv_status, sep = ' '))
+            print(paste('iter:', theta$curr - 1, conv_status, 
+                        '--------------------------------', sep = ' '))
         }
         
         theta$curr = theta$curr + 1

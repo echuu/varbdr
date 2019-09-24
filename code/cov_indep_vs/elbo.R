@@ -118,7 +118,7 @@ computeELBO = function(prior, theta) {
     #        (matrix.trace(as.matrix(theta$Q_d_inv[,,d])) + md_md[d])
     # }
     # p5_tmp = theta$lambda_d * log(1 - prior$pi_d) + 
-    #     0.5 * theta$lambda_d * (K * log(prior$xi_0) - K * log(2 * pi) - p5_tmp)
+    #    0.5 * theta$lambda_d * (K * log(prior$xi_0) - K * log(2 * pi) - p5_tmp)
     
     # p5 = sum(p5_tmp)
     
@@ -207,8 +207,8 @@ computeELBO = function(prior, theta) {
     theta$L[theta$curr] = elbo
     
     # determine convergence status
-    if (checkELBO(prior, theta)) {
-        theta$converge = TRUE
+    if (checkELBO(theta)) {
+         theta$converge = TRUE
     }
     
     return(theta)
