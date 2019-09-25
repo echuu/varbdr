@@ -17,6 +17,7 @@ d = 3           # covariate used in the mixture density (non-noise)
 # output: list containing X, y 
 #         X    :  (N x D) design matrix
 #         y    :  (N x 1) response vector
+#         d    :  (1 x 1) index of the non-noise covariate
 gmm_sim_xy = function(N, D, seed = 100) {
     
     set.seed(seed)
@@ -47,7 +48,7 @@ gmm_sim_xy = function(N, D, seed = 100) {
     y[!mix_indic] = rnorm(N_mix1, mean = mu_1[!mix_indic], sd = sqrt(sigsq_1))
     y[mix_indic]  = rnorm(N_mix2, mean = mu_2[mix_indic], sd = sqrt(sigsq_2))
     
-    return(list(X = X, y = y))
+    return(list(X = X, y = y, d = d))
     
 } # end of gmm_sim_xy() function
 

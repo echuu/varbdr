@@ -107,7 +107,7 @@ computeELBO = function(prior, theta) {
     
     # (3) E [ln p (pi)] = ------------------------------------------------------
     log_C_alpha_0 = log_dir_const(prior$alpha_0, K)
-    e_ln_p_pi = log_C_alpha_0 + sum((prior$alpha_0 - 1) * e_ln_pi)
+    e_ln_p_pi = log_C_alpha_0 + sum((prior$alpha_0 - 1) * e_ln_pi_k)
     
     
     # (4) E [ln p (beta, omega)] = ---------------------------------------------
