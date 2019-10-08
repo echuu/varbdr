@@ -28,6 +28,9 @@ updateQ = function(prior, theta) {
     # (3.3) update the unconditional mean and variance of beta_k
     theta = betak_update(prior, theta)
     
+    # update variables used in the final model
+    theta = updateModelParams(prior, theta)
+    
     return(theta)
     
 } # end updateQ() function

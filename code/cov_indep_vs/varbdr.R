@@ -16,6 +16,17 @@ varbdr = function(prior, theta) {
         
         if (theta$converge) {
             conv_status = 'elbo converged'
+            
+            # include the elbo plot -- move this into elbo file later
+            
+            elbo_df = data.frame(iter = 1:(i-1), elbo = theta$L[2:i])
+            
+            theta$elbo_plot = ggplot(elbo_df, aes(iter, elbo)) + geom_point() +
+                scale_x_discrete(limits = c(1:(i-1))) + 
+                theme_bw()
+            
+            print(paste('iter:', theta$curr - 1, conv_status, 
+                        '--------------------------------', sep = ' '))
             break
         }    
         

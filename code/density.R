@@ -16,7 +16,7 @@ library(ggplot2)
 library(reshape2)
 
 # py_0(): mixture density used to approximate the true density,
-#        covariate-INDEPENDENT weights
+#         covariate-INDEPENDENT weights
 # input:  
 #          theta  : variational parameters
 #          prior  : prior-related variables

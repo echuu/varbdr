@@ -316,4 +316,25 @@ precUpdate = function(prior, theta) {
 
 
 
+## update the variables used in the mixture of experts density
+##      pi_k
+##      beta_k
+##      tau_k
+updateModelParams = function(prior, theta) {
+    
+    # E[pi_k] = E[Dir(pi_k | alpha_1 , ... , alpha_K)] = alpha_k / sum(alpha_k)
+    theta$pi_k = theta$alpha_k / sum(theta$alpha_k)
+    
+    # E[beta_k] = E[N(beta_k | m_k, Sigma_k)] = m_k
+    theta$beta_k = theta$m_k
+    
+    # E[tau_k] = E[Ga(tau_k | a_k, b_k)] = a_k / b_k
+    theta$tau_k = theta$a_k / theta$b_k
+    
+    return(theta)
+    
+} # end updateModelParams() function
+
+
+
 

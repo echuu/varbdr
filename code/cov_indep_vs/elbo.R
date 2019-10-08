@@ -160,7 +160,7 @@ computeELBO = function(prior, theta) {
     # check values of lambda_d for each d
     if (theta$VERBOSE) {
         for (d in 1:D) {
-            cat("p(lambda_", d, ') \t\t= \t', l_d[d], '\n', sep = '')
+            cat("lambda_", d, ' \t\t= \t', l_d[d], '\n', sep = '')
         }
     }
     

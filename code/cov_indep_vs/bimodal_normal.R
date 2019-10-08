@@ -21,9 +21,9 @@ xy_df = data.frame(x = X[,d], y = y)
 ggplot(xy_df, aes(x, y)) + geom_point()
 
 # plot conditional densities for different values of x
-y_grid   = seq(-3, 2, length.out = 1000)
+y_grid   = seq(-3, 2, length.out = 5000)
 num_pred = 3 # num of conditional densities to be evaulated
-x        = matrix(rnorm(num_pred * D), num_pred, D)
+x        = matrix(runif(num_pred * D), num_pred, D)
 x[,d]    = c(0, 0.5, 0.9) # fill in d-th column with the non-noise covariate
 f_yx     = matrix(0, nrow = length(y_grid), ncol = num_pred) # (1000 x 3)
 
@@ -62,7 +62,7 @@ source('misc.R')   # load convergence functions
 alpha_0 = rep(1 / K, K);                         # pi_k params
 m_0 = 0; xi_0 = 10;                              # beta params             
 pi_d = 0.3;                                      # prior prob of inclusion
-a_0 = 1; b_0 = 1;                                # tau params
+a_0 = 0.5; b_0 = 0.5;                                # tau params
 VERBOSE = TRUE; tol = 1e-3;  max_iter = 50;      # algo/converge params
 
 
@@ -73,7 +73,7 @@ prior = initPriors(y, X, K,
                    pi_d,                       # beta : prior pip
                    a_0, b_0)                   # tau  : shape, rate
 
-theta = initVarParams_indep(y, X, N, D, K, max_iter = max_iter)
+# theta = initVarParams_indep(y, X, N, D, K, max_iter = max_iter)
 
 source('updateFunctions.R') # update functions for variational distributions
 source('updateQ.R')         # performs one update for each distribution
@@ -81,7 +81,63 @@ source('varbdr.R')          # main cavi loop
 source('elbo.R')
 
 # run the cavi algorithm
-theta = initVarParams_indep(y, X, N, D, K)
+theta = initVarParams_indep(y, X, N, D, K, max_iter = max_iter)
 theta_star = varbdr(prior, theta)
+
+# theta_star stores variational parameters after convergence
+
+## TODO: -----------------------------------------------------------------------
+
+# obtain the approximate conditional density using the x-values passed into
+# mixture of experts model
+
+source('approxDensity.R')
+
+# store the conditional density approximations (col-wise per x input)
+py_x = matrix(0, nrow = length(y_grid), ncol = num_pred) # (1000 x 3)
+
+for (i in 1:num_pred) {
+    # evaluate each of the conditional densities
+    py_x[,i] = approx_f_xy(prior, theta_star, y_grid, x[i,])
+}
+
+# plot the approx conditional densities overlayed with the 'true' condititional
+# densities 
+
+cd_plots = vector("list", num_pred)
+
+for (i in 1:num_pred) {
+    # data frame for y, p(y|x) evaluations, true cond. densities f(y|x)
+    df_y_py = data.frame(y = y_grid, py = py_x[,i], fy = yx_curves[,i])
+    
+    # create conditional density plot
+    cd_plots[[i]] = ggplot(df_y_py, aes(x = y, y = py)) + 
+        geom_point(size = 0.5)
+}
+
+
+# overlay the true density (blue) on the approximate density (black)
+cd_plots[[1]] + geom_line(aes(x = y_grid, y = yx_curves[,1]), color = 'blue')
+
+cd_plots[[2]] + geom_line(aes(x = y_grid, y = yx_curves[,2]), color = 'blue')
+
+cd_plots[[3]] + geom_line(aes(x = y_grid, y = yx_curves[,3]), color = 'blue')
+
+multiplot(plotlist = cd_plots, cols = num_pred)
+
+
+# numerical figure to quantify discrepancy
+
+# uncertainty estimate (?) need to look at how C&S + others do this
+
+# quantify accuracy of the variable selection
+
+
+## DONE: -----------------------------------------------------------------------
+
+
+
+
+
 
 

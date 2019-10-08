@@ -12,20 +12,25 @@
 #          p_y    : approximate conditional density for y|X 
 approx_f_xy = function(prior, theta, y, x) {
     
-
+    
+    #if (theta$VERBOSE) {
+    #    print("MoE approx -- covariate-INDEPENDENT weights + V.S.")
+    #}
+    
     p_y = 0
     
-    # theta$pi_k needs to be updated before computing, as this is not done
-    # during each iteration of the CAVI algorithm, although maybe we should, 
-    # considering it is not particularly expensive
+    # print(x)
     
     # evaluate each of the gaussians
     for (k in 1:prior$K) {
         tau_k_inv = 1 / theta$tau_k[k]  # precision of k-th gaussian
-        beta_k = theta$beta[,k]         # coefficient vector of k-th gaussian
+        beta_k = theta$beta_k[,k]         # coefficient vector of k-th gaussian
         mu_k = c(t(x) %*% beta_k)       # mean component of k-th gaussian
-        p_y = p_y + theta$pi_k[k] * dnorm(y, mu_k, sqrt(tau_k_inv))
+        # print(mu_k)
+        p_y = p_y + theta$pi_k * dnorm(y, mu_k, sqrt(tau_k_inv))
     }
+    
+    # print(p_y)
     
     return(p_y)
 } # end of approx_f_xy() function
